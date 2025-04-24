@@ -169,6 +169,8 @@
   </style>
 </head>
 <body>
+  <div id="notification" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#28a745; color:white; padding:15px 30px; border-radius:5px; opacity:0; transition:opacity 0.5s ease-in-out; z-index:1000;">Información enviada correctamente</div>
+
   <!-- Initial loading message displayed while fetching data -->
   <div id="mensaje_cargando">Cargando información, por favor espere...</div>
 
@@ -534,6 +536,27 @@
             pdf.save(`reporte_${Date.now()}.pdf`);
             btnEnviar.style.display = 'inline-block';
             btnMod.style.display = 'inline-block';
+        // Mostrar mensaje de confirmación
+        const notif = document.getElementById('notification');
+        notif.style.display = 'block';
+        setTimeout(() => { notif.style.opacity = 1; }, 10);
+        setTimeout(() => {
+          notif.style.opacity = 0;
+          notif.addEventListener('transitionend', () => {
+            notif.style.display = 'none';
+            // Limpiar formulario
+            ['sector','placa','proceso','nombre','identidad','total','litros','motivo','fecha','horas','km','factura']
+              .forEach(id => document.getElementById(id).value = '');
+            ['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
+              .forEach(id => document.getElementById(id).value = null);
+            // Volver al formulario
+            document.getElementById('preview_contenido').style.display = 'none';
+            const formEl = document.getElementById('formulario_contenido');
+            formEl.style.display = 'block';
+            formEl.classList.add('fade-in-up');
+          }, { once: true });
+        }, 2000);
+
           }
         });
       });

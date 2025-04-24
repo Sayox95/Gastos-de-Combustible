@@ -7,6 +7,16 @@
   <!-- Roboto font for consistent typography -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   <style>
+    /* Animaciones para transiciones */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    /* Global page styles */
     /* Global page styles */
     body {
       font-family: 'Roboto', sans-serif;
@@ -174,6 +184,10 @@
     <input type="text" id="placa" list="placas" autocomplete="off" placeholder="Escribe o selecciona una placa">
     <datalist id="placas"></datalist>
 
+    <!-- Proceso seleccionado por usuario (movido) -->
+    <label for="proceso">Proceso:</label>
+    <select id="proceso"><option value="">Seleccione un proceso</option></select>
+
     <!-- Datos del colaborador -->
     <label for="nombre">Nombre Completo:</label>
     <input type="text" id="nombre" required>
@@ -185,17 +199,18 @@
     <label for="total">Total Gastado (L):</label>
     <input type="number" id="total" step="0.01">
 
-    <!-- Nuevo campo: Litros consumidos (no se muestra en preview ni PDF) -->
-    <label for="litros">Litros consumidos:</label>
-    <input type="number" id="litros" name="litros" step="0.01">
+    <!-- Nuevo campo: Litros Consumidos, no aparece en preview ni PDF -->
+    <label for="litros">Litros Consumidos:</label>
+    <input type="number" id="litros" step="0.01">
+
+<!-- Motivación del viaje -->
 
     <!-- Motivación del viaje -->
     <label for="motivo">Motivo del Llenado:</label>
     <textarea id="motivo" rows="3"></textarea>
 
     <!-- Proceso seleccionado por usuario -->
-    <label for="proceso">Proceso:</label>
-    <select id="proceso"><option value="">Seleccione un proceso</option></select>
+    
 
     <!-- Fecha y duración -->
     <label for="fecha">Fecha:</label>
@@ -211,21 +226,24 @@
     <label for="factura">Número de Factura:</label>
     <input type="text" id="factura">
 
-    <!-- Inputs de imágenes (galería o cámara) -->
-    <label for="foto_factura">Fotografía de la Factura:</label>
-    <input type="file" id="foto_factura" accept="image/*">
-
+    <!-- Inputs de imágenes (galería o cámara) reordered -->
     <label for="foto_tablero_antes">Fotografía Tablero Antes:</label>
     <input type="file" id="foto_tablero_antes" accept="image/*">
 
-    <label for="foto_bomba">Fotografía Bomba:</label>
+    <label for="foto_bomba">Fotografía Bomba en 0:</label>
     <input type="file" id="foto_bomba" accept="image/*">
-
-    <label for="foto_despues">Fotografía Después:</label>
-    <input type="file" id="foto_despues" accept="image/*">
 
     <label for="foto_frontal">Fotografía Frontal del Vehículo:</label>
     <input type="file" id="foto_frontal" accept="image/*">
+
+    <label for="foto_bomba_llenado">Fotografía Bomba Llena:</label>
+    <input type="file" id="foto_bomba_llenado" accept="image/*">
+
+    <label for="foto_despues">Fotografía Tablero Después de Llenado:</label>
+    <input type="file" id="foto_despues" accept="image/*">
+
+    <label for="foto_factura">Fotografía de la Factura:</label>
+    <input type="file" id="foto_factura" accept="image/*">
 
     <!-- Botón para generar vista previa -->
     <button id="guardar_reporte">Guardar Reporte</button>
@@ -248,7 +266,16 @@
       <h3 class="format-header">FOTOGRAFÍAS</h3>
       <div id="photos_table_container"></div>
     </div>
-    <!-- Botones para generación de PDF o volver atrás -->
+        <!-- Página 3: separador -->
+    
+    <!-- Página 3: solo fotografía de la factura -->
+    <div class="page" id="preview_page3">
+      <h3 class="format-header">FACTURA ORIGINAL</h3>
+      <div class="invoice-box">
+        <img id="factura_only_img" style="width:auto; height:800px; object-fit:contain; display:block; margin:0 auto;" />
+      </div>
+    </div>
+
     <button id="enviar_reporte">Enviar Reporte</button>
     <button id="modificar_reporte">Modificar Reporte</button>
   </div>
@@ -273,6 +300,10 @@
           // Eliminar duplicados usando Set
           [...new Set(data.map(x => x.Sector))].forEach(s => sel.add(new Option(s, s)));
           document.getElementById('mensaje_cargando').style.display = 'none';
+          // Animar formulario al aparecer
+          const formEl = document.getElementById('formulario_contenido');
+          formEl.style.display = 'block';
+          formEl.classList.add('fade-in-up');
           document.getElementById('formulario_contenido').style.display = 'block';
         })
         .catch(err => {
@@ -371,11 +402,11 @@
         <table class="photos-table">
           <tr>
             <td><div class="photo-title">TABLERO ANTES DE LLENADO</div>${imgHTML('foto_tablero_antes')}</td>
-            <td colspan="2"><div class="photo-title">BOMBA DE COMBUSTIBLE</div>${imgHTML('foto_bomba')}</td>
+            <td colspan="2"><div class="photo-title">BOMBA DE COMBUSTIBLE 0</div>${imgHTML('foto_bomba')}</td>
           </tr>
           <tr>
             <td><div class="photo-title">TABLERO DESPUÉS DE LLENADO</div>${imgHTML('foto_despues')}</td>
-            <td colspan="2" rowspan="2"><div class="photo-title">FACTURA</div>${imgHTML('foto_factura')}</td>
+            <td colspan="2" rowspan="2"><div class="photo-title">BOMBA DE COMBUSTIBLE LLENA</div>${imgHTML('foto_bomba_llenado')}</td>
           </tr>
           <tr>
             <td><div class="photo-title">VISTA FRONTAL DEL VEHÍCULO</div>${imgHTML('foto_frontal')}</td>
@@ -386,16 +417,40 @@
             <td class="photo-footer">FACTURA: ${data.FacturaNo}</td>
           </tr>
         </table>`;
+      // Cargar imagen de factura en la página 3
+      const factImg = document.getElementById('factura_only_img');
+      const fileF = document.getElementById('foto_factura').files[0];
+      if (fileF) {
+        const rdF = new FileReader();
+        rdF.onload = e => factImg.src = e.target.result;
+        rdF.readAsDataURL(fileF);
+      }
 
       // Mostrar vista previa y ocultar formulario
-      document.getElementById('formulario_contenido').style.display = 'none';
+      // Ocultar formulario con animación
+      const formEl = document.getElementById('formulario_contenido');
+      formEl.classList.remove('fade-in-up');
+      formEl.style.display = 'none';
       document.getElementById('preview_contenido').style.display = 'block';
+      // Animar vista previa al aparecer
+      const previewEl = document.getElementById('preview_contenido');
+      previewEl.classList.add('fade-in-up');
+      // Ajustar scroll para centrar preview
+      setTimeout(() => previewEl.scrollIntoView({ behavior: 'smooth' }), 100);
     };
 
     // Volver al formulario desde la vista previa
     document.getElementById('modificar_reporte').onclick = () => {
-      document.getElementById('preview_contenido').style.display = 'none';
-      document.getElementById('formulario_contenido').style.display = 'block';
+      // Animar cierre de preview
+      const previewEl = document.getElementById('preview_contenido');
+      previewEl.classList.remove('fade-in-up');
+      previewEl.style.display = 'none';
+      // Mostrar formulario con animación
+      const formEl = document.getElementById('formulario_contenido');
+      formEl.style.display = 'block';
+      formEl.classList.add('fade-in-up');
+      // Centramos el formulario en vista
+      setTimeout(() => formEl.scrollIntoView({ behavior: 'smooth' }), 100);
     };
 
     // Generar y descargar PDF de forma manual para controlar cada página

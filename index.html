@@ -224,6 +224,8 @@
     <!-- Datos del vehículo y factura -->
     <label for="km">Km Actual del Vehículo:</label>
     <input type="number" id="km">
+    <label for="nombre_comercio">Nombre del comercio:</label>
+    <input type="text" id="nombre_comercio" placeholder="Nombre del comercio">
 
     <label for="factura">Número de Factura:</label>
     <input type="text" id="factura" oninput="maskFactura(this)">
@@ -322,7 +324,7 @@
     /* URLs de servicios Google Apps Script */
     const urlVehiculos = "https://script.google.com/macros/s/AKfycbyma6AE1f67e71m6DLtfo7ny8wqivE9Hcvl7XdwiRXq5C5G6yZfVJ9TpHGvHSt3_FAk/exec";
     const urlProcesos  = "https://script.google.com/macros/s/AKfycbzV4X0c77XndhamTSPo9DPrNtQWbjlPEXv7HIIlWWSx48FIXdV-lafOL6FCdzrfqGZf/exec";
-    const urlGuardarReporte = "https://script.google.com/macros/s/AKfycbw6bnYhxne7v28qlqMUtO5TSPIJdbNNeJhy0DBoe4-b17vzrtnB-Y3iN5Jt9ffuqiAXyQ/exec";
+    const urlGuardarReporte = "https://script.google.com/macros/s/AKfycbwgw1fPMP6EKf3GlCzdeBU1bzRqf5u0w_1Fd6LFGG5njpIUmwt5XrN4q2vE-7mrFKNxkg/exec";
     let vehiculos = [], procesos = [];
 
     /**
@@ -514,6 +516,7 @@
         Fecha: document.getElementById('fecha').value,
         HorasDelViaje: document.getElementById('horas').value,
         KmActual: document.getElementById('km').value,
+        NombreComercio: document.getElementById('nombre_comercio').value,
         NumeroFactura: document.getElementById('factura').value
       };
       fetch(urlGuardarReporte, {
@@ -563,6 +566,7 @@
           Fecha: fecha,
           HorasDelViaje: document.getElementById('horas').value,
           KmActual: document.getElementById('km').value,
+        NombreComercio: document.getElementById('nombre_comercio').value,
           NumeroFactura: facturaNo,
           pdf: pdfBase64,
           filename: filename
@@ -585,7 +589,7 @@
           notif.addEventListener('transitionend', () => {
             notif.style.display = 'none';
             // Limpiar formulario
-            ['sector','placa','proceso','nombre','identidad','total','litros','motivo','fecha','horas','km','factura']
+            ['sector','placa','proceso','nombre','identidad','total','litros','motivo','fecha','horas','km','nombre_comercio','factura']
               .forEach(id => document.getElementById(id).value = '');
             ['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
               .forEach(id => document.getElementById(id).value = null);

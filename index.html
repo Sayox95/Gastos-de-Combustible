@@ -297,24 +297,27 @@
     el.value = v;
   }
 
-  // Máscara para Número de Factura: formato ###-###-#####
-  function maskFactura(el) {
-    let v = el.value.replace(/\D/g, '');
-    if (v.length > 3) {
-      const part1 = v.slice(0, 3);
-      const rest  = v.slice(3);
-      if (rest.length > 3) {
-        const part2 = rest.slice(0, 3);
-        const tail  = rest.slice(3);
-        el.value = `${part1}-${part2}-${tail}`;
-      } else {
-        el.value = `${part1}-${rest}`;
+  // Máscara para Número de Factura: formato ###-###-##-#####
+    function maskFactura(el) {
+      // Solo dígitos
+      let v = el.value.replace(/\D/g, '');
+      // 1er tramo (0–3 dígitos)
+      if (v.length <= 3) {
+        el.value = v;
       }
-    } else {
-      el.value = v;
+      // 2º tramo (4–6 dígitos)
+      else if (v.length <= 6) {
+        el.value = `${v.slice(0,3)}-${v.slice(3)}`;
+      }
+      // 3er tramo (7–8 dígitos)
+      else if (v.length <= 8) {
+        el.value = `${v.slice(0,3)}-${v.slice(3,6)}-${v.slice(6)}`;
+      }
+      // Resto (9+ dígitos)
+      else {
+        el.value = `${v.slice(0,3)}-${v.slice(3,6)}-${v.slice(6,8)}-${v.slice(8)}`;
+      }
     }
-  }
-
 
     /* URLs de servicios Google Apps Script */
     const urlVehiculos = "https://script.google.com/macros/s/AKfycbyma6AE1f67e71m6DLtfo7ny8wqivE9Hcvl7XdwiRXq5C5G6yZfVJ9TpHGvHSt3_FAk/exec";

@@ -319,7 +319,7 @@
     /* URLs de servicios Google Apps Script */
     const urlVehiculos = "https://script.google.com/macros/s/AKfycbwu3vNXNPeZ7GZlRHlgVw8MvOTe_qOwGPruPxZExAvrKuvd3E1ZYBgqXqCf800KuM5X/exec";
     const urlProcesos  = "https://script.google.com/macros/s/AKfycbzV4X0c77XndhamTSPo9DPrNtQWbjlPEXv7HIIlWWSx48FIXdV-lafOL6FCdzrfqGZf/exec";
-    const urlGuardarReporte = "https://script.google.com/macros/s/AKfycbz39sMCCEQiDCOKycKjLJgTsjPmCDJD1BVLqLAvujB0NjxzN5X6WDQpdkSzhTkIsJPcUw/exec";
+    const urlGuardarReporte = "https://script.google.com/macros/s/AKfycbw6bnYhxne7v28qlqMUtO5TSPIJdbNNeJhy0DBoe4-b17vzrtnB-Y3iN5Jt9ffuqiAXyQ/exec";
     let vehiculos = [], procesos = [];
 
     /**
@@ -533,7 +533,36 @@
           if (index > 0) pdf.addPage();
           pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
           if (index === pages.length - 1) {
-            pdf.save(`reporte_${Date.now()}.pdf`);
+                    // Capturar PDF y enviar a Apps Script para Sheet + Drive
+        const pdfDataUri = pdf.output('datauristring');
+        const pdfBase64  = pdfDataUri.split(',')[1];
+        const sector     = document.getElementById('sector').value;
+        const fecha      = document.getElementById('fecha').value; // YYYY-MM-DD
+        const facturaNo  = document.getElementById('factura').value;
+        const filename   = `${sector}_${fecha}_${facturaNo}.pdf`;
+        const savePayload = {
+          Sector: sector,
+          Placa: document.getElementById('placa').value,
+          Proceso: document.getElementById('proceso').value,
+          Nombre: document.getElementById('nombre').value,
+          Identidad: document.getElementById('identidad').value,
+          TotalGastado: document.getElementById('total').value,
+          LitrosConsumidos: document.getElementById('litros').value,
+          MotivoDelLlenado: document.getElementById('motivo').value,
+          Fecha: fecha,
+          HorasDelViaje: document.getElementById('horas').value,
+          KmActual: document.getElementById('km').value,
+          NumeroFactura: facturaNo,
+          pdf: pdfBase64,
+          filename: filename
+        };
+        fetch(urlGuardarReporte, {
+          method: 'POST',
+          mode:   'no-cors',
+          body:    JSON.stringify(savePayload)
+        });
+        // Descargar PDF con nomenclatura Sector_Fecha_NumeroFactura
+        pdf.save(filename);
             btnEnviar.style.display = 'inline-block';
             btnMod.style.display = 'inline-block';
         // Mostrar mensaje de confirmación

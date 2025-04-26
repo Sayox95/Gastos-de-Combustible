@@ -502,8 +502,8 @@
     };
 
     // Generar y descargar PDF de forma manual para controlar cada página
-    document.getElementById('enviar_reporte').onclick = () => {
-      // Guardar datos en Google Sheets
+    document.getElementById('enviar_reporte').onclick = async () => {
+      // Guardar datos en Google Sheets (no-cors)
       const reportData = {
         Sector: document.getElementById('sector').value,
         Placa: document.getElementById('placa').value,
@@ -520,94 +520,62 @@
         NumeroFactura: document.getElementById('factura').value
       };
       fetch(urlGuardarReporte, {
-        method: 'POST',
-        mode: 'no-cors',
+        method: 'POST', mode: 'no-cors',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(reportData)
-      })
-      .then(() => console.log('Datos enviados al sheet'))
-      .catch(err => console.error('Error al guardar en sheet:', err));
-    
+      }).catch(err => console.error('Error al guardar en sheet:', err));
+      // Prepara PDF
       const btnEnviar = document.getElementById('enviar_reporte');
       const btnMod = document.getElementById('modificar_reporte');
       btnEnviar.style.display = 'none';
       btnMod.style.display = 'none';
-
       const pages = document.querySelectorAll('.page');
-      const margins = {top: 12.7, left: 12.7, bottom: 12.7, right: 12.7}; // mm
-      const pdf = new jspdf.jsPDF({unit: 'mm', format: 'letter', orientation: 'portrait'});
-
-      pages.forEach((pg, index) => {
-        // Quitar sombra antes de capturar la página
+      const margins = {top:12.7,left:12.7,bottom:12.7,right:12.7};
+      const pdf = new jspdf.jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
+      // Generar secuencialmente
+      for (let i = 0; i < pages.length; i++) {
+        const pg = pages[i];
         pg.style.boxShadow = 'none';
-        html2canvas(pg, { scale: 1, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
-          const imgData = canvas.toDataURL('image/png');
-          const pdfWidth = pdf.internal.pageSize.getWidth() - margins.left - margins.right;
-          const pdfHeight = pdf.internal.pageSize.getHeight() - margins.top - margins.bottom;
-          if (index > 0) pdf.addPage();
-          pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
-          if (index === pages.length - 1) {
-                    // Capturar PDF y enviar a Apps Script para Sheet + Drive
-        const pdfDataUri = pdf.output('datauristring');
-        const pdfBase64  = pdfDataUri.split(',')[1];
-        const sector     = document.getElementById('sector').value;
-        const fecha      = document.getElementById('fecha').value; // YYYY-MM-DD
-        const facturaNo  = document.getElementById('factura').value;
-        const filename   = `${sector}_${fecha}_${facturaNo}.pdf`;
-        const savePayload = {
-          Sector: sector,
-          Placa: document.getElementById('placa').value,
-          Proceso: document.getElementById('proceso').value,
-          Nombre: document.getElementById('nombre').value,
-          Identidad: document.getElementById('identidad').value,
-          TotalGastado: document.getElementById('total').value,
-          LitrosConsumidos: document.getElementById('litros').value,
-          MotivoDelLlenado: document.getElementById('motivo').value,
-          Fecha: fecha,
-          HorasDelViaje: document.getElementById('horas').value,
-          KmActual: document.getElementById('km').value,
-        NombreComercio: document.getElementById('nombre_comercio').value,
-          NumeroFactura: facturaNo,
-          pdf: pdfBase64,
-          filename: filename
-        };
-        fetch(urlGuardarReporte, {
-          method: 'POST',
-          mode:   'no-cors',
-          body:    JSON.stringify(savePayload)
-        });
-        // Descargar PDF con nomenclatura Sector_Fecha_NumeroFactura
-        pdf.save(filename);
-            btnEnviar.style.display = 'inline-block';
-            btnMod.style.display = 'inline-block';
-        // Mostrar mensaje de confirmación
-        const notif = document.getElementById('notification');
-        notif.style.display = 'block';
-        setTimeout(() => { notif.style.opacity = 1; }, 10);
-        setTimeout(() => {
-          notif.style.opacity = 0;
-          notif.addEventListener('transitionend', () => {
-            notif.style.display = 'none';
-            // Limpiar formulario
-            ['sector','placa','proceso','nombre','identidad','total','litros','motivo','fecha','horas','km','nombre_comercio','factura']
-              .forEach(id => document.getElementById(id).value = '');
-            ['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
-              .forEach(id => document.getElementById(id).value = null);
-            // Volver al formulario
-            document.getElementById('preview_contenido').style.display = 'none';
-            const formEl = document.getElementById('formulario_contenido');
-            formEl.style.display = 'block';
-            formEl.classList.add('fade-in-up');
-          }, { once: true });
-        }, 2000);
-
-          }
-        });
-      });
+        const canvas = await html2canvas(pg, {scale:1,useCORS:true,backgroundColor:'#ffffff'});
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth() - margins.left - margins.right;
+        const pdfHeight = pdf.internal.pageSize.getHeight() - margins.top - margins.bottom;
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
+      }
+      // Generar nombre de archivo
+      const sector = document.getElementById('sector').value;
+      const fecha = document.getElementById('fecha').value;
+      const facturaNo = document.getElementById('factura').value;
+      const filename = `${sector}_${fecha}_${facturaNo}.pdf`;
+      // Envío del PDF a Drive/Sheet
+      const pdfDataUri = pdf.output('datauristring');
+      const pdfBase64 = pdfDataUri.split(',')[1];
+      const savePayload = {...reportData, pdf: pdfBase64, filename};
+      fetch(urlGuardarReporte, {method:'POST',mode:'no-cors',body: JSON.stringify(savePayload)});
+      // Descargar PDF
+      pdf.save(filename);
+      // Mostrar confirmación y limpiar
+      const notif = document.getElementById('notification');
+      notif.style.display = 'block';
+      setTimeout(() => notif.style.opacity = 1, 10);
+      setTimeout(() => {
+        notif.style.opacity = 0;
+        notif.addEventListener('transitionend', () => {
+          notif.style.display = 'none';
+          // Limpiar inputs
+          ['sector','placa','proceso','nombre','identidad','total','litros','motivo','fecha','horas','km','nombre_comercio','factura']
+            .forEach(id => document.getElementById(id).value = '');
+          ['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
+            .forEach(id => document.getElementById(id).value = null);
+          document.getElementById('preview_contenido').style.display = 'none';
+          const formEl = document.getElementById('formulario_contenido');
+          formEl.style.display = 'block';
+          formEl.classList.add('fade-in-up');
+        }, {once:true});
+      }, 2000);
     };
-
-
-    // Inicializar carga al abrir página
+// Inicializar carga al abrir página
     window.onload = () => {
       cargarDatosVehiculos();
       cargarProcesos();

@@ -483,6 +483,9 @@
       // Animar vista previa al aparecer
       const previewEl = document.getElementById('preview_contenido');
       previewEl.classList.add('fade-in-up');
+      // Asegurar mostrar botones en la vista previa
+      document.getElementById('enviar_reporte').style.display = 'inline-block';
+      document.getElementById('modificar_reporte').style.display = 'inline-block';
       // Ajustar scroll para centrar preview
       setTimeout(() => previewEl.scrollIntoView({ behavior: 'smooth' }), 100);
     };

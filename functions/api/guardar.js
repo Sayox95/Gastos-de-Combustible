@@ -14,8 +14,24 @@ export async function onRequestPost(context) {
       }
       rawBody = params.toString();
     } else {
-      throw new Error("Unsupported Content-Type: " + contentType);
+      return new Response(JSON.stringify({
+        status: "ERROR",
+        message: "Unsupported Content-Type",
+        detail: contentType
+      }), {
+        status: 415,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+          "Content-Type": "application/json"
+        }
+      });
     }
+
+    // 🧪 Log antes de hacer fetch
+    console.log("➡️ Enviando datos a App Script...");
+    console.log("Contenido:", rawBody);
 
     const response = await fetch("https://script.google.com/macros/s/AKfycbwLjj4Fz22_PnIXc7FZHLE-9sPQ9HeHLsk_RvePK0y-nbpmOR57PWNwYGkHDF2UwAwS1A/exec", {
       method: "POST",
@@ -27,14 +43,15 @@ export async function onRequestPost(context) {
 
     const resultText = await response.text();
 
-    // Forzamos una respuesta que siempre sea JSON parseable
-    const safePayload = {
-      status: "OK",
-      raw: resultText
-    };
+    // 🧪 Log después del fetch
+    console.log("⬅️ Respuesta de App Script recibida:");
+    console.log(resultText);
 
-    return new Response(JSON.stringify(safePayload), {
-      status: response.status,
+    return new Response(JSON.stringify({
+      status: "OK",
+      appScriptResponse: resultText
+    }), {
+      status: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -45,9 +62,11 @@ export async function onRequestPost(context) {
     });
 
   } catch (err) {
+    console.error("❌ Error en el Worker:", err);
+
     return new Response(JSON.stringify({
       status: "ERROR",
-      message: "Worker error",
+      message: "Cloudflare Worker Exception",
       detail: err.message
     }), {
       status: 500,

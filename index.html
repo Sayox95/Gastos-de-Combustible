@@ -324,7 +324,7 @@
     /* URLs de servicios Google Apps Script */
     const urlVehiculos = "https://script.google.com/macros/s/AKfycbzQWc9420O98qaaGVcUG3HubJ88y69ALs-uydxTzegpCU2B6E1q2IKRTPHzdF98i9cp/exec";
     const urlProcesos  = "https://script.google.com/macros/s/AKfycbw4KLB3AiRM6N1sC39cn1-HANO6ccsBQs3AeL6S5y-bt1IEoV8eZOakwHU_OSbspJWG/exec";
-    const urlGuardarReporte = "https://script.google.com/macros/s/AKfycbzETjKzNT4QOVEjUCEMCR3ITipqDRX7KxkYnaaT8MiQz00uoORnehhVsUd42xqSgIyI5Q/exec";
+    const urlGuardarReporte = "https://script.google.com/macros/s/AKfycby7Sh704h2m3lS2R4J9btkmitTNfJcTaS-P_5dWFHiRTwEBQ4aHJ5C2UHFhUmo8k_5mPg/exec";
     let vehiculos = [], procesos = [];
 
     /**
@@ -332,7 +332,7 @@
      * Popula <select id="sector"> y muestra el formulario.
      */
     function cargarDatosVehiculos() {
-      fetch(urlVehiculos, { method: 'GET', mode: 'no-cors' })
+      fetch(urlVehiculos)
         .then(res => res.json())
         .then(data => {
           vehiculos = data;
@@ -357,7 +357,7 @@
      * Popula <select id="proceso">.
      */
     function cargarProcesos() {
-      fetch(urlProcesos, { method: 'GET', mode: 'no-cors' })
+      fetch(urlProcesos)
         .then(res => res.json())
         .then(data => {
           procesos = data.map(item => item.Proceso);
@@ -524,9 +524,6 @@
       };
       fetch(urlGuardarReporte, {
         method: 'POST', mode: 'no-cors',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(reportData)
-      mode: 'no-cors' mode: 'no-cors',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(reportData)
       }).catch(err => console.error('Error al guardar en sheet:', err));

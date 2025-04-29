@@ -551,6 +551,10 @@
       const fecha = document.getElementById('fecha').value;
       const facturaNo = document.getElementById('factura').value;
       const filename = `${sector}_${fecha}_${facturaNo}.pdf`;
+      // Preparar payload de PDF
+      const pdfDataUri = pdf.output('datauristring');
+      const pdfBase64 = pdfDataUri.split(',')[1];
+      const savePayload = {...reportData, pdf: pdfBase64, filename};
       // Envío del PDF a Drive/Sheet
       fetch(urlGuardarReporte, {
         method: 'POST',

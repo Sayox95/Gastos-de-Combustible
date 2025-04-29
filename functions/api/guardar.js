@@ -1,7 +1,6 @@
 export async function onRequestPost(context) {
   try {
     const contentType = context.request.headers.get("content-type") || "";
-
     let rawBody;
 
     if (contentType.includes("application/json") || contentType.includes("text/plain")) {
@@ -32,6 +31,9 @@ export async function onRequestPost(context) {
       status: response.status,
       headers: {
         "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
         "Content-Type": "application/json"
       }
     });
@@ -45,7 +47,8 @@ export async function onRequestPost(context) {
       status: 500,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
       }
     });
   }

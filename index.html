@@ -541,16 +541,39 @@
         console.error("Reporte no guardado:", msg);
       };
 
+      
       if (isIOS()) {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", urlGuardarReporte, true);
         xhr.setRequestHeader("Content-Type", "application/json");
+
         xhr.onload = function () {
+          console.log("📥 Respuesta XHR recibida:", xhr.responseText);
           try {
+            if (!xhr.responseText) throw new Error("Respuesta vacía");
             const result = JSON.parse(xhr.responseText);
+            console.log("📋 Parsed JSON:", result);
             if (result.status === 'OK') {
-              onSuccess();
+              alert("✅ Reporte enviado exitosamente.");
+              pdf.save(filename);
             } else {
+              alert("❌ Error: " + (result.message || "Error inesperado"));
+            }
+          } catch (e) {
+            alert("⚠️ No se pudo interpretar la respuesta del servidor.");
+            console.error("Error parsing response:", e);
+            console.error("Respuesta cruda:", xhr.responseText);
+          }
+        };
+
+        xhr.onerror = function () {
+          alert("❌ Error de red o CORS con XHR.");
+          console.error("⚠️ Error de red o CORS en iOS");
+        };
+
+        xhr.send(JSON.stringify(savePayload));
+      } else {
+
               onFailure(result.message || "Respuesta inválida del servidor");
             }
           } catch (e) {

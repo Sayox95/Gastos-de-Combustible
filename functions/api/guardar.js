@@ -27,7 +27,13 @@ export async function onRequestPost(context) {
 
     const resultText = await response.text();
 
-    return new Response(resultText, {
+    // Forzamos una respuesta que siempre sea JSON parseable
+    const safePayload = {
+      status: "OK",
+      raw: resultText
+    };
+
+    return new Response(JSON.stringify(safePayload), {
       status: response.status,
       headers: {
         "Access-Control-Allow-Origin": "*",

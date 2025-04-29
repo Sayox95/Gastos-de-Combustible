@@ -5,14 +5,15 @@ export async function onRequestPost(context) {
     let rawBody;
 
     if (contentType.includes("application/json") || contentType.includes("text/plain")) {
-      rawBody = await context.request.text();
+      const json = await context.request.json();
+      rawBody = new URLSearchParams(json).toString();
     } else if (contentType.includes("form-data") || contentType.includes("x-www-form-urlencoded")) {
       const formData = await context.request.formData();
-      const payload = {};
+      const params = new URLSearchParams();
       for (const [key, value] of formData.entries()) {
-        payload[key] = value;
+        params.append(key, value);
       }
-      rawBody = JSON.stringify(payload);
+      rawBody = params.toString();
     } else {
       throw new Error("Unsupported Content-Type: " + contentType);
     }
@@ -20,7 +21,7 @@ export async function onRequestPost(context) {
     const response = await fetch("https://script.google.com/macros/s/AKfycbz9-0whnU42v7g2OfmoWceewhQ2SYtpttN8d9u_okwXQMOX_HmPRK_07F28Q9m9gLHSiA/exec", {
       method: "POST",
       headers: {
-        "Content-Type": "text/plain"
+        "Content-Type": "application/x-www-form-urlencoded"
       },
       body: rawBody
     });

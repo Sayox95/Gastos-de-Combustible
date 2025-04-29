@@ -522,96 +522,65 @@
         NombreComercio: document.getElementById('nombre_comercio').value,
         NumeroFactura: document.getElementById('factura').value
       };
-      
-      function isIOS() {
-        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      fetch(urlGuardarReporte, {
+        method: 'POST', mode: 'cors',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(reportData)
+      })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+        return res.json();
+      })
+      .then(res => console.log('Guardado inicial OK:', res))
+      .catch(err => console.error('Error POST inicial:', err));
+      // Prepara PDF
+      const btnEnviar = document.getElementById('enviar_reporte');
+      const btnMod = document.getElementById('modificar_reporte');
+      btnEnviar.style.display = 'none';
+      btnMod.style.display = 'none';
+      const pages = document.querySelectorAll('.page');
+      const margins = {top:12.7,left:12.7,bottom:12.7,right:12.7};
+      const pdf = new jspdf.jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
+      // Generar secuencialmente
+      for (let i = 0; i < pages.length; i++) {
+        const pg = pages[i];
+        pg.style.boxShadow = 'none';
+        const canvas = await html2canvas(pg, {scale:1,useCORS:true,backgroundColor:'#ffffff'});
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth() - margins.left - margins.right;
+        const pdfHeight = pdf.internal.pageSize.getHeight() - margins.top - margins.bottom;
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
       }
-
+      // Generar nombre de archivo
+      const sector = document.getElementById('sector').value;
+      const fecha = document.getElementById('fecha').value;
+      const facturaNo = document.getElementById('factura').value;
+      const filename = `${sector}_${fecha}_${facturaNo}.pdf`;
       // Envío del PDF a Drive/Sheet
       const pdfDataUri = pdf.output('datauristring');
       const pdfBase64 = pdfDataUri.split(',')[1];
       const savePayload = {...reportData, pdf: pdfBase64, filename};
-
-      const onSuccess = () => {
-        alert("✅ Reporte enviado exitosamente.");
-        pdf.save(filename);
-      };
-
-      const onFailure = (msg) => {
-        alert("❌ Error al enviar el reporte: " + msg);
-        console.error("Reporte no guardado:", msg);
-      };
-
-      if (isIOS()) {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", urlGuardarReporte, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.onload = function () {
-          try {
-            const result = JSON.parse(xhr.responseText);
-            if (result.status === 'OK') {
-              onSuccess();
-            } else {
-              onFailure(result.message || "Respuesta inválida del servidor");
-            }
-          } catch (e) {
-            onFailure("Respuesta no válida del servidor");
-          }
-        };
-        xhr.onerror = function () {
-          onFailure("Error de red o CORS con XHR");
-        };
-        xhr.send(JSON.stringify(savePayload));
-      } else {
-        
-if (isIOS()) {
-  logIOS("📤 iPhone detectado: enviando con formulario clásico");
-
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = urlGuardarReporte;
-  form.style.display = 'none';
-
-  for (const key in savePayload) {
-    if (savePayload.hasOwnProperty(key)) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = savePayload[key];
-      form.appendChild(input);
-    }
+      
+fetch(urlGuardarReporte, {
+  method: 'POST',
+  mode: 'cors',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify(savePayload)
+})
+.then(response => response.json())
+.then(result => {
+  if (result.status !== 'OK') {
+    alert('Error al guardar el reporte: ' + result.message);
+    console.error('Respuesta del servidor:', result);
   }
+})
+.catch(err => {
+  alert('Error al conectar con el servidor (Cloudflare Worker).');
+  console.error('Error de red o CORS:', err);
+});
 
-  document.body.appendChild(form);
-  form.submit();
-
-  logIOS("📤 Formulario enviado como POST clásico.");
-} else {
-  logIOS("📤 No iPhone: enviando con fetch normal");
-
-  fetch(urlGuardarReporte, {
-    method: 'POST',
-    mode: 'cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(savePayload)
-  })
-  .then(response => response.json())
-  .then(result => {
-    logIOS("📥 Respuesta de servidor: " + JSON.stringify(result));
-    if (result.status === 'OK') {
-      pdf.save(filename);
-    } else {
-      logIOS("❌ Error: " + (result.message || "Error inesperado"));
-    }
-  })
-  .catch(err => {
-    logIOS("❌ Error al conectar con servidor: " + err.message);
-  });
-}
-
-      }
-
-
+      // Descargar PDF
       pdf.save(filename);
       // Mostrar confirmación y limpiar
       const notif = document.getElementById('notification');

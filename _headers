@@ -1,10 +1,5 @@
-# Aplica CORS a la ruta de tu Pages Function
-/api/guardar
-  Access-Control-Allow-Origin: *
-  Access-Control-Allow-Methods: GET, POST, OPTIONS
-  Access-Control-Allow-Headers: Content-Type
-  Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
-
-# Opcional: CORS genérico para todas las rutas estáticas
 /*
   Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: POST, OPTIONS
+  Access-Control-Allow-Headers: Content-Type
+  Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers

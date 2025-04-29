@@ -555,25 +555,7 @@
       const pdfDataUri = pdf.output('datauristring');
       const pdfBase64 = pdfDataUri.split(',')[1];
       const savePayload = {...reportData, pdf: pdfBase64, filename};
-      
-fetch(urlGuardarReporte, {
-  method: 'POST',
-  mode: 'cors',
-  headers: {'Content-Type': 'application/json'},
-  body: JSON.stringify(savePayload)
-})
-.then(response => response.json())
-.then(result => {
-  if (result.status !== 'OK') {
-    alert('Error al guardar el reporte: ' + result.message);
-    console.error('Respuesta del servidor:', result);
-  }
-})
-.catch(err => {
-  alert('Error al conectar con el servidor (Cloudflare Worker).');
-  console.error('Error de red o CORS:', err);
-});
-
+      fetch(urlGuardarReporte, {method:'POST',mode:'cors',body: JSON.stringify(savePayload)});
       // Descargar PDF
       pdf.save(filename);
       // Mostrar confirmación y limpiar

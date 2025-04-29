@@ -46,7 +46,7 @@ export async function onRequestPost(context) {
     console.log('Contenido:', rawBody);
 
     const response = await fetch(
-      'hhttps://script.google.com/macros/s/AKfycbx_f3aSxmZ2YvvbtlqBpJ-7cD0adf2UnwGVva_u02V9_K7kWceM_hmzurZa_-a20SBaDQ/exec',
+      'https://script.google.com/macros/s/AKfycbz1vF4SpqBWlGWcMrGXFjYa5TsMmNQ0yMgcqb1rJYCw8zsKFkwfcp7UnfiSF42TWzwq_Q/exec',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

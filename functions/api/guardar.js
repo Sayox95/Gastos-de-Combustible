@@ -1,92 +1,607 @@
-// CORS Preflight handler
-export function onRequestOptions(context) {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Combustible</title>
+  <!-- Roboto font for consistent typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    /* Animaciones para transiciones */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-  });
-}
-
-// POST handler para guardar datos
-export async function onRequestPost(context) {
-  try {
-    const contentType = context.request.headers.get('content-type') || '';
-    let rawBody;
-
-    if (contentType.includes('application/json') || contentType.includes('text/plain')) {
-      const json = await context.request.json();
-      rawBody = new URLSearchParams(json).toString();
-    } else if (contentType.includes('form-data') || contentType.includes('x-www-form-urlencoded')) {
-      const formData = await context.request.formData();
-      const params = new URLSearchParams();
-      for (const [key, value] of formData.entries()) {
-        params.append(key, value);
-      }
-      rawBody = params.toString();
-    } else {
-      return new Response(JSON.stringify({
-        status: 'ERROR',
-        message: 'Unsupported Content-Type',
-        detail: contentType
-      }), {
-        status: 415,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Content-Type': 'application/json'
-        }
-      });
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out forwards;
     }
 
-    console.log('➡️ Enviando datos a App Script...');
-    console.log('Contenido:', rawBody);
+    /* Global page styles */
+    /* Global page styles */
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    .formulario {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; }
+    label { display: block; margin-top: 10px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px 0;
+    }
+    button:hover { background-color: #0056b3; }
+    #mensaje_cargando {
+      text-align: center;
+      font-weight: bold;
+      color: #007BFF;
+      margin-bottom: 15px;
+    }
 
-    const response = await fetch(
-      'https://script.google.com/macros/s/AKfycbz1vF4SpqBWlGWcMrGXFjYa5TsMmNQ0yMgcqb1rJYCw8zsKFkwfcp7UnfiSF42TWzwq_Q/exec',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: rawBody
-      }
-    );
+    /* Styles for preview pages to mimic Letter dimensions */
+    @page {
+      size: letter;
+      margin: 1.27cm;
+    }
+    .page {
+      background: white;
+      width: 216mm;           /* Carta: 8.5in = 216mm */
+      height: 279mm;          /* Carta: 11in = 279mm */
+      margin: 20px auto;      /* Separación entre páginas */
+      padding: 1.27cm;        /* Márgenes internos de 1.27cm */
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      display: flex;          /* Contenedor flex para extender contenido */
+      flex-direction: column; /* Organizar header y contenido en columna */
+      overflow: hidden;       /* Ocultar desbordes */
+      page-break-after: always;
+    }
+    @media print {
+      .page { page-break-after: always; margin: 0; box-shadow: none; }
+      body { margin: 0; }
+    }
+    .format-header {
+      text-align: center;
+      font-weight: bold;
+      border: 1px solid #000;
+      padding: 5px;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    .preview-box {
+      display: flex;
+      gap: 10px; /* Gap between columns */
+      flex: 1; /* Fill vertical space under header */
+    }
+    .invoice-box {
+      flex: 0 0 55%; /* Width ratio for invoice box */
+      height: 100%;  /* Fill parent height */
+    }
+    .summary-box {
+      flex: 0 0 45%; /* Width ratio for summary box */
+      height: 100%;  /* Fill parent height */
+    }
+    .invoice-box .placeholder {
+      width: 100%; height: 100%;
+      border: 2px dashed #666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-style: italic;
+    }
+    .summary-box table {
+      width: 100%; height: 100%;
+      border-collapse: collapse;
+    }
+    .summary-box td:first-child { width: 30%; }
+    .summary-box td:nth-child(2) { width: 70%; }
+    .summary-box td {
+      font-size: 14px;
+      border: 1px solid #ccc;
+      padding: 8px;
+      vertical-align: top;
+    }
 
-    const resultText = await response.text();
+    /* Adjust page 2 to fill remaining height */
+    #photos_table_container {
+      flex: 1;               /* Fill vertical space under header */
+      display: flex;
+      flex-direction: column;
+    }
+    .photos-table {
+      flex: 1;               /* Fill all available height */
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .photos-table td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      vertical-align: top;
+      overflow: hidden;
+      width: 45%;
+      height: 300px; /* Ajustado a 300px según pedido */
+    }
+    .photos-table td[rowspan="2"] {
+      width: 55%;
+      height: 530px; /* Ajustado a 530px según pedido */
+    }
+    .photos-table img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    .photo-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+    .photo-footer { font-size: 14px; font-weight: bold; text-align: left; padding: 6px; }
+    /* Pie de página: altura fija distinta de las fotos */
+    .photos-table tr:last-child td {
+      height: 20px; /* Ajustado a 20px para el pie de página */ /* Ajusta este valor para cambiar el largo del pie de página */
+    }
+      /* Ensure preview content matches Letter width */
+    html, body { box-sizing: border-box; }
+    #preview_contenido {
+      width: 216mm;       /* Match page width for PDF capture */
+      margin: 0 auto;
+      overflow: visible;
+    }
+  </style>
+</head>
+<body>
+  <div id="notification" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#28a745; color:white; padding:15px 30px; border-radius:5px; opacity:0; transition:opacity 0.5s ease-in-out; z-index:1000;">Información enviada correctamente</div>
 
-    console.log('⬅️ Respuesta de App Script recibida:');
-    console.log(resultText);
+  <!-- Initial loading message displayed while fetching data -->
+  <div id="mensaje_cargando">Cargando información, por favor espere...</div>
 
-    return new Response(JSON.stringify({
-      status: 'OK',
-      appScriptResponse: resultText
-    }), {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Vary': 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
-        'Content-Type': 'application/json'
-      }
-    });
+  <!-- Formulario: oculto hasta cargar sectores y procesos -->
+  <div class="formulario" id="formulario_contenido" style="display:none;">
+    <h2>Reporte de Gasto de Combustible</h2>
+    <!-- Sector selector populated dinámicamente -->
+    <label for="sector">Seleccionar Sector:</label>
+    <select id="sector"><option value="">Seleccione un sector</option></select>
 
-  } catch (err) {
-    console.error('❌ Error en el Worker:', err);
+    <!-- Placa selector dependiente del sector -->
+    <label for="placa">Seleccionar Placa del Vehículo:</label>
+    <input type="text" id="placa" list="placas" autocomplete="off" placeholder="Escribe o selecciona una placa">
+    <datalist id="placas"></datalist>
 
-    return new Response(JSON.stringify({
-      status: 'ERROR',
-      message: 'Cloudflare Worker Exception',
-      detail: err.message
-    }), {
-      status: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-        'Vary': 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers'
-      }
-    });
+    <!-- Proceso seleccionado por usuario (movido) -->
+    <label for="proceso">Proceso:</label>
+    <select id="proceso"><option value="">Seleccione un proceso</option></select>
+
+    <!-- Datos del colaborador -->
+    <label for="nombre">Nombre Completo:</label>
+    <input type="text" id="nombre" required>
+
+    <label for="identidad">No. Identidad:</label>
+    <input type="text" id="identidad" required oninput="maskIdentidad(this)" maxlength="15">
+
+    <!-- Kilometraje y gasto -->
+    <label for="total">Total Gastado (L):</label>
+    <input type="number" id="total" step="0.01">
+
+    <!-- Nuevo campo: Litros Consumidos, no aparece en preview ni PDF -->
+    <label for="litros">Litros Consumidos:</label>
+    <input type="number" id="litros" step="0.01">
+
+<!-- Motivación del viaje -->
+
+    <!-- Motivación del viaje -->
+    <label for="motivo">Motivo del Llenado:</label>
+    <textarea id="motivo" rows="3"></textarea>
+
+    <!-- Proceso seleccionado por usuario -->
+    
+
+    <!-- Fecha y duración -->
+    <label for="fecha">Fecha:</label>
+    <input type="date" id="fecha">
+
+    <label for="horas">Horas de Viaje:</label>
+    <input type="text" id="horas">
+
+    <!-- Datos del vehículo y factura -->
+    <label for="km">Km Actual del Vehículo:</label>
+    <input type="number" id="km">
+    <label for="nombre_comercio">Nombre del comercio:</label>
+    <input type="text" id="nombre_comercio" placeholder="Nombre del comercio">
+
+    <label for="factura">Número de Factura:</label>
+    <input type="text" id="factura" oninput="maskFactura(this)">
+
+    <!-- Inputs de imágenes (galería o cámara) reordered -->
+    <label for="foto_tablero_antes">Fotografía Tablero Antes:</label>
+    <input type="file" id="foto_tablero_antes" accept="image/*">
+
+    <label for="foto_bomba">Fotografía Bomba en 0:</label>
+    <input type="file" id="foto_bomba" accept="image/*">
+
+    <label for="foto_frontal">Fotografía Frontal del Vehículo:</label>
+    <input type="file" id="foto_frontal" accept="image/*">
+
+    <label for="foto_bomba_llenado">Fotografía Bomba Llena:</label>
+    <input type="file" id="foto_bomba_llenado" accept="image/*">
+
+    <label for="foto_despues">Fotografía Tablero Después de Llenado:</label>
+    <input type="file" id="foto_despues" accept="image/*">
+
+    <label for="foto_factura">Fotografía de la Factura:</label>
+    <input type="file" id="foto_factura" accept="image/*">
+
+    <!-- Botón para generar vista previa -->
+    <button id="guardar_reporte">Guardar Reporte</button>
+  </div>
+
+  <!-- Contenedor de vista previa: dos páginas A4 simuladas -->
+  <div id="preview_contenido" style="display:none;">
+    <!-- Página 1: resumen e inserción de factura -->
+    <div class="page" id="preview_page1">
+      <h3 id="format_header" class="format-header"></h3>
+      <div class="preview-box">
+        <div class="invoice-box">
+          <div class="placeholder" id="placeholder_box">Pegar Factura Original en este Espacio</div>
+        </div>
+        <div class="summary-box" id="summary_box"></div>
+      </div>
+    </div>
+    <!-- Página 2: galería de fotografías con pie de página -->
+    <div class="page" id="preview_page2">
+      <h3 class="format-header">FOTOGRAFÍAS</h3>
+      <div id="photos_table_container"></div>
+    </div>
+        <!-- Página 3: separador -->
+    
+    <!-- Página 3: solo fotografía de la factura -->
+    <div class="page" id="preview_page3">
+      <h3 class="format-header">FACTURA ORIGINAL</h3>
+      <div class="invoice-box">
+        <img id="factura_only_img" style="width:auto; height:800px; object-fit:contain; display:block; margin:0 auto;" />
+      </div>
+    </div>
+
+    <button id="enviar_reporte">Enviar Reporte</button>
+    <button id="modificar_reporte">Modificar Reporte</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    
+  // Máscara para No. Identidad: formato ####-####-#####
+  function maskIdentidad(el) {
+    let v = el.value.replace(/\D/g, '');
+    v = v.slice(0, 13);
+    if (v.length > 8) {
+      v = v.replace(/(\d{4})(\d{4})(\d+)/, '$1-$2-$3');
+    } else if (v.length > 4) {
+      v = v.replace(/(\d{4})(\d+)/, '$1-$2');
+    }
+    el.value = v;
   }
-}
+
+  // Máscara para Número de Factura: formato ###-###-##-#####
+    function maskFactura(el) {
+      // Solo dígitos
+      let v = el.value.replace(/\D/g, '');
+      // 1er tramo (0–3 dígitos)
+      if (v.length <= 3) {
+        el.value = v;
+      }
+      // 2º tramo (4–6 dígitos)
+      else if (v.length <= 6) {
+        el.value = `${v.slice(0,3)}-${v.slice(3)}`;
+      }
+      // 3er tramo (7–8 dígitos)
+      else if (v.length <= 8) {
+        el.value = `${v.slice(0,3)}-${v.slice(3,6)}-${v.slice(6)}`;
+      }
+      // Resto (9+ dígitos)
+      else {
+        el.value = `${v.slice(0,3)}-${v.slice(3,6)}-${v.slice(6,8)}-${v.slice(8)}`;
+      }
+    }
+
+    /* URLs de servicios Google Apps Script */
+    const urlVehiculos = "https://script.google.com/macros/s/AKfycbzQWc9420O98qaaGVcUG3HubJ88y69ALs-uydxTzegpCU2B6E1q2IKRTPHzdF98i9cp/exec";
+    const urlProcesos  = "https://script.google.com/macros/s/AKfycbw4KLB3AiRM6N1sC39cn1-HANO6ccsBQs3AeL6S5y-bt1IEoV8eZOakwHU_OSbspJWG/exec";
+    const urlGuardarReporte = `${window.location.origin}/api/guardar`;
+    let vehiculos = [], procesos = [];
+
+    /**
+     * Carga sectores y placas de la hoja "Vehiculos".
+     * Popula <select id="sector"> y muestra el formulario.
+     */
+    function cargarDatosVehiculos() {
+      fetch(urlVehiculos)
+        .then(res => res.json())
+        .then(data => {
+          vehiculos = data;
+          const sel = document.getElementById('sector');
+          // Eliminar duplicados usando Set
+          [...new Set(data.map(x => x.Sector))].forEach(s => sel.add(new Option(s, s)));
+          document.getElementById('mensaje_cargando').style.display = 'none';
+          // Animar formulario al aparecer
+          const formEl = document.getElementById('formulario_contenido');
+          formEl.style.display = 'block';
+          formEl.classList.add('fade-in-up');
+          document.getElementById('formulario_contenido').style.display = 'block';
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById('mensaje_cargando').innerText = 'Error al cargar los datos.';
+        });
+    }
+
+    /**
+     * Carga procesos de la hoja "Procesos".
+     * Popula <select id="proceso">.
+     */
+    function cargarProcesos() {
+      fetch(urlProcesos)
+        .then(res => res.json())
+        .then(data => {
+          procesos = data.map(item => item.Proceso);
+          const sel = document.getElementById('proceso');
+          sel.innerHTML = '<option value="">Seleccione un proceso</option>';
+          procesos.forEach(p => sel.add(new Option(p, p)));
+        })
+        .catch(err => console.error('Error al cargar procesos:', err));
+    }
+
+    // Al cambiar sector, filtrar placas correspondientes
+    document.getElementById('sector').addEventListener('change', function() {
+      const dataList = document.getElementById('placas');
+      dataList.innerHTML = '';
+      vehiculos.filter(v => v.Sector === this.value).forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.PLACA;
+        dataList.appendChild(opt);
+      });
+      // Limpiar el input de placa al cambiar el sector
+      document.getElementById('placa').value = '';
+      // Limpiar proceso
+      document.getElementById('proceso').value = '';
+    });
+
+    // Guardar reporte y generar vista previa
+    document.getElementById('guardar_reporte').onclick = () => {
+      // Recopilar datos del formulario
+      const data = {
+        Fecha:      document.getElementById('fecha').value,
+        Nombre:     document.getElementById('nombre').value,
+        Identidad:  document.getElementById('identidad').value,
+        Total:      document.getElementById('total').value + ' L',
+        Motivo:     document.getElementById('motivo').value,
+        Proceso:    document.getElementById('proceso').value,
+        Horas:      document.getElementById('horas').value,
+        Sector:     document.getElementById('sector').value,
+        Km:         document.getElementById('km').value,
+        FacturaNo:  document.getElementById('factura').value,
+        Placa:      document.getElementById('placa').value
+      };
+      // Buscar jefe inmediato por placa
+      const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+      data.JefeInmediato = (jefeObj 
+      ? (jefeObj["Jefe inmediato"] 
+         || jefeObj["Jefe Inmediato"] 
+         || jefeObj.JefeInmediato 
+         || "") 
+      : "");
+
+      // Formatear encabezado con mes y año
+      const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+      const fDate = new Date(data.Fecha);
+      document.getElementById('format_header').textContent =
+        `FORMATO DE FACTURAS COMBUSTIBLE ${meses[fDate.getMonth()]} ${fDate.getFullYear()}`;
+
+      // Construir tabla resumen dinámicamente
+      const sb = document.getElementById('summary_box'); sb.innerHTML = '';
+      const tbl = document.createElement('table');
+      const rows = [
+        ['Nombre Completo', data.Nombre],
+        ['No. Identidad', data.Identidad],
+        ['Firma del Colaborador', ''],
+        ['Tipo de Gestión', `PLACA: ${data.Placa}`],
+        ['Total', data.Total],
+        ['Motivo del llenado de combustible',
+         `Compra de Combustible al Vehículo<br><br>Para Labores de: ${data.Motivo}<br><br>Proceso: ${data.Proceso}`],
+        ['Fecha', data.Fecha],
+        ['Horas de Viaje', data.Horas],
+        ['Observación',
+         `SECTOR: ${data.Sector}<br><br>KM: ${data.Km}<br><br>FACTURA: ${data.FacturaNo}`],
+        ['Autorizado por Jefe Inmediato', data.JefeInmediato],
+        ['Firma', '']
+      ];
+      rows.forEach(([k,v]) => {
+        const r = tbl.insertRow();
+        r.insertCell().textContent = k;
+        r.insertCell().innerHTML = v;
+      });
+      sb.appendChild(tbl);
+
+      // Construir galería de fotografías
+      const container = document.getElementById('photos_table_container');
+      const imgHTML = id => {
+        const f = document.getElementById(id).files[0];
+        if (!f) return '';
+        return `<img src="${URL.createObjectURL(f)}" class="photo-img">`;
+      };
+      container.innerHTML = `
+        <table class="photos-table">
+          <tr>
+            <td><div class="photo-title">TABLERO ANTES DE LLENADO</div>${imgHTML('foto_tablero_antes')}</td>
+            <td colspan="2"><div class="photo-title">BOMBA DE COMBUSTIBLE 0</div>${imgHTML('foto_bomba')}</td>
+          </tr>
+          <tr>
+            <td><div class="photo-title">TABLERO DESPUÉS DE LLENADO</div>${imgHTML('foto_despues')}</td>
+            <td colspan="2" rowspan="2"><div class="photo-title">BOMBA DE COMBUSTIBLE LLENA</div>${imgHTML('foto_bomba_llenado')}</td>
+          </tr>
+          <tr>
+            <td><div class="photo-title">VISTA FRONTAL DEL VEHÍCULO</div>${imgHTML('foto_frontal')}</td>
+          </tr>
+          <tr>
+            <td class="photo-footer">PLACA: ${data.Placa}</td>
+            <td class="photo-footer">FECHA: ${data.Fecha}</td>
+            <td class="photo-footer">FACTURA: ${data.FacturaNo}</td>
+          </tr>
+        </table>`;
+      // Cargar imagen de factura en la página 3
+      const factImg = document.getElementById('factura_only_img');
+      const fileF = document.getElementById('foto_factura').files[0];
+      if (fileF) {
+        const rdF = new FileReader();
+        rdF.onload = e => factImg.src = e.target.result;
+        rdF.readAsDataURL(fileF);
+      }
+
+      // Mostrar vista previa y ocultar formulario
+      // Ocultar formulario con animación
+      const formEl = document.getElementById('formulario_contenido');
+      formEl.classList.remove('fade-in-up');
+      formEl.style.display = 'none';
+      document.getElementById('preview_contenido').style.display = 'block';
+      // Animar vista previa al aparecer
+      const previewEl = document.getElementById('preview_contenido');
+      previewEl.classList.add('fade-in-up');
+      // Asegurar mostrar botones en la vista previa
+      document.getElementById('enviar_reporte').style.display = 'inline-block';
+      document.getElementById('modificar_reporte').style.display = 'inline-block';
+      // Ajustar scroll para centrar preview
+      setTimeout(() => previewEl.scrollIntoView({ behavior: 'smooth' }), 100);
+    };
+
+    // Volver al formulario desde la vista previa
+    document.getElementById('modificar_reporte').onclick = () => {
+      // Animar cierre de preview
+      const previewEl = document.getElementById('preview_contenido');
+      previewEl.classList.remove('fade-in-up');
+      previewEl.style.display = 'none';
+      // Mostrar formulario con animación
+      const formEl = document.getElementById('formulario_contenido');
+      formEl.style.display = 'block';
+      formEl.classList.add('fade-in-up');
+      // Centramos el formulario en vista
+      setTimeout(() => formEl.scrollIntoView({ behavior: 'smooth' }), 100);
+    };
+    document.getElementById('enviar_reporte').onclick = async () => {
+  // 1. Recopilar datos
+  const reportData = {
+    Sector: document.getElementById('sector').value,
+    Placa: document.getElementById('placa').value,
+    Proceso: document.getElementById('proceso').value,
+    Nombre: document.getElementById('nombre').value,
+    Identidad: document.getElementById('identidad').value,
+    TotalGastado: document.getElementById('total').value,
+    LitrosConsumidos: document.getElementById('litros').value,
+    MotivoDelLlenado: document.getElementById('motivo').value,
+    Fecha: document.getElementById('fecha').value,
+    HorasDelViaje: document.getElementById('horas').value,
+    KmActual: document.getElementById('km').value,
+    NombreComercio: document.getElementById('nombre_comercio').value,
+    NumeroFactura: document.getElementById('factura').value
+  };
+
+  // 2. Primer POST: guarda datos en Sheets
+  try {
+    const res1 = await fetch(urlGuardarReporte, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reportData)
+    });
+    console.log('Primer POST →', res1.status, res1.statusText);
+    const json1 = await res1.json().catch(()=>({}));
+    console.log('Primer guardado result:', json1);
+  } catch (e) {
+    console.error('Error al guardar datos en Sheet:', e);
+    alert('No fue posible guardar los datos. Revisa conexión/CORS.');
+    return;
+  }
+
+  // 3. Ocultar botones y preparar PDF
+  document.getElementById('enviar_reporte').style.display = 'none';
+  document.getElementById('modificar_reporte').style.display = 'none';
+
+  const pages = document.querySelectorAll('.page');
+
+  // 4. Preparar y enviar PDF al Worker
+  const pdfDataUri = pdf.output('datauristring');
+  const pdfBase64 = pdfDataUri.split(',')[1];
+  const savePayload = {
+    ...reportData,
+    pdf: pdfBase64,
+    filename: `${reportData.Sector}_${reportData.Fecha}_${reportData.NumeroFactura}.pdf`
+  };
+
+  try {
+    const res2 = await fetch(urlGuardarReporte, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(savePayload)
+    });
+    console.log('Segundo POST →', res2.status, res2.statusText);
+    const json2 = await res2.json().catch(()=>({}));
+    if (json2.status !== 'OK') {
+      console.error('Worker respondió error:', json2);
+      alert('Error al guardar el PDF: ' + (json2.message || 'desconocido'));
+      return;
+    }
+  } catch (e) {
+    console.error('Error al enviar PDF al Worker:', e);
+    alert('No fue posible guardar el PDF. Revisa conexión/CORS.');
+    return;
+  }
+
+  // 5. Descarga del PDF en iOS/desktop
+  const fileName = savePayload.filename;
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    pdf.output('bloburl').then(url => window.open(url, '_blank'));
+  } else {
+    pdf.save(fileName);
+  }
+
+  // 6. Notificación y limpieza
+  const notif = document.getElementById('notification');
+  notif.textContent = 'Información enviada correctamente';
+  notif.style.display = 'block';
+  notif.style.opacity = 1;
+  setTimeout(() => {
+    notif.style.opacity = 0;
+    notif.addEventListener('transitionend', () => {
+      notif.style.display = 'none';
+      // Aquí va tu lógica para limpiar inputs
+    }, { once: true });
+  }, 2000);
+};
+    window.onload = () => {
+      cargarDatosVehiculos();
+      cargarProcesos();
+    };
+  </script>
+
+  <!-- Incluir html2pdf.js desde CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+</body>
+</html>

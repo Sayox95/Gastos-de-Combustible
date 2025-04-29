@@ -324,7 +324,7 @@
     /* URLs de servicios Google Apps Script */
     const urlVehiculos = "https://script.google.com/macros/s/AKfycbzQWc9420O98qaaGVcUG3HubJ88y69ALs-uydxTzegpCU2B6E1q2IKRTPHzdF98i9cp/exec";
     const urlProcesos  = "https://script.google.com/macros/s/AKfycbw4KLB3AiRM6N1sC39cn1-HANO6ccsBQs3AeL6S5y-bt1IEoV8eZOakwHU_OSbspJWG/exec";
-    const urlGuardarReporte = `${window.location.origin}/api/guardar`;
+    const urlGuardarReporte = "/api/guardar";
     let vehiculos = [], procesos = [];
 
     /**
@@ -523,10 +523,16 @@
         NumeroFactura: document.getElementById('factura').value
       };
       fetch(urlGuardarReporte, {
-        method: 'POST', mode: 'no-cors',
+        method: 'POST', mode: 'cors',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(reportData)
-      }).catch(err => console.error('Error al guardar en sheet:', err));
+      })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+        return res.json();
+      })
+      .then(res => console.log('Guardado inicial OK:', res))
+      .catch(err => console.error('Error POST inicial:', err));
       // Prepara PDF
       const btnEnviar = document.getElementById('enviar_reporte');
       const btnMod = document.getElementById('modificar_reporte');
@@ -551,31 +557,30 @@
       const fecha = document.getElementById('fecha').value;
       const facturaNo = document.getElementById('factura').value;
       const filename = `${sector}_${fecha}_${facturaNo}.pdf`;
-      // Preparar payload de PDF
+      // Envío del PDF a Drive/Sheet
       const pdfDataUri = pdf.output('datauristring');
       const pdfBase64 = pdfDataUri.split(',')[1];
       const savePayload = {...reportData, pdf: pdfBase64, filename};
-      // Envío del PDF a Drive/Sheet
-      fetch(urlGuardarReporte, {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(savePayload)
-      })
-      .then(res => {
-        console.log('POST /api/guardar →', res.status, res.statusText, [...res.headers]);
-        return res.json().catch(() => ({}));
-      })
-      .then(result => {
-        console.log('→ Cuerpo JSON:', result);
-        if (result.status !== 'OK') {
-          alert('Error al guardar: ' + (result.message || JSON.stringify(result)));
-        }
-      })
-      .catch(err => {
-        alert('Error de conexión/CORS: ' + err.message);
-        console.error('Fetch error:', err);
-      });// Descargar PDF
+      
+fetch(urlGuardarReporte, {
+  method: 'POST',
+  mode: 'cors',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify(savePayload)
+})
+.then(response => response.json())
+.then(result => {
+  if (result.status !== 'OK') {
+    alert('Error al guardar el reporte: ' + result.message);
+    console.error('Respuesta del servidor:', result);
+  }
+})
+.catch(err => {
+  alert('Error al conectar con el servidor (Cloudflare Worker).');
+  console.error('Error de red o CORS:', err);
+});
+
+      // Descargar PDF
       pdf.save(filename);
       // Mostrar confirmación y limpiar
       const notif = document.getElementById('notification');

@@ -523,16 +523,10 @@
         NumeroFactura: document.getElementById('factura').value
       };
       fetch(urlGuardarReporte, {
-        method: 'POST', mode: 'cors',
+        method: 'POST', mode: 'no-cors',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(reportData)
-      })
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-        return res.json();
-      })
-      .then(res => console.log('Guardado inicial OK:', res))
-      .catch(err => console.error('Error POST inicial:', err));
+      }).catch(err => console.error('Error al guardar en sheet:', err));
       // Prepara PDF
       const btnEnviar = document.getElementById('enviar_reporte');
       const btnMod = document.getElementById('modificar_reporte');
@@ -558,29 +552,26 @@
       const facturaNo = document.getElementById('factura').value;
       const filename = `${sector}_${fecha}_${facturaNo}.pdf`;
       // Envío del PDF a Drive/Sheet
-      const pdfDataUri = pdf.output('datauristring');
-      const pdfBase64 = pdfDataUri.split(',')[1];
-      const savePayload = {...reportData, pdf: pdfBase64, filename};
-      
-fetch(urlGuardarReporte, {
-  method: 'POST',
-  mode: 'cors',
-  headers: {'Content-Type': 'application/json'},
-  body: JSON.stringify(savePayload)
-})
-.then(response => response.json())
-.then(result => {
-  if (result.status !== 'OK') {
-    alert('Error al guardar el reporte: ' + result.message);
-    console.error('Respuesta del servidor:', result);
-  }
-})
-.catch(err => {
-  alert('Error al conectar con el servidor (Cloudflare Worker).');
-  console.error('Error de red o CORS:', err);
-});
-
-      // Descargar PDF
+      fetch(urlGuardarReporte, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(savePayload)
+      })
+      .then(res => {
+        console.log('POST /api/guardar →', res.status, res.statusText, [...res.headers]);
+        return res.json().catch(() => ({}));
+      })
+      .then(result => {
+        console.log('→ Cuerpo JSON:', result);
+        if (result.status !== 'OK') {
+          alert('Error al guardar: ' + (result.message || JSON.stringify(result)));
+        }
+      })
+      .catch(err => {
+        alert('Error de conexión/CORS: ' + err.message);
+        console.error('Fetch error:', err);
+      });// Descargar PDF
       pdf.save(filename);
       // Mostrar confirmación y limpiar
       const notif = document.getElementById('notification');

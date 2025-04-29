@@ -506,27 +506,21 @@
 
     // Generar y descargar PDF de forma manual para controlar cada página
     document.getElementById('enviar_reporte').onclick = async () => {
-      // Guardar datos en Google Sheets (no-cors)
-      const reportData = {
-        Sector: document.getElementById('sector').value,
-        Placa: document.getElementById('placa').value,
-        Proceso: document.getElementById('proceso').value,
-        Nombre: document.getElementById('nombre').value,
-        Identidad: document.getElementById('identidad').value,
-        TotalGastado: document.getElementById('total').value,
-        LitrosConsumidos: document.getElementById('litros').value,
-        MotivoDelLlenado: document.getElementById('motivo').value,
-        Fecha: document.getElementById('fecha').value,
-        HorasDelViaje: document.getElementById('horas').value,
-        KmActual: document.getElementById('km').value,
-        NombreComercio: document.getElementById('nombre_comercio').value,
-        NumeroFactura: document.getElementById('factura').value
-      };
+      // Guardar datos en Google Sheets
       fetch(urlGuardarReporte, {
-        method: 'POST', mode: 'no-cors',
-        headers: {'Content-Type': 'application/json'},
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reportData)
-      }).catch(err => console.error('Error al guardar en sheet:', err));
+      })
+      .then(res => {
+        console.log('Primer POST /api/guardar →', res.status, res.statusText);
+        return res.json().catch(() => ({}));
+      })
+      .then(result => {
+        console.log('Primer guardado result:', result);
+      })
+      .catch(err => console.error('Error al guardar en sheet:', err));
       // Prepara PDF
       const btnEnviar = document.getElementById('enviar_reporte');
       const btnMod = document.getElementById('modificar_reporte');
@@ -551,6 +545,10 @@
       const fecha = document.getElementById('fecha').value;
       const facturaNo = document.getElementById('factura').value;
       const filename = `${sector}_${fecha}_${facturaNo}.pdf`;
+      // Preparar payload de PDF
+      const pdfDataUri = pdf.output('datauristring');
+      const pdfBase64 = pdfDataUri.split(',')[1];
+      const savePayload = {...reportData, pdf: pdfBase64, filename};
       // Envío del PDF a Drive/Sheet
       fetch(urlGuardarReporte, {
         method: 'POST',

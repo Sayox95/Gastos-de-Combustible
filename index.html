@@ -506,96 +506,98 @@
 
     // Generar y descargar PDF de forma manual para controlar cada página
     document.getElementById('enviar_reporte').onclick = async () => {
-  // 1. Recopilar datos
-  const reportData = {
-    Sector: document.getElementById('sector').value,
-    Placa: document.getElementById('placa').value,
-    Proceso: document.getElementById('proceso').value,
-    Nombre: document.getElementById('nombre').value,
-    Identidad: document.getElementById('identidad').value,
-    TotalGastado: document.getElementById('total').value,
-    LitrosConsumidos: document.getElementById('litros').value,
-    MotivoDelLlenado: document.getElementById('motivo').value,
-    Fecha: document.getElementById('fecha').value,
-    HorasDelViaje: document.getElementById('horas').value,
-    KmActual: document.getElementById('km').value,
-    NombreComercio: document.getElementById('nombre_comercio').value,
-    NumeroFactura: document.getElementById('factura').value
-  };
+      // Guardar datos en Google Sheets (no-cors)
+      const reportData = {
+        Sector: document.getElementById('sector').value,
+        Placa: document.getElementById('placa').value,
+        Proceso: document.getElementById('proceso').value,
+        Nombre: document.getElementById('nombre').value,
+        Identidad: document.getElementById('identidad').value,
+        TotalGastado: document.getElementById('total').value,
+        LitrosConsumidos: document.getElementById('litros').value,
+        MotivoDelLlenado: document.getElementById('motivo').value,
+        Fecha: document.getElementById('fecha').value,
+        HorasDelViaje: document.getElementById('horas').value,
+        KmActual: document.getElementById('km').value,
+        NombreComercio: document.getElementById('nombre_comercio').value,
+        NumeroFactura: document.getElementById('factura').value
+      };
+      fetch(urlGuardarReporte, {
+        method: 'POST', mode: 'no-cors',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(reportData)
+      }).catch(err => console.error('Error al guardar en sheet:', err));
+      // Prepara PDF
+      const btnEnviar = document.getElementById('enviar_reporte');
+      const btnMod = document.getElementById('modificar_reporte');
+      btnEnviar.style.display = 'none';
+      btnMod.style.display = 'none';
+      const pages = document.querySelectorAll('.page');
+      const margins = {top:12.7,left:12.7,bottom:12.7,right:12.7};
+      const pdf = new jspdf.jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
+      // Generar secuencialmente
+      for (let i = 0; i < pages.length; i++) {
+        const pg = pages[i];
+        pg.style.boxShadow = 'none';
+        const canvas = await html2canvas(pg, {scale:1,useCORS:true,backgroundColor:'#ffffff'});
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth() - margins.left - margins.right;
+        const pdfHeight = pdf.internal.pageSize.getHeight() - margins.top - margins.bottom;
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
+      }
+      // Generar nombre de archivo
+      const sector = document.getElementById('sector').value;
+      const fecha = document.getElementById('fecha').value;
+      const facturaNo = document.getElementById('factura').value;
+      const filename = `${sector}_${fecha}_${facturaNo}.pdf`;
+      // Envío del PDF a Drive/Sheet
+      fetch(urlGuardarReporte, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(savePayload)
+      })
+      .then(res => {
+        console.log('POST /api/guardar →', res.status, res.statusText, [...res.headers]);
+        return res.json().catch(() => ({}));
+      })
+      .then(result => {
+        console.log('→ Cuerpo JSON:', result);
+        if (result.status !== 'OK') {
+          alert('Error al guardar: ' + (result.message || JSON.stringify(result)));
+        }
+      })
+      .catch(err => {
+        alert('Error de conexión/CORS: ' + err.message);
+        console.error('Fetch error:', err);
+      });// Descargar PDF
+      pdf.save(filename);
+      // Mostrar confirmación y limpiar
+      const notif = document.getElementById('notification');
+      notif.style.display = 'block';
+      setTimeout(() => notif.style.opacity = 1, 10);
+      setTimeout(() => {
+        notif.style.opacity = 0;
+        notif.addEventListener('transitionend', () => {
+          notif.style.display = 'none';
+          // Limpiar inputs
+          ['sector','placa','proceso','nombre','identidad','total','litros','motivo','fecha','horas','km','nombre_comercio','factura']
+            .forEach(id => document.getElementById(id).value = '');
+          ['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
+            .forEach(id => document.getElementById(id).value = null);
+          document.getElementById('preview_contenido').style.display = 'none';
+          const formEl = document.getElementById('formulario_contenido');
+          formEl.style.display = 'block';
+          formEl.classList.add('fade-in-up');
+        }, {once:true});
+      }, 2000);
+    };
 
-  // 2. Primer POST: guarda datos en Sheets
-  try {
-    const res1 = await fetch(urlGuardarReporte, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(reportData)
-    });
-    console.log('Primer POST →', res1.status, res1.statusText);
-    const json1 = await res1.json().catch(()=>({}));
-    console.log('Primer guardado result:', json1);
-  } catch (e) {
-    console.error('Error al guardar datos en Sheet:', e);
-    alert('No fue posible guardar los datos. Revisa conexión/CORS.');
-    return;
-  }
 
-  // 3. Ocultar botones y preparar PDF
-  document.getElementById('enviar_reporte').style.display = 'none';
-  document.getElementById('modificar_reporte').style.display = 'none';
 
-  const pages = document.querySelectorAll('.page');
 
-  // 4. Preparar y enviar PDF al Worker
-  const pdfDataUri = pdf.output('datauristring');
-  const pdfBase64 = pdfDataUri.split(',')[1];
-  const savePayload = {
-    ...reportData,
-    pdf: pdfBase64,
-    filename: `${reportData.Sector}_${reportData.Fecha}_${reportData.NumeroFactura}.pdf`
-  };
-
-  try {
-    const res2 = await fetch(urlGuardarReporte, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(savePayload)
-    });
-    console.log('Segundo POST →', res2.status, res2.statusText);
-    const json2 = await res2.json().catch(()=>({}));
-    if (json2.status !== 'OK') {
-      console.error('Worker respondió error:', json2);
-      alert('Error al guardar el PDF: ' + (json2.message || 'desconocido'));
-      return;
-    }
-  } catch (e) {
-    console.error('Error al enviar PDF al Worker:', e);
-    alert('No fue posible guardar el PDF. Revisa conexión/CORS.');
-    return;
-  }
-
-  // 5. Descarga del PDF en iOS/desktop
-  const fileName = savePayload.filename;
-  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-    pdf.output('bloburl').then(url => window.open(url, '_blank'));
-  } else {
-    pdf.save(fileName);
-  }
-
-  // 6. Notificación y limpieza
-  const notif = document.getElementById('notification');
-  notif.textContent = 'Información enviada correctamente';
-  notif.style.display = 'block';
-  notif.style.opacity = 1;
-  setTimeout(() => {
-    notif.style.opacity = 0;
-    notif.addEventListener('transitionend', () => {
-      notif.style.display = 'none';
-      // Aquí va tu lógica para limpiar inputs
-    }, { once: true });
-  }, 2000);
-};
+    // Inicializar carga al abrir página
     window.onload = () => {
       cargarDatosVehiculos();
       cargarProcesos();
@@ -604,6 +606,11 @@
 
   <!-- Incluir html2pdf.js desde CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+</body>
+</html>
+
+  <!-- Incluir html2pdf.js desde CDN para generación de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 </body>
 </html>

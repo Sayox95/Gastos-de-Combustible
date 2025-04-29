@@ -17,7 +17,7 @@ export async function onRequestPost(context) {
       throw new Error("Unsupported Content-Type: " + contentType);
     }
 
-    const response = await fetch("https://script.google.com/macros/s/AKfycbz9-0whnU42v7g2OfmoWceewhQ2SYtpttN8d9u_okwXQMOX_HmPRK_07F28Q9m9gLHSiA/exec", {
+    const response = await fetch("https://script.google.com/macros/s/AKfycbzvPuSOaG4mGK5VMWwhlqrNmXRv1r8eUJ6P9QHZ33u7kOMjIhRpdVcNuYhp8KJA2wkYvw/exec", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"

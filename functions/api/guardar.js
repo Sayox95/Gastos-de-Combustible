@@ -14,26 +14,10 @@ export async function onRequestPost(context) {
       }
       rawBody = params.toString();
     } else {
-      return new Response(JSON.stringify({
-        status: "ERROR",
-        message: "Unsupported Content-Type",
-        detail: contentType
-      }), {
-        status: 415,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-          "Content-Type": "application/json"
-        }
-      });
+      throw new Error("Unsupported Content-Type: " + contentType);
     }
 
-    // 🧪 Log antes de hacer fetch
-    console.log("➡️ Enviando datos a App Script...");
-    console.log("Contenido:", rawBody);
-
-    const response = await fetch("https://script.google.com/macros/s/AKfycbxPXTyP-oh19vnoyPcmCJIyXGrYZLreDS46EoCNWpWwKLOrZ5Pg891ba7nxBzI4kguieA/exec", {
+    const response = await fetch("https://script.google.com/macros/s/AKfycbxRsOx8dKEpY6RuTNS2P1pdb4Tox0KYjOHIGUxvmQ0MZYJf5AishXDz0vBHqyYHmuDbug/exec", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"
@@ -43,15 +27,8 @@ export async function onRequestPost(context) {
 
     const resultText = await response.text();
 
-    // 🧪 Log después del fetch
-    console.log("⬅️ Respuesta de App Script recibida:");
-    console.log(resultText);
-
-    return new Response(JSON.stringify({
-      status: "OK",
-      appScriptResponse: resultText
-    }), {
-      status: 200,
+    return new Response(resultText, {
+      status: response.status,
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -62,11 +39,9 @@ export async function onRequestPost(context) {
     });
 
   } catch (err) {
-    console.error("❌ Error en el Worker:", err);
-
     return new Response(JSON.stringify({
       status: "ERROR",
-      message: "Cloudflare Worker Exception",
+      message: "Worker error",
       detail: err.message
     }), {
       status: 500,

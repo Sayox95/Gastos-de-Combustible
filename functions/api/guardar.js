@@ -16,22 +16,17 @@ export async function onRequestPost(context) {
     const contentType = context.request.headers.get('content-type') || '';
     let rawBody;
 
-    // Soportar JSON o texto plano
     if (contentType.includes('application/json') || contentType.includes('text/plain')) {
       const json = await context.request.json();
       rawBody = new URLSearchParams(json).toString();
-    }
-    // Soportar form-data o urlencoded
-    else if (contentType.includes('form-data') || contentType.includes('x-www-form-urlencoded')) {
+    } else if (contentType.includes('form-data') || contentType.includes('x-www-form-urlencoded')) {
       const formData = await context.request.formData();
       const params = new URLSearchParams();
       for (const [key, value] of formData.entries()) {
         params.append(key, value);
       }
       rawBody = params.toString();
-    }
-    // Content-Type no soportado
-    else {
+    } else {
       return new Response(JSON.stringify({
         status: 'ERROR',
         message: 'Unsupported Content-Type',
@@ -47,13 +42,11 @@ export async function onRequestPost(context) {
       });
     }
 
-    // Log de depuración
     console.log('➡️ Enviando datos a App Script...');
     console.log('Contenido:', rawBody);
 
-    // Reenvío a tu App Script
     const response = await fetch(
-      'https://script.google.com/macros/s/AKfycbxREud0DKMxyAOL0gTBNMyHCuG52AGzXM-62l4mwcYtXeuprr0H0uO06ETBzifLEebVuA/exec',
+      'hhttps://script.google.com/macros/s/AKfycbx_f3aSxmZ2YvvbtlqBpJ-7cD0adf2UnwGVva_u02V9_K7kWceM_hmzurZa_-a20SBaDQ/exec',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -63,11 +56,9 @@ export async function onRequestPost(context) {
 
     const resultText = await response.text();
 
-    // Log de respuesta del App Script
     console.log('⬅️ Respuesta de App Script recibida:');
     console.log(resultText);
 
-    // Responder al cliente
     return new Response(JSON.stringify({
       status: 'OK',
       appScriptResponse: resultText

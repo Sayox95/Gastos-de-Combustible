@@ -534,8 +534,7 @@
 
       const onSuccess = () => {
         alert("✅ Reporte enviado exitosamente.");
-        pdf.save(filename);
-      };
+        pdf.save(filename);};
 
       const onFailure = (msg) => {
         alert("❌ Error al enviar el reporte: " + msg);
@@ -580,11 +579,7 @@
         .catch(err => {
           onFailure("Error al conectar con el servidor");
         });
-      }
-
-
-      pdf.save(filename);
-      // Mostrar confirmación y limpiar
+      }// Mostrar confirmación y limpiar
       const notif = document.getElementById('notification');
       notif.style.display = 'block';
       setTimeout(() => notif.style.opacity = 1, 10);

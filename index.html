@@ -532,6 +532,16 @@
       const pdfBase64 = pdfDataUri.split(',')[1];
       const savePayload = {...reportData, pdf: pdfBase64, filename};
 
+      const onSuccess = () => {
+        alert("✅ Reporte enviado exitosamente.");
+        pdf.save(filename);
+      };
+
+      const onFailure = (msg) => {
+        alert("❌ Error al enviar el reporte: " + msg);
+        console.error("Reporte no guardado:", msg);
+      };
+
       if (isIOS()) {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", urlGuardarReporte, true);
@@ -539,18 +549,17 @@
         xhr.onload = function () {
           try {
             const result = JSON.parse(xhr.responseText);
-            if (result.status !== 'OK') {
-              alert('Error al guardar el reporte: ' + result.message);
-              console.error('Respuesta del servidor:', result);
+            if (result.status === 'OK') {
+              onSuccess();
+            } else {
+              onFailure(result.message || "Respuesta inválida del servidor");
             }
           } catch (e) {
-            alert('Respuesta del servidor no válida');
-            console.error('Parse error:', e);
+            onFailure("Respuesta no válida del servidor");
           }
         };
         xhr.onerror = function () {
-          alert('Error al conectar con el servidor (Cloudflare Worker).');
-          console.error('Error de red o CORS con XHR');
+          onFailure("Error de red o CORS con XHR");
         };
         xhr.send(JSON.stringify(savePayload));
       } else {
@@ -562,14 +571,14 @@
         })
         .then(response => response.json())
         .then(result => {
-          if (result.status !== 'OK') {
-            alert('Error al guardar el reporte: ' + result.message);
-            console.error('Respuesta del servidor:', result);
+          if (result.status === 'OK') {
+            onSuccess();
+          } else {
+            onFailure(result.message || "Error inesperado");
           }
         })
         .catch(err => {
-          alert('Error al conectar con el servidor (Cloudflare Worker).');
-          console.error('Error de red o CORS:', err);
+          onFailure("Error al conectar con el servidor");
         });
       }
 

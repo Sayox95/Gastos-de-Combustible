@@ -53,7 +53,7 @@ export async function onRequestPost(context) {
 
     // Reenvío a tu App Script
     const response = await fetch(
-      'https://script.google.com/macros/s/AKfycbwLjj4Fz22_PnIXc7FZHLE-9sPQ9HeHLsk_RvePK0y-nbpmOR57PWNwYGkHDF2UwAwS1A/exec',
+      'https://script.google.com/macros/s/AKfycbxREud0DKMxyAOL0gTBNMyHCuG52AGzXM-62l4mwcYtXeuprr0H0uO06ETBzifLEebVuA/exec',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

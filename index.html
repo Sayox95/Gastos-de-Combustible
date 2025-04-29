@@ -542,6 +542,7 @@
       };
 
       
+      
       if (isIOS()) {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", urlGuardarReporte, true);
@@ -573,6 +574,7 @@
 
         xhr.send(JSON.stringify(savePayload));
       } else {
+
 
               onFailure(result.message || "Respuesta inválida del servidor");
             }

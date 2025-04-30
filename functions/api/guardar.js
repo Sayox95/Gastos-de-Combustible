@@ -28,7 +28,7 @@ export async function onRequestPost({ request }) {
 
   // Reenviamos al endpoint de Apps Script
   const resp = await fetch(
-    "https://script.google.com/macros/s/AKfycbxRsOx8dKEpY6RuTNS2P1pdb4Tox0KYjOHIGUxvmQ0MZYJf5AishXDz0vBHqyYHmuDbug/exec",
+    "https://script.google.com/macros/s/AKfycbxhGh19qtJ6makKRjiSdX4On2ywBrs93U_XgudH100cIK0TvS9yO_oNcarmQtAhKMbhuw/exec",
     {
       method: 'POST',
       headers: {

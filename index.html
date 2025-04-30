@@ -584,10 +584,17 @@
           pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
         }
 
+        
         const pdfBlob = pdf.output('blob');
-        const url = URL.createObjectURL(pdfBlob);
-        window.open(url, '_blank');
-        URL.revokeObjectURL(url);
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+
 
         // Mostrar confirmación y limpiar
         const notif = document.getElementById('notification');

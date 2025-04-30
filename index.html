@@ -596,6 +596,7 @@
         URL.revokeObjectURL(blobUrl);
 
 
+        document.getElementById('generando_pdf_modal').style.display = 'none';
         // Mostrar confirmación y limpiar
         const notif = document.getElementById('notification');
         notif.style.display = 'block';
@@ -619,7 +620,8 @@
         console.error('Error de red o CORS:', err);
       }
 
-      // Mostrar confirmación y limpiar
+      document.getElementById('generando_pdf_modal').style.display = 'none';
+        // Mostrar confirmación y limpiar
       const notif = document.getElementById('notification');
       notif.style.display = 'block';
       setTimeout(() => notif.style.opacity = 1, 10);
@@ -653,10 +655,42 @@
   <!-- Incluir html2pdf.js desde CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+<div id="generando_pdf_modal" style="
+  display:none;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.6);
+  color:white;
+  font-size:24px;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;">
+  Generando PDF, por favor espere...
+</div>
+
 </body>
 </html>
 
   <!-- Incluir html2pdf.js desde CDN para generación de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+<div id="generando_pdf_modal" style="
+  display:none;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.6);
+  color:white;
+  font-size:24px;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;">
+  Generando PDF, por favor espere...
+</div>
+
 </body>
 </html>

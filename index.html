@@ -522,6 +522,10 @@
 
     // Generar y descargar PDF de forma manual para controlar cada página
     document.getElementById('enviar_reporte').onclick = async () => {
+  const modal = document.getElementById('generando_pdf_modal');
+  modal.style.visibility = 'visible';
+  modal.style.opacity = 1;
+  await new Promise(r => setTimeout(r, 100));
   modal.style.visibility = 'visible';
   modal.style.opacity = 1;
   await new Promise(r => setTimeout(r, 100));
@@ -665,9 +669,7 @@
 
 
     // Inicializar carga al abrir página
-    let modal = document.getElementById('generando_pdf_modal');
-
-window.onload = () => {
+    window.onload = () => {
       cargarDatosVehiculos();
       cargarProcesos();
     };

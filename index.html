@@ -551,26 +551,67 @@
       const pdfBase64 = pdfDataUri.split(',')[1];
       const savePayload = {...reportData, pdf: pdfBase64, filename};
       
-fetch(urlGuardarReporte, {
-  method: 'POST',
-  mode: 'cors',
-  headers: {'Content-Type': 'application/json'},
-  body: JSON.stringify(savePayload)
-})
-.then(response => response.json())
-.then(result => {
-  if (result.status !== 'OK') {
-    alert('Error al guardar el reporte: ' + result.message);
-    console.error('Respuesta del servidor:', result);
-  }
-})
-.catch(err => {
-  alert('Error al conectar con el servidor (Cloudflare Worker).');
-  console.error('Error de red o CORS:', err);
-});
 
-      // Descargar PDF
-      pdf.save(filename);
+      // Primero, guarda los datos (espera confirmación)
+      try {
+        const saveResponse = await fetch(urlGuardarReporte, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(savePayload)
+        });
+
+        const saveResult = await saveResponse.json();
+        if (saveResult.status !== 'OK') {
+          alert('Error al guardar el reporte: ' + saveResult.message);
+          console.error('Respuesta del servidor:', saveResult);
+          return;
+        }
+
+        // Luego de guardar, generar PDF
+        const pages = document.querySelectorAll('.page');
+        const margins = {top:12.7,left:12.7,bottom:12.7,right:12.7};
+        const pdf = new jspdf.jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
+
+        for (let i = 0; i < pages.length; i++) {
+          const pg = pages[i];
+          pg.style.boxShadow = 'none';
+          const canvas = await html2canvas(pg, {scale:1,useCORS:true,backgroundColor:'#ffffff'});
+          const imgData = canvas.toDataURL('image/png');
+          const pdfWidth = pdf.internal.pageSize.getWidth() - margins.left - margins.right;
+          const pdfHeight = pdf.internal.pageSize.getHeight() - margins.top - margins.bottom;
+          if (i > 0) pdf.addPage();
+          pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
+        }
+
+        const pdfBlob = pdf.output('blob');
+        const url = URL.createObjectURL(pdfBlob);
+        window.open(url, '_blank');
+        URL.revokeObjectURL(url);
+
+        // Mostrar confirmación y limpiar
+        const notif = document.getElementById('notification');
+        notif.style.display = 'block';
+        setTimeout(() => notif.style.opacity = 1, 10);
+        setTimeout(() => {
+          notif.style.opacity = 0;
+          notif.addEventListener('transitionend', () => {
+            notif.style.display = 'none';
+            ['sector','placa','proceso','nombre','identidad','total','litros','motivo','fecha','horas','km','nombre_comercio','factura']
+              .forEach(id => document.getElementById(id).value = '');
+            ['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
+              .forEach(id => document.getElementById(id).value = null);
+            document.getElementById('preview_contenido').style.display = 'none';
+            const formEl = document.getElementById('formulario_contenido');
+            formEl.style.display = 'block';
+            formEl.classList.add('fade-in-up');
+          }, {once:true});
+        }, 2000);
+      } catch (err) {
+        alert('Error al conectar con el servidor (Cloudflare Worker).');
+        console.error('Error de red o CORS:', err);
+      }
+
       // Mostrar confirmación y limpiar
       const notif = document.getElementById('notification');
       notif.style.display = 'block';

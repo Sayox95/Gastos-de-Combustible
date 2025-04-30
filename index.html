@@ -522,11 +522,6 @@
         NombreComercio: document.getElementById('nombre_comercio').value,
         NumeroFactura: document.getElementById('factura').value
       };
-      fetch(urlGuardarReporte, {
-        method: 'POST', mode: 'no-cors',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(reportData)
-      }).catch(err => console.error('Error al guardar en sheet:', err));
       // Prepara PDF
       const btnEnviar = document.getElementById('enviar_reporte');
       const btnMod = document.getElementById('modificar_reporte');

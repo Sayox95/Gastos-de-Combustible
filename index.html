@@ -247,23 +247,47 @@
     <input type="text" id="factura" oninput="maskFactura(this)">
 
     <!-- Inputs de imágenes (galería o cámara) reordered -->
-    <label for="foto_tablero_antes">Fotografía Tablero Antes:</label>
-    <input type="file" id="foto_tablero_antes" accept="image/*">
+    
+<label for="foto_tablero_antes">Fotografía Tablero Antes:</label>
+<div class="input-hybrid" id="wrap_foto_tablero_antes_wrap">
+  <input type="file" id="foto_tablero_antes_std" accept="image/*">
+  <input type="file" id="foto_tablero_antes_cap" accept="image/*" capture="environment" style="display:none;">
+</div>
 
-    <label for="foto_bomba">Fotografía Bomba en 0:</label>
-    <input type="file" id="foto_bomba" accept="image/*">
+    
+<label for="foto_bomba">Fotografía Bomba en 0:</label>
+<div class="input-hybrid" id="wrap_foto_bomba_wrap">
+  <input type="file" id="foto_bomba_std" accept="image/*">
+  <input type="file" id="foto_bomba_cap" accept="image/*" capture="environment" style="display:none;">
+</div>
 
-    <label for="foto_frontal">Fotografía Frontal del Vehículo:</label>
-    <input type="file" id="foto_frontal" accept="image/*">
+    
+<label for="foto_frontal">Fotografía Frontal del Vehículo:</label>
+<div class="input-hybrid" id="wrap_foto_frontal_wrap">
+  <input type="file" id="foto_frontal_std" accept="image/*">
+  <input type="file" id="foto_frontal_cap" accept="image/*" capture="environment" style="display:none;">
+</div>
 
-    <label for="foto_bomba_llenado">Fotografía Bomba Llena:</label>
-    <input type="file" id="foto_bomba_llenado" accept="image/*">
+    
+<label for="foto_bomba_llenado">Fotografía Bomba Llena:</label>
+<div class="input-hybrid" id="wrap_foto_bomba_llenado_wrap">
+  <input type="file" id="foto_bomba_llenado_std" accept="image/*">
+  <input type="file" id="foto_bomba_llenado_cap" accept="image/*" capture="environment" style="display:none;">
+</div>
 
-    <label for="foto_despues">Fotografía Tablero Después de Llenado:</label>
-    <input type="file" id="foto_despues" accept="image/*">
+    
+<label for="foto_despues">Fotografía Tablero Después de Llenado:</label>
+<div class="input-hybrid" id="wrap_foto_despues_wrap">
+  <input type="file" id="foto_despues_std" accept="image/*">
+  <input type="file" id="foto_despues_cap" accept="image/*" capture="environment" style="display:none;">
+</div>
 
-    <label for="foto_factura">Fotografía de la Factura:</label>
-    <input type="file" id="foto_factura" accept="image/*">
+    
+<label for="foto_factura">Fotografía de la Factura:</label>
+<div class="input-hybrid" id="wrap_foto_factura_wrap">
+  <input type="file" id="foto_factura_std" accept="image/*">
+  <input type="file" id="foto_factura_cap" accept="image/*" capture="environment" style="display:none;">
+</div>
 
     <!-- Botón para generar vista previa -->
     <button id="guardar_reporte">Guardar Reporte</button>
@@ -299,7 +323,7 @@
     <button id="enviar_reporte">Enviar Reporte</button>
     <button id="modificar_reporte">Modificar Reporte</button>
 
-<button id="btn_descarga_manual" style="display:none; margin-top:20px;">Descargar PDF manualmente</button>
+
 
   </div>
 
@@ -403,7 +427,8 @@
     });
 
     // Guardar reporte y generar vista previa
-    document.getElementById('guardar_reporte').onclick = () => {
+const el_guardar_reporte = document.getElementById('guardar_reporte');
+if (el_guardar_reporte) el_guardar_reporte.onclick = () => {
       // Recopilar datos del formulario
       const data = {
         Fecha:      document.getElementById('fecha').value,
@@ -510,7 +535,8 @@
     };
 
     // Volver al formulario desde la vista previa
-    document.getElementById('modificar_reporte').onclick = () => {
+const el_modificar_reporte = document.getElementById('modificar_reporte');
+if (el_modificar_reporte) el_modificar_reporte.onclick = () => {
       // Animar cierre de preview
       const previewEl = document.getElementById('preview_contenido');
       previewEl.classList.remove('fade-in-up');
@@ -524,7 +550,8 @@
     };
 
     // Generar y descargar PDF de forma manual para controlar cada página
-    document.getElementById('enviar_reporte').onclick = async () => {
+    const enviarBtn = document.getElementById('enviar_reporte');
+  if (enviarBtn) enviarBtn.onclick = async () => {
   const modal = document.getElementById('generando_pdf_modal');
   modal.style.visibility = 'visible';
   modal.style.opacity = 1;
@@ -680,7 +707,8 @@ generatedBlob = pdfBlob;
 
     // Lógica de descarga manual
     let generatedBlob = null;
-    document.getElementById('btn_descarga_manual').onclick = () => {
+const el_btn_descarga_manual = document.getElementById('btn_descarga_manual');
+if (el_btn_descarga_manual) el_btn_descarga_manual.onclick = () => {
       if (generatedBlob) {
         const blobUrl = URL.createObjectURL(generatedBlob);
         const a = document.createElement('a');
@@ -694,6 +722,21 @@ generatedBlob = pdfBlob;
         alert("El archivo PDF aún no está listo.");
       }
     };
+
+
+    
+// Detectar si el navegador requiere usar capture para permitir cámara
+const isSamsungChrome = navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Samsung");
+if (isSamsungChrome) {
+  console.log("Chrome en Samsung detectado: activando capture en inputs.");
+  const hybrids = document.querySelectorAll(".input-hybrid");
+  hybrids.forEach(wrapper => {
+    const std = wrapper.querySelector("input[id$='_std']");
+    const cap = wrapper.querySelector("input[id$='_cap']");
+    std.style.display = "none";
+    cap.style.display = "block";
+  });
+}
 
 
     // Inicializar carga al abrir página

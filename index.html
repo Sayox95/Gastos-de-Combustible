@@ -380,10 +380,6 @@ function validarFormulario() {
   return valido;
 }
 
-
-
-
-
 </script>
   <script>
     
@@ -484,16 +480,8 @@ function validarFormulario() {
     });
 
     // Guardar reporte y generar vista previa
-    document.getElementById('guardar_reporte').onclick = async () => {
+    document.getElementById('guardar_reporte').onclick = () => {
     if (!validarFormulario()) return;
-  const placa = document.getElementById('placa').value.trim();
-  const fecha = document.getElementById('fecha').value.trim();
-  const factura = document.getElementById('factura').value.trim();
-  const existe = await verificarDuplicado(placa, fecha, factura);
-  if (existe) {
-    alert('Ya existe un reporte con estos datos. Si continúas, se reemplazará el anterior.');
-  }
-
       // Recopilar datos del formulario
       const data = {
         Fecha:      document.getElementById('fecha').value,
@@ -922,34 +910,6 @@ function validarFormulario() {
   </div>
 </div>
 
-
-<script>
-  window.onload = () => {
-    async function verificarDuplicado(placa, fecha, factura) {
-      const url = 'https://script.google.com/macros/s/AKfycbx4Bu2Gunfp9Q_l5d9SW0CUTUjAgHa0MyJAkusP0qX3bJ1DvkPd_zrSotvFGClDx8l43Q/exec'
-                  + '?accion=verificar'
-                  + '&placa=' + encodeURIComponent(placa)
-                  + '&fecha=' + encodeURIComponent(fecha)
-                  + '&factura=' + encodeURIComponent(factura);
-      const resp = await fetch(url);
-      const data = await resp.json();
-      return data.existe;
-    }
-
-    document.getElementById('guardar_reporte').onclick = async () => {
-      if (!validarFormulario()) return;
-      const placa = document.getElementById('placa').value.trim();
-      const fecha = document.getElementById('fecha').value.trim();
-      const factura = document.getElementById('factura').value.trim();
-      const existe = await verificarDuplicado(placa, fecha, factura);
-      if (existe) {
-        alert('Ya existe un reporte con estos datos. Si continúas, se reemplazará el anterior.');
-      }
-      // Aquí continúa tu lógica de generación de PDF...
-    };
-  };
-</script>
-
 </body>
 </html>
 
@@ -1015,34 +975,6 @@ function validarFormulario() {
     Generando PDF, por favor espere...
   </div>
 </div>
-
-
-<script>
-  window.onload = () => {
-    async function verificarDuplicado(placa, fecha, factura) {
-      const url = 'https://script.google.com/macros/s/AKfycbx4Bu2Gunfp9Q_l5d9SW0CUTUjAgHa0MyJAkusP0qX3bJ1DvkPd_zrSotvFGClDx8l43Q/exec'
-                  + '?accion=verificar'
-                  + '&placa=' + encodeURIComponent(placa)
-                  + '&fecha=' + encodeURIComponent(fecha)
-                  + '&factura=' + encodeURIComponent(factura);
-      const resp = await fetch(url);
-      const data = await resp.json();
-      return data.existe;
-    }
-
-    document.getElementById('guardar_reporte').onclick = async () => {
-      if (!validarFormulario()) return;
-      const placa = document.getElementById('placa').value.trim();
-      const fecha = document.getElementById('fecha').value.trim();
-      const factura = document.getElementById('factura').value.trim();
-      const existe = await verificarDuplicado(placa, fecha, factura);
-      if (existe) {
-        alert('Ya existe un reporte con estos datos. Si continúas, se reemplazará el anterior.');
-      }
-      // Aquí continúa tu lógica de generación de PDF...
-    };
-  };
-</script>
 
 </body>
 </html>

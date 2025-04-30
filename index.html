@@ -479,8 +479,40 @@ function validarFormulario() {
       document.getElementById('proceso').value = '';
     });
 
-    // Guardar reporte y generar vista previa
-    document.getElementById('guardar_reporte').onclick = () => {
+    
+    // Verificar duplicado antes de generar preview
+    async function verificarDuplicado(placa, fecha, factura) {
+      try {
+        const response = await fetch("/api/guardar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            validarDuplicado: true,
+            Placa: placa,
+            Fecha: fecha,
+            NumeroFactura: factura
+          })
+        });
+        const result = await response.json();
+        return result.duplicado || false;
+      } catch (err) {
+        console.error("Error al verificar duplicado:", err);
+        return false;
+      }
+    }
+
+// Guardar reporte y generar vista previa
+    document.getElementById('guardar_reporte').onclick = async () => {
+
+    const placa = document.getElementById('placa').value;
+    const fecha = document.getElementById('fecha').value;
+    const factura = document.getElementById('factura').value;
+
+    const esDuplicado = await verificarDuplicado(placa, fecha, factura);
+    if (esDuplicado) {
+      alert("⚠️ Ya existe un reporte con estos datos. Si continúas, se reemplazará el anterior.");
+    }
+
     if (!validarFormulario()) return;
       // Recopilar datos del formulario
       const data = {

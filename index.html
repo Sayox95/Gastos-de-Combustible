@@ -167,6 +167,22 @@
       overflow: visible;
     }
   </style>
+
+<style>
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
 </head>
 <body>
   <div id="notification" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#28a745; color:white; padding:15px 30px; border-radius:5px; opacity:0; transition:opacity 0.5s ease-in-out; z-index:1000;">Información enviada correctamente</div>
@@ -506,6 +522,9 @@
 
     // Generar y descargar PDF de forma manual para controlar cada página
     document.getElementById('enviar_reporte').onclick = async () => {
+  modal.style.visibility = 'visible';
+  modal.style.opacity = 1;
+  await new Promise(r => setTimeout(r, 100));
       // Guardar datos en Google Sheets (no-cors)
       const reportData = {
         Sector: document.getElementById('sector').value,
@@ -596,7 +615,7 @@
         URL.revokeObjectURL(blobUrl);
 
 
-        const modal = document.getElementById('generando_pdf_modal'); modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
+        modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
         // Mostrar confirmación y limpiar
         const notif = document.getElementById('notification');
         notif.style.display = 'block';
@@ -620,7 +639,7 @@
         console.error('Error de red o CORS:', err);
       }
 
-      const modal = document.getElementById('generando_pdf_modal'); modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
+      modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
         // Mostrar confirmación y limpiar
       const notif = document.getElementById('notification');
       notif.style.display = 'block';
@@ -646,7 +665,9 @@
 
 
     // Inicializar carga al abrir página
-    window.onload = () => {
+    let modal = document.getElementById('generando_pdf_modal');
+
+window.onload = () => {
       cargarDatosVehiculos();
       cargarProcesos();
     };
@@ -662,15 +683,16 @@
   position:fixed;
   top:0; left:0; right:0; bottom:0;
   background:rgba(0,0,0,0.6);
-  color:white;
-  font-size:24px;
-  font-weight:bold;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
   z-index:2000;
   transition: opacity 0.3s ease;">
-  Generando PDF, por favor espere...
+  <div class="spinner"></div>
+  <div style="color:white; font-size:20px; font-weight:bold; margin-top:20px;">
+    Generando PDF, por favor espere...
+  </div>
 </div>
 
 </body>
@@ -685,15 +707,16 @@
   position:fixed;
   top:0; left:0; right:0; bottom:0;
   background:rgba(0,0,0,0.6);
-  color:white;
-  font-size:24px;
-  font-weight:bold;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
   z-index:2000;
   transition: opacity 0.3s ease;">
-  Generando PDF, por favor espere...
+  <div class="spinner"></div>
+  <div style="color:white; font-size:20px; font-weight:bold; margin-top:20px;">
+    Generando PDF, por favor espere...
+  </div>
 </div>
 
 </body>

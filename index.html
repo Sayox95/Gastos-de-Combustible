@@ -510,7 +510,8 @@ function validarFormulario() {
 
     const esDuplicado = await verificarDuplicado(placa, fecha, factura);
     if (esDuplicado) {
-      alert("⚠️ Ya existe un reporte con estos datos. Si continúas, se reemplazará el anterior.");
+      const continuar = confirm("⚠️ Ya existe un reporte con estos datos. ¿Deseas reemplazarlo?");
+      if (!continuar) return; // Detiene flujo si usuario cancela
     }
 
     if (!validarFormulario()) return;

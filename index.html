@@ -501,6 +501,25 @@ function validarFormulario() {
       }
     }
 
+
+function imagenesCompletas() {
+  const campos = [
+    'foto_tablero_antes',
+    'foto_bomba',
+    'foto_despues',
+    'foto_bomba_llenado',
+    'foto_frontal',
+    'foto_factura'
+  ];
+  for (const id of campos) {
+    const input = document.getElementById(id);
+    if (!input || !input.files || input.files.length === 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Guardar reporte y generar vista previa
     document.getElementById('guardar_reporte').onclick = async () => {
 
@@ -514,7 +533,13 @@ function validarFormulario() {
       if (!continuar) return; // Detiene flujo si usuario cancela
     }
 
-    if (!validarFormulario()) return;
+    
+if (!validarFormulario()) return;
+if (!imagenesCompletas()) {
+  alert("⚠️ Faltan fotografías por cargar. Por favor verifica antes de continuar.");
+  return;
+}
+
       // Recopilar datos del formulario
       const data = {
         Fecha:      document.getElementById('fecha').value,

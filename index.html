@@ -664,7 +664,7 @@ function imagenesCompletas() {
       for (let i = 0; i < pages.length; i++) {
         const pg = pages[i];
         pg.style.boxShadow = 'none';
-        const canvas = await html2canvas(pg, {scale:1,useCORS:true,backgroundColor:'#ffffff'});
+        const canvas = await html2canvas(pg, {scale:0.6,useCORS:true,backgroundColor:'#ffffff'});
         const imgData = canvas.toDataURL('image/png');
         const pdfWidth = pdf.internal.pageSize.getWidth() - margins.left - margins.right;
         const pdfHeight = pdf.internal.pageSize.getHeight() - margins.top - margins.bottom;

@@ -1,66 +1,1073 @@
-// functions/api/guardar.js
+<!DOCTYPE html>
 
-/**
- * Preflight OPTIONS para habilitar CORS
- */
-export async function onRequestOptions({ request }) {
-  // En lugar de '*' usamos el Origin real para maximizar compatibilidad
-  const origin = request.headers.get('Origin') || '*';
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      // quitamos Access-Control-Allow-Credentials si no usamos cookies
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Control de Combustible</title>
+<!-- Roboto font for consistent typography -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap" rel="stylesheet"/>
+<style>
+    /* Animaciones para transiciones */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-  });
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    /* Global page styles */
+    /* Global page styles */
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    .formulario {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; }
+    label { display: block; margin-top: 10px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px 0;
+    }
+    button:hover { background-color: #0056b3; }
+    #mensaje_cargando {
+      text-align: center;
+      font-weight: bold;
+      color: #007BFF;
+      margin-bottom: 15px;
+    }
+
+    /* Styles for preview pages to mimic Letter dimensions */
+    @page {
+      size: letter;
+      margin: 1.27cm;
+    }
+    .page {
+      background: white;
+      width: 216mm;           /* Carta: 8.5in = 216mm */
+      height: 279mm;          /* Carta: 11in = 279mm */
+      margin: 20px auto;      /* Separación entre páginas */
+      padding: 1.27cm;        /* Márgenes internos de 1.27cm */
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      display: flex;          /* Contenedor flex para extender contenido */
+      flex-direction: column; /* Organizar header y contenido en columna */
+      overflow: hidden;       /* Ocultar desbordes */
+      page-break-after: always;
+    }
+    @media print {
+      .page { page-break-after: always; margin: 0; box-shadow: none; }
+      body { margin: 0; }
+    }
+    .format-header {
+      text-align: center;
+      font-weight: bold;
+      border: 1px solid #000;
+      padding: 5px;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    .preview-box {
+      display: flex;
+      gap: 10px; /* Gap between columns */
+      flex: 1; /* Fill vertical space under header */
+    }
+    .invoice-box {
+      flex: 0 0 55%; /* Width ratio for invoice box */
+      height: 100%;  /* Fill parent height */
+    }
+    .summary-box {
+      flex: 0 0 45%; /* Width ratio for summary box */
+      height: 100%;  /* Fill parent height */
+    }
+    .invoice-box .placeholder {
+      width: 100%; height: 100%;
+      border: 2px dashed #666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-style: italic;
+    }
+    .summary-box table {
+      width: 100%; height: 100%;
+      border-collapse: collapse;
+    }
+    .summary-box td:first-child { width: 30%; }
+    .summary-box td:nth-child(2) { width: 70%; }
+    .summary-box td {
+      font-size: 14px;
+      border: 1px solid #ccc;
+      padding: 8px;
+      vertical-align: top;
+    }
+
+    /* Adjust page 2 to fill remaining height */
+    #photos_table_container {
+      flex: 1;               /* Fill vertical space under header */
+      display: flex;
+      flex-direction: column;
+    }
+    .photos-table {
+      flex: 1;               /* Fill all available height */
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .photos-table td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      vertical-align: top;
+      overflow: hidden;
+      width: 45%;
+      height: 300px; /* Ajustado a 300px según pedido */
+    }
+    .photos-table td[rowspan="2"] {
+      width: 55%;
+      height: 530px; /* Ajustado a 530px según pedido */
+    }
+    .photos-table img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    .photo-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+    .photo-footer { font-size: 14px; font-weight: bold; text-align: left; padding: 6px; }
+    /* Pie de página: altura fija distinta de las fotos */
+    .photos-table tr:last-child td {
+      height: 20px; /* Ajustado a 20px para el pie de página */ /* Ajusta este valor para cambiar el largo del pie de página */
+    }
+      /* Ensure preview content matches Letter width */
+    html, body { box-sizing: border-box; }
+    #preview_contenido {
+      width: 216mm;       /* Match page width for PDF capture */
+      margin: 0 auto;
+      overflow: visible;
+    }
+  </style>
+<style>
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+<style>
+#toast-alert {
+  visibility: hidden;
+  min-width: 280px;
+  background-color: #c62828;
+  color: white;
+  text-align: center;
+  border-radius: 5px;
+  padding: 14px 28px;
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  bottom: 30px;
+  font-size: 16px;
+  transform: translateX(-50%);
+}
+#toast-alert.show {
+  visibility: visible;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+@keyframes fadein {
+  from { bottom: 10px; opacity: 0; }
+  to   { bottom: 30px; opacity: 1; }
+}
+@keyframes fadeout {
+  from { bottom: 30px; opacity: 1; }
+  to   { bottom: 10px; opacity: 0; }
+}
+</style>
+<div id="toast-alert">⚠️ Hay campos obligatorios sin completar.</div>
+</head>
+<body>
+<div id="notification" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#28a745; color:white; padding:15px 30px; border-radius:5px; opacity:0; transition:opacity 0.5s ease-in-out; z-index:1000;">Información enviada correctamente</div>
+<!-- Initial loading message displayed while fetching data -->
+<div id="mensaje_cargando">Cargando información, por favor espere...</div>
+<!-- Formulario: oculto hasta cargar sectores y procesos -->
+<div class="formulario" id="formulario_contenido" style="display:none;">
+<h2>Reporte de Gasto de Combustible</h2>
+<!-- Sector selector populated dinámicamente -->
+<!-- Placa selector dependiente del sector -->
+<datalist id="placas"></datalist>
+<!-- Proceso seleccionado por usuario (movido) -->
+<!-- Datos del colaborador -->
+<!-- Kilometraje y gasto -->
+<!-- Nuevo campo: Litros Consumidos, no aparece en preview ni PDF -->
+<!-- Motivación del viaje -->
+<!-- Motivación del viaje -->
+<!-- Proceso seleccionado por usuario -->
+<!-- Fecha y duración -->
+<!-- Datos del vehículo y factura -->
+<!-- Inputs de imágenes (galería o cámara) reordered -->
+<!-- Botón para generar vista previa -->
+<div class="paso" id="paso1" style="display:block;"><label for="sector">Seleccionar Sector:</label><span class="error-msg" id="error_sector" style="color:red; display:none;">(Campo obligatorio)</span><select id="sector"><option value="">Seleccione un sector</option></select><label for="placa">Seleccionar Placa del Vehículo:</label><span class="error-msg" id="error_placa" style="color:red; display:none;">(Campo obligatorio)</span><input autocomplete="off" id="placa" list="placas" placeholder="Escribe o selecciona una placa" type="text"/><label for="proceso">Proceso:</label><span class="error-msg" id="error_proceso" style="color:red; display:none;">(Campo obligatorio)</span><select id="proceso"><option value="">Seleccione un proceso</option></select><label for="nombre">Nombre Completo:</label><span class="error-msg" id="error_nombre" style="color:red; display:none;">(Campo obligatorio)</span><input id="nombre" required="" type="text"/><label for="identidad">No. Identidad:</label><span class="error-msg" id="error_identidad" style="color:red; display:none;">(Campo obligatorio)</span><input id="identidad" maxlength="15" oninput="maskIdentidad(this)" required="" type="text"/><label for="total">Total Gastado (L):</label><span class="error-msg" id="error_total" style="color:red; display:none;">(Campo obligatorio)</span><input id="total" step="0.01" type="number"/><label for="litros">Litros Consumidos:</label><span class="error-msg" id="error_litros" style="color:red; display:none;">(Campo obligatorio)</span><input id="litros" step="0.01" type="number"/><label for="motivo">Motivo del Llenado:</label><span class="error-msg" id="error_motivo" style="color:red; display:none;">(Campo obligatorio)</span><textarea id="motivo" rows="3"></textarea><label for="fecha">Fecha:</label><span class="error-msg" id="error_fecha" style="color:red; display:none;">(Campo obligatorio)</span><input id="fecha" type="date"/><label for="horas">Horas de Viaje:</label><input id="horas" type="text"/><label for="km">Km Actual del Vehículo:</label><span class="error-msg" id="error_km" style="color:red; display:none;">(Campo obligatorio)</span><input id="km" type="number"/><label for="nombre_comercio">Nombre del comercio:</label><span class="error-msg" id="error_nombre_comercio" style="color:red; display:none;">(Campo obligatorio)</span><input id="nombre_comercio" placeholder="Nombre del comercio" type="text"/><label for="factura">Número de Factura:</label><span class="error-msg" id="error_factura" style="color:red; display:none;">(Campo obligatorio)</span><input id="factura" oninput="maskFactura(this)" type="text"/><div><button onclick="validarYVerificarDuplicado();" type="button">Siguiente</button></div></div><div class="paso" id="paso2" style="display:none;;text-align:center;"><label for="foto_tablero_antes">Fotografía Tablero Antes:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Tablero%20antes%20de%20llenado.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_tablero_antes" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_tablero_antes')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_tablero_antes')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_tablero_antes"></div><div><button onclick="mostrarPaso(1)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_tablero_antes')){siguientePaso(3);}" style=" margin: 5px" type="button">Siguiente</button></div><input accept="image/*" hidden="True" id="foto_tablero_antes" type="file"/></div><div class="paso" id="paso3" style="display:none;;text-align:center;"><label for="foto_bomba">Fotografía Bomba en 0:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Bomba%20en%20cero.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_bomba" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_bomba')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_bomba')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_bomba"></div><div><button onclick="mostrarPaso(2)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_bomba')){siguientePaso(4);}" style=" margin: 5px" type="button">Siguiente</button></div><input accept="image/*" hidden="True" id="foto_bomba" type="file"/></div><div class="paso" id="paso4" style="display:none;;text-align:center;"><label for="foto_frontal">Fotografía Frontal del Vehículo o VIN con Vehículo:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Vista%20Frontal.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_frontal" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_frontal')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_frontal')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_frontal"></div><div><button onclick="mostrarPaso(3)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_frontal')){siguientePaso(5);}" style=" margin: 5px" type="button">Siguiente</button></div><input accept="image/*" hidden="True" id="foto_frontal" type="file"/></div><div class="paso" id="paso5" style="display:none;;text-align:center;"><label for="foto_bomba_llenado">Fotografía Bomba Llena:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Bomba%20llena.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_bomba_llenado" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_bomba_llenado')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_bomba_llenado')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_bomba_llenado"></div><div><button onclick="mostrarPaso(4)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_bomba_llenado')){siguientePaso(6);}" style=" margin: 5px" type="button">Siguiente</button></div><input accept="image/*" hidden="True" id="foto_bomba_llenado" type="file"/></div><div class="paso" id="paso6" style="display:none;;text-align:center;"><input accept="image/*" hidden="True" id="foto_despues" type="file"/><label for="foto_despues">Fotografía Tablero Después de Llenado:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Tablero%20antes%20de%20llenado.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_despues" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_despues')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_despues')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_despues"></div><div><button onclick="mostrarPaso(5)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_despues')){siguientePaso(7);}" style=" margin: 5px" type="button">Siguiente</button></div></div><div class="paso" id="paso7" style="display:none; text-align: center;"><h2>Fotografía de la Factura:</h2><img alt="Ejemplo factura" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Factura.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><input accept="image/*" hidden="True" id="foto_factura" type="file"/><button onclick="activarCamara('foto_factura')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_factura')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_factura"></div>
+<div style="display: flex; justify-content: center;  margin-top: 20px;">
+<button onclick="mostrarPaso(6)" style="margin: 5px;" type="button">Anterior</button>
+<button id="guardar_reporte" style="margin: 5px;" type="button">Guardar Reporte</button>
+</div>
+</div></div>
+<!-- Contenedor de vista previa: dos páginas A4 simuladas -->
+<div id="preview_contenido" style="display:none;">
+<!-- Página 1: resumen e inserción de factura -->
+<div class="page" id="preview_page1">
+<h3 class="format-header" id="format_header"></h3>
+<div class="preview-box">
+<div class="invoice-box">
+<div class="placeholder" id="placeholder_box">Pegar Factura Original en este Espacio</div>
+</div>
+<div class="summary-box" id="summary_box"></div>
+</div>
+</div>
+<!-- Página 2: galería de fotografías con pie de página -->
+<div class="page" id="preview_page2">
+<h3 class="format-header">FOTOGRAFÍAS</h3>
+<div id="photos_table_container"></div>
+</div>
+<!-- Página 3: separador -->
+<!-- Página 3: solo fotografía de la factura -->
+<div class="page" id="preview_page3">
+<h3 class="format-header">FACTURA ORIGINAL</h3>
+<div class="invoice-box">
+<img id="factura_only_img" style="width:auto; height:800px; object-fit:contain; display:block; margin:0 auto;"/>
+</div>
+</div>
+<button id="enviar_reporte">Enviar Reporte</button>
+<button id="modificar_reporte">Modificar Reporte</button>
+</div>
+
+<script>
+    
+  // Máscara para No. Identidad: formato ####-####-#####
+  function maskIdentidad(el) {
+    let v = el.value.replace(/\D/g, '');
+    v = v.slice(0, 13);
+    if (v.length > 8) {
+      v = v.replace(/(\d{4})(\d{4})(\d+)/, '$1-$2-$3');
+    } else if (v.length > 4) {
+      v = v.replace(/(\d{4})(\d+)/, '$1-$2');
+    }
+    el.value = v;
+  }
+
+  // Máscara para Número de Factura: formato ###-###-##-#####
+    function maskFactura(el) {
+      // Solo dígitos
+      let v = el.value.replace(/\D/g, '');
+      // 1er tramo (0–3 dígitos)
+      if (v.length <= 3) {
+        el.value = v;
+      }
+      // 2º tramo (4–6 dígitos)
+      else if (v.length <= 6) {
+        el.value = `${v.slice(0,3)}-${v.slice(3)}`;
+      }
+      // 3er tramo (7–8 dígitos)
+      else if (v.length <= 8) {
+        el.value = `${v.slice(0,3)}-${v.slice(3,6)}-${v.slice(6)}`;
+      }
+      // Resto (9+ dígitos)
+      else {
+        el.value = `${v.slice(0,3)}-${v.slice(3,6)}-${v.slice(6,8)}-${v.slice(8)}`;
+      }
+    }
+
+    /* URLs de servicios Google Apps Script */
+    const urlVehiculos = "https://script.google.com/macros/s/AKfycbxp2yVp4hF-t9f2LdU9NhZxVt6RwXyL3uKrKzXk4a_l4na2Rkd1LZMB02pEJeRQ_eCF/exec";
+    const urlProcesos  = "https://script.google.com/macros/s/AKfycbw4KLB3AiRM6N1sC39cn1-HANO6ccsBQs3AeL6S5y-bt1IEoV8eZOakwHU_OSbspJWG/exec";
+    const urlGuardarReporte = "/api/guardar";
+    let vehiculos = [], procesos = [];
+
+    /**
+     * Carga sectores y placas de la hoja "Vehiculos".
+     * Popula <select id="sector"> y muestra el formulario.
+     */
+    function cargarDatosVehiculos() {
+      fetch(urlVehiculos)
+        .then(res => res.json())
+        .then(data => {
+          vehiculos = data;
+          const sel = document.getElementById('sector');
+          // Eliminar duplicados usando Set
+          [...new Set(data.map(x => x.Sector))].forEach(s => sel.add(new Option(s, s)));
+          document.getElementById('mensaje_cargando').style.display = 'none';
+          // Animar formulario al aparecer
+          const formEl = document.getElementById('formulario_contenido');
+          formEl.style.display = 'block';
+          formEl.classList.add('fade-in-up');
+            mostrarPaso(1);
+          document.getElementById('formulario_contenido').style.display = 'block';
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById('mensaje_cargando').innerText = 'Error al cargar los datos.';
+        });
+    }
+
+    /**
+     * Carga procesos de la hoja "Procesos".
+     * Popula <select id="proceso">.
+     */
+    function cargarProcesos() {
+      fetch(urlProcesos)
+        .then(res => res.json())
+        .then(data => {
+          procesos = data.map(item => item.Proceso);
+          const sel = document.getElementById('proceso');
+          sel.innerHTML = '<option value="">Seleccione un proceso</option>';
+          procesos.forEach(p => sel.add(new Option(p, p)));
+        })
+        .catch(err => console.error('Error al cargar procesos:', err));
+    }
+
+    // Al cambiar sector, filtrar placas correspondientes
+    document.getElementById('sector').addEventListener('change', function() {
+      const dataList = document.getElementById('placas');
+      dataList.innerHTML = '';
+      vehiculos.filter(v => v.Sector === this.value).forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.PLACA;
+        dataList.appendChild(opt);
+      });
+      // Limpiar el input de placa al cambiar el sector
+      document.getElementById('placa').value = '';
+      // Limpiar proceso
+      document.getElementById('proceso').value = '';
+    });
+
+    
+    // Verificar duplicado antes de generar preview
+    async function verificarDuplicado(placa, fecha, factura) {
+      try {
+        const response = await fetch("/api/guardar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            validarDuplicado: true,
+            Placa: placa,
+            Fecha: fecha,
+            NumeroFactura: factura
+          })
+        });
+        const result = await response.json();
+        return result.duplicado || false;
+      } catch (err) {
+        console.error("Error al verificar duplicado:", err);
+        return false;
+      }
+    }
+
+
+function imagenesCompletas() {
+  const campos = [
+    'foto_tablero_antes',
+    'foto_bomba',
+    'foto_despues',
+    'foto_bomba_llenado',
+    'foto_frontal',
+    'foto_factura'
+  ];
+  for (const id of campos) {
+    const input = document.getElementById(id);
+    if (!input || !input.files || input.files.length === 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
-/**
- * POST: reenvía el JSON al Apps Script y devuelve su respuesta
- */
-export async function onRequestPost({ request }) {
-  const origin = request.headers.get('Origin') || '*';
-  const bodyText = await request.text();
+// Guardar reporte y generar vista previa
+    document.getElementById('guardar_reporte').onclick = async () => {
 
-  // Para depurar:
-  console.log('📤 Proxy body:', bodyText);
+  if (!validarFormulario()) return;
+  if (!imagenesCompletas()) {
+    alert("⚠️ Faltan fotografías por cargar. Por favor verifica antes de continuar.");
+    return;
+  }
+  const placa = document.getElementById('placa').value;
+  const fecha = document.getElementById('fecha').value;
+  const factura = document.getElementById('factura').value;// Continúa con la generación de PDF y carga previa
+  // ... el resto del código de recopilación de datos permanece intacto ...
 
-  let resp;
-  try {
-    resp = await fetch(
-      "https://script.google.com/macros/s/AKfycbypJfNJUmJYkoPerSqYpYQR0IcZFW7zdPr7oTF5ohy1uNzXZ9GNwkmlZV9KiRHVuhV7bQ/exec",
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: bodyText,
+  // Recopilar datos del formulario
+      const data = {
+        Fecha:      document.getElementById('fecha').value,
+        Nombre:     document.getElementById('nombre').value,
+        Identidad:  document.getElementById('identidad').value,
+        Total:      document.getElementById('total').value + ' L',
+        Motivo:     document.getElementById('motivo').value,
+        Proceso:    document.getElementById('proceso').value,
+        Horas:      document.getElementById('horas').value,
+        Sector:     document.getElementById('sector').value,
+        Km:         document.getElementById('km').value,
+        FacturaNo:  document.getElementById('factura').value,
+        Placa:      document.getElementById('placa').value
+      
+};
+      // Buscar jefe inmediato por placa
+      const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+      data.JefeInmediato = (jefeObj 
+      ? (jefeObj["Jefe inmediato"] 
+         || jefeObj["Jefe Inmediato"] 
+         || jefeObj.JefeInmediato 
+         || "") 
+      : "");
+
+      // Formatear encabezado con mes y año
+      const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+      const fDate = new Date(data.Fecha);
+      document.getElementById('format_header').textContent =
+        `FORMATO DE FACTURAS COMBUSTIBLE ${meses[fDate.getMonth()]} ${fDate.getFullYear()}`;
+
+      // Construir tabla resumen dinámicamente
+      const sb = document.getElementById('summary_box'); sb.innerHTML = '';
+      const tbl = document.createElement('table');
+      const rows = [
+        ['Nombre Completo', data.Nombre],
+        ['No. Identidad', data.Identidad],
+        ['Firma del Colaborador', ''],
+        ['Tipo de Gestión', `PLACA: ${data.Placa}`],
+        ['Total', data.Total],
+        ['Motivo del llenado de combustible',
+         `Compra de Combustible al Vehículo<br><br>Para Labores de: ${data.Motivo}<br><br>Proceso: ${data.Proceso}`],
+        ['Fecha', data.Fecha],
+        ['Horas de Viaje', data.Horas],
+        ['Observación',
+         `SECTOR: ${data.Sector}<br><br>KM: ${data.Km}<br><br>FACTURA: ${data.FacturaNo}`],
+        ['Autorizado por Jefe Inmediato', data.JefeInmediato],
+        ['Firma', '']
+      ];
+      rows.forEach(([k,v]) => {
+        const r = tbl.insertRow();
+        r.insertCell().textContent = k;
+        r.insertCell().innerHTML = v;
+      });
+      sb.appendChild(tbl);
+
+      // Construir galería de fotografías
+      const container = document.getElementById('photos_table_container');
+      const imgHTML = id => {
+        const f = document.getElementById(id).files[0];
+        if (!f) return '';
+        return `<img src="${URL.createObjectURL(f)}" class="photo-img">`;
+      };
+      container.innerHTML = `
+        <table class="photos-table">
+          <tr>
+            <td><div class="photo-title">TABLERO ANTES DE LLENADO</div>${imgHTML('foto_tablero_antes')}</td>
+            <td colspan="2"><div class="photo-title">BOMBA DE COMBUSTIBLE 0</div>${imgHTML('foto_bomba')}</td>
+          </tr>
+          <tr>
+            <td><div class="photo-title">TABLERO DESPUÉS DE LLENADO</div>${imgHTML('foto_despues')}</td>
+            <td colspan="2" rowspan="2"><div class="photo-title">BOMBA DE COMBUSTIBLE LLENA</div>${imgHTML('foto_bomba_llenado')}</td>
+          </tr>
+          <tr>
+            <td><div class="photo-title">VISTA FRONTAL DEL VEHÍCULO / VIN CON VEHICULO</div>${imgHTML('foto_frontal')}</td>
+          </tr>
+          <tr>
+            <td class="photo-footer">PLACA: ${data.Placa}</td>
+            <td class="photo-footer">FECHA: ${data.Fecha}</td>
+            <td class="photo-footer">FACTURA: ${data.FacturaNo}</td>
+          </tr>
+        </table>`;
+      // Cargar imagen de factura en la página 3
+      const factImg = document.getElementById('factura_only_img');
+      const fileF = document.getElementById('foto_factura').files[0];
+      if (fileF) {
+        const rdF = new FileReader();
+        rdF.onload = e => factImg.src = e.target.result;
+        rdF.readAsDataURL(fileF);
       }
-    );
-  } catch (e) {
-    console.error('⚠️ Error conectando a Apps Script:', e);
-    return new Response(JSON.stringify({
-      status: 'ERROR',
-      message: 'No se pudo conectar con Apps Script'
-    }), {
-      status: 502,
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Content-Type': 'application/json'
+
+      // Mostrar vista previa y ocultar formulario
+      // Ocultar formulario con animación
+      const formEl = document.getElementById('formulario_contenido');
+      formEl.classList.remove('fade-in-up');
+      formEl.style.display = 'none';
+      document.getElementById('preview_contenido').style.display = 'block';
+      // Animar vista previa al aparecer
+      const previewEl = document.getElementById('preview_contenido');
+      previewEl.classList.add('fade-in-up');
+      // Asegurar mostrar botones en la vista previa
+      document.getElementById('enviar_reporte').style.display = 'inline-block';
+      document.getElementById('modificar_reporte').style.display = 'inline-block';
+      // Ajustar scroll para centrar preview
+      setTimeout(() => previewEl.scrollIntoView({ behavior: 'smooth' }), 100);
+    };
+
+    // Volver al formulario desde la vista previa
+    document.getElementById('modificar_reporte').onclick = () => {
+      // Animar cierre de preview
+      const previewEl = document.getElementById('preview_contenido');
+      previewEl.classList.remove('fade-in-up');
+      previewEl.style.display = 'none';
+      // Mostrar formulario con animación
+      const formEl = document.getElementById('formulario_contenido');
+      formEl.style.display = 'block';
+      formEl.classList.add('fade-in-up');
+            mostrarPaso(1);
+      // Centramos el formulario en vista
+      setTimeout(() => formEl.scrollIntoView({ behavior: 'smooth' }), 100);
+    };
+
+    // Generar y descargar PDF de forma manual para controlar cada página
+    document.getElementById('enviar_reporte').onclick = async () => {
+  const modal = document.getElementById('generando_pdf_modal');
+  modal.style.visibility = 'visible';
+  modal.style.opacity = 1;
+  await new Promise(r => setTimeout(r, 100));
+  modal.style.visibility = 'visible';
+  modal.style.opacity = 1;
+  await new Promise(r => setTimeout(r, 100));
+      // Guardar datos en Google Sheets (no-cors)
+      const reportData = {
+        Sector: document.getElementById('sector').value,
+        Placa: document.getElementById('placa').value,
+        Proceso: document.getElementById('proceso').value,
+        Nombre: document.getElementById('nombre').value,
+        Identidad: document.getElementById('identidad').value,
+        TotalGastado: document.getElementById('total').value,
+        LitrosConsumidos: document.getElementById('litros').value,
+        MotivoDelLlenado: document.getElementById('motivo').value,
+        Fecha: document.getElementById('fecha').value,
+        HorasDelViaje: document.getElementById('horas').value,
+        KmActual: document.getElementById('km').value,
+        NombreComercio: document.getElementById('nombre_comercio').value,
+        NumeroFactura: document.getElementById('factura').value
+      };
+      // Prepara PDF
+      const btnEnviar = document.getElementById('enviar_reporte');
+      const btnMod = document.getElementById('modificar_reporte');
+      btnEnviar.style.display = 'none';
+      btnMod.style.display = 'none';
+      const pages = document.querySelectorAll('.page');
+      const margins = {top:12.7,left:12.7,bottom:12.7,right:12.7};
+      const pdf = new jspdf.jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
+      // Generar secuencialmente
+      for (let i = 0; i < pages.length; i++) {
+        const pg = pages[i];
+        pg.style.boxShadow = 'none';
+        const canvas = await html2canvas(pg, {scale:1,useCORS:true,backgroundColor:'#ffffff'});
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth() - margins.left - margins.right;
+        const pdfHeight = pdf.internal.pageSize.getHeight() - margins.top - margins.bottom;
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
+      }
+      // Generar nombre de archivo
+      const sector = document.getElementById('sector').value;
+      const fecha = document.getElementById('fecha').value;
+      const facturaNo = document.getElementById('factura').value;
+      const filename = `${sector}_${fecha}_${facturaNo}.pdf`;
+      // Envío del PDF a Drive/Sheet
+      const pdfDataUri = pdf.output('datauristring');
+      const pdfBase64 = pdfDataUri.split(',')[1];
+      const savePayload = {...reportData, pdf: pdfBase64, filename};
+      
+
+      // Primero, guarda los datos (espera confirmación)
+      try {
+        const saveResponse = await fetch(urlGuardarReporte, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(savePayload)
+        });
+
+        const saveResult = await saveResponse.json();
+        if (saveResult.status !== 'OK') {
+          alert('Error al guardar el reporte: ' + saveResult.message);
+          console.error('Respuesta del servidor:', saveResult);
+          return;
+        }
+
+        // Luego de guardar, generar PDF
+        const pages = document.querySelectorAll('.page');
+        const margins = {top:12.7,left:12.7,bottom:12.7,right:12.7};
+        const pdf = new jspdf.jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
+
+        for (let i = 0; i < pages.length; i++) {
+          const pg = pages[i];
+          pg.style.boxShadow = 'none';
+          const canvas = await html2canvas(pg, {scale:1,useCORS:true,backgroundColor:'#ffffff'});
+          const imgData = canvas.toDataURL('image/png');
+          const pdfWidth = pdf.internal.pageSize.getWidth() - margins.left - margins.right;
+          const pdfHeight = pdf.internal.pageSize.getHeight() - margins.top - margins.bottom;
+          if (i > 0) pdf.addPage();
+          pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
+        }
+
+        
+        const pdfBlob = pdf.output('blob');
+        if (navigator.userAgent.includes("SamsungBrowser")) {
+  console.log("Samsung Internet detectado. Abriendo PDF en nueva pestaña.");
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  window.open(blobUrl, '_blank');
+} else {
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(blobUrl);
+}
+
+
+        modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
+        // Mostrar confirmación y limpiar
+        const notif = document.getElementById('notification');
+        notif.style.display = 'block';
+        setTimeout(() => notif.style.opacity = 1, 10);
+        setTimeout(() => {
+          notif.style.opacity = 0;
+          notif.addEventListener('transitionend', () => {
+            notif.style.display = 'none';
+            ['sector','placa','proceso','nombre','identidad','total','litros','motivo','fecha','horas','km','nombre_comercio','factura']
+              .forEach(id => document.getElementById(id).value = '');
+            ['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
+              .forEach(id => document.getElementById(id).value = null);
+
+// Limpiar previews de imágenes
+['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
+  .forEach(id => {
+    const preview = document.getElementById('preview_' + id);
+    if (preview) preview.innerHTML = '';
+  });
+            document.getElementById('preview_contenido').style.display = 'none';
+            const formEl = document.getElementById('formulario_contenido');
+            formEl.style.display = 'block';
+            formEl.classList.add('fade-in-up');
+            mostrarPaso(1);
+          }, {once:true});
+        }, 2000);
+      } catch (err) {
+        alert('Error al conectar con el servidor (Cloudflare Worker).');
+        console.error('Error de red o CORS:', err);
+      }
+
+      modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
+        // Mostrar confirmación y limpiar
+      const notif = document.getElementById('notification');
+      notif.style.display = 'block';
+      setTimeout(() => notif.style.opacity = 1, 10);
+      setTimeout(() => {
+        notif.style.opacity = 0;
+        notif.addEventListener('transitionend', () => {
+          notif.style.display = 'none';
+          // Limpiar inputs
+          ['sector','placa','proceso','nombre','identidad','total','litros','motivo','fecha','horas','km','nombre_comercio','factura']
+            .forEach(id => document.getElementById(id).value = '');
+          ['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
+            .forEach(id => document.getElementById(id).value = null);
+          document.getElementById('preview_contenido').style.display = 'none';
+          const formEl = document.getElementById('formulario_contenido');
+          formEl.style.display = 'block';
+          formEl.classList.add('fade-in-up');
+            mostrarPaso(1);
+        }, {once:true});
+      }, 2000);
+    };
+
+
+
+
+    // Inicializar carga al abrir página
+    window.onload = () => {
+      cargarDatosVehiculos();
+      cargarProcesos();
+    };
+  
+// Mostrar previews para cada campo de imagen
+['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura'].forEach(id => {
+  const input = document.getElementById(id);
+  if (input) {
+    input.addEventListener('change', () => {
+      if (input.files && input.files.length > 0) {
+        const archivo = input.files[0];
+        const url = URL.createObjectURL(archivo);
+        const contenedor = document.getElementById('preview_' + id);
+        if (contenedor) {
+          contenedor.innerHTML = `<img src="${url}" style="max-width:100%; max-height:300px;">`;
+        }
       }
     });
   }
+});
 
-  const text = await resp.text();
-  console.log('📥 Respuesta Apps Script:', resp.status, text);
 
-  // Si el script devolvió HTML por algún error de despliegue, lo verás aquí
-  // (en la consola remote de Safari).  
-  return new Response(text, {
-    status: resp.status,
-    headers: {
-      'Access-Control-Allow-Origin': origin,
-      'Content-Type': 'application/json'
+function validarFormulario() {
+  let valido = true;
+  const campos = ['sector', 'placa', 'proceso', 'nombre', 'identidad', 'total', 'litros', 'motivo', 'fecha', 'km', 'nombre_comercio', 'factura', 'foto_tablero_antes', 'foto_bomba', 'foto_despues', 'foto_bomba_llenado', 'foto_frontal', 'foto_factura'];
+
+  campos.forEach(id => {
+    const campo = document.getElementById(id);
+    const error = document.getElementById("error_" + id);
+    if (campo && (!campo.value || campo.value.trim() === "")) {
+      if (error) error.style.display = "inline";
+      valido = false;
+    } else {
+      if (error) error.style.display = "none";
     }
   });
+
+  if (!valido) {
+    const toast = document.getElementById("toast-alert");
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+  return valido;
 }
+
+</script>
+<!-- Incluir html2pdf.js desde CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+// Mostrar previews para cada campo de imagen
+['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura'].forEach(id => {
+  const input = document.getElementById(id);
+  if (input) {
+    input.addEventListener('change', () => {
+      if (input.files && input.files.length > 0) {
+        const archivo = input.files[0];
+        const url = URL.createObjectURL(archivo);
+        const contenedor = document.getElementById('preview_' + id);
+        if (contenedor) {
+          contenedor.innerHTML = `<img src="${url}" style="max-width:100%; max-height:300px;">`;
+        }
+      }
+    });
+  }
+});
+
+
+function validarFormulario() {
+  let valido = true;
+  const campos = ['sector', 'placa', 'proceso', 'nombre', 'identidad', 'total', 'litros', 'motivo', 'fecha', 'km', 'nombre_comercio', 'factura', 'foto_tablero_antes', 'foto_bomba', 'foto_despues', 'foto_bomba_llenado', 'foto_frontal', 'foto_factura'];
+
+  campos.forEach(id => {
+    const campo = document.getElementById(id);
+    const error = document.getElementById("error_" + id);
+    if (campo && (!campo.value || campo.value.trim() === "")) {
+      if (error) error.style.display = "inline";
+      valido = false;
+    } else {
+      if (error) error.style.display = "none";
+    }
+  });
+
+  if (!valido) {
+    const toast = document.getElementById("toast-alert");
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+  return valido;
+}
+
+</script>
+
+<div id="generando_pdf_modal" style="
+  visibility: hidden;
+  opacity: 0;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+  transition: opacity 0.3s ease;">
+<div class="spinner"></div>
+<div style="color:white; font-size:20px; font-weight:bold; margin-top:20px;">
+    Generando PDF, por favor espere...
+  </div>
+</div>
+<div id="verificando_duplicado_modal" style="
+  visibility: hidden;
+  opacity: 0;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+  transition: opacity 0.3s ease;">
+<div class="spinner"></div>
+<div style="color:white; font-size:20px; font-weight:bold; margin-top:20px;">
+    Verificando datos, por favor espere...
+  </div>
+</div>
+<script>
+function mostrarLoaderVerificacion() {
+  const modal = document.getElementById("verificando_duplicado_modal");
+  if (modal) modal.style.visibility = 'visible', modal.style.opacity = 1;
+}
+function ocultarLoaderVerificacion() {
+  const modal = document.getElementById("verificando_duplicado_modal");
+  if (modal) modal.style.opacity = 0;
+  setTimeout(() => { if (modal) modal.style.visibility = 'hidden'; }, 300);
+}
+</script>
+<script>
+function mostrarPaso(paso) {
+  document.querySelectorAll('.paso').forEach(p => p.style.display = 'none');
+  const siguiente = document.getElementById('paso' + paso);
+  if (siguiente) siguiente.style.display = 'block';
+}
+
+async function siguientePaso(pasoActual) {
+  if (pasoActual === 2) {
+    if (!validarFormulario()) return;const placa = document.getElementById('placa').value;
+    const fecha = document.getElementById('fecha').value;
+    const factura = document.getElementById('factura').value;
+    const duplicado = await verificarDuplicado(placa, fecha, factura);
+    ocultarLoaderVerificacion();
+    if (duplicado) {
+      const continuar = confirm("⚠️ Ya existe un reporte con estos datos. ¿Deseas reemplazarlo?");
+      if (!continuar) return;
+    }
+  }
+  mostrarPaso(pasoActual);
+}
+</script><script>
+function validarFormulario() {
+  const paso1 = document.getElementById("paso1");
+  const campos = Array.from(paso1.querySelectorAll("input, select, textarea")).filter(c => c.id !== "horas")
+              .filter(campo => campo.id !== "horas");
+  let esValido = true;
+
+  campos.forEach(campo => {
+    const error = document.getElementById(`error_${campo.id}`);
+    if (!campo.value.trim()) {
+      esValido = false;
+      if (error) error.style.display = 'inline';
+      campo.classList.add("invalido");
+    } else {
+      if (error) error.style.display = 'none';
+      campo.classList.remove("invalido");
+    }
+  });
+
+  return esValido;
+}
+</script><script>
+function activarCamara(id) {
+  const input = document.getElementById(id);
+  input.setAttribute("capture", "environment");
+  input.click();
+}
+
+function abrirGaleria(id) {
+  const input = document.getElementById(id);
+  input.removeAttribute("capture");
+  input.click();
+}
+
+// Validar imagen cargada por paso antes de avanzar
+function validarImagenPaso(id) {
+  const input = document.getElementById(id);
+  if (!input || !input.files || input.files.length === 0) {
+    alert("Debe tomar o subir una fotografía antes de continuar.");
+    return false;
+  }
+  return true;
+}
+</script><script>
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("guardar_reporte");
+  if (btn && typeof generarPreviewPDF === "function") {
+    btn.onclick = generarPreviewPDF;
+  }
+});
+</script><script>
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("foto_factura");
+  if (input) {
+    input.addEventListener("change", e => {
+      const preview = document.getElementById("preview_foto_factura");
+      if (preview && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          preview.innerHTML = '<img src="' + ev.target.result + '" style="max-width: 100%; max-height: 200px;">';
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      }
+    });
+  }
+});
+</script>
+<script>
+function mostrarLoaderVerificacion() {
+  const modal = document.getElementById("verificando_duplicado_modal");
+  if (modal) {
+    modal.style.visibility = 'visible';
+    modal.style.opacity = 1;
+  }
+}
+function ocultarLoaderVerificacion() {
+  const modal = document.getElementById("verificando_duplicado_modal");
+  if (modal) {
+    modal.style.opacity = 0;
+    setTimeout(() => {
+      modal.style.visibility = 'hidden';
+    }, 300);
+  }
+}
+</script>
+<script>
+function validarYVerificarDuplicado() {
+  if (!validarFormulario()) return;
+
+  mostrarLoaderVerificacion();
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const duplicado = false;
+
+      if (duplicado) {
+        alert("Ya existe un reporte con esta información.");
+        ocultarLoaderVerificacion();
+      } else {
+        const paso2 = document.getElementById('paso2');
+
+        const observer = new MutationObserver(() => {
+          if (paso2.style.display === "block") {
+            ocultarLoaderVerificacion();
+            observer.disconnect();
+          }
+        });
+
+        observer.observe(paso2, { attributes: true, attributeFilter: ["style"] });
+        siguientePaso(2);
+      }
+    }, 100);
+  });
+}
+</script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script><script>
+document.getElementById("enviar_reporte").onclick = async () => {
+  const modal = document.getElementById('generando_pdf_modal');
+  modal.style.visibility = 'visible';
+  modal.style.opacity = 1;
+
+  const data = {
+    Sector: document.getElementById('sector').value,
+    Placa: document.getElementById('placa').value,
+    Proceso: document.getElementById('proceso').value,
+    Nombre: document.getElementById('nombre').value,
+    Identidad: document.getElementById('identidad').value,
+    TotalGastado: document.getElementById('total').value,
+    LitrosConsumidos: document.getElementById('litros').value,
+    MotivoDelLlenado: document.getElementById('motivo').value,
+    Fecha: document.getElementById('fecha').value,
+    HorasDelViaje: document.getElementById('horas').value,
+    KmActual: document.getElementById('km').value,
+    NombreComercio: document.getElementById('nombre_comercio').value,
+    NumeroFactura: document.getElementById('factura').value
+  };
+
+  const filename = `${data.Sector}_${data.Fecha}_${data.NumeroFactura}.pdf`;
+  const element = document.getElementById("preview_contenido");
+
+  const opt = {
+    margin:       0,
+    filename:     filename,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+  };
+
+  const worker = html2pdf().from(element).set(opt);
+  const pdfBlob = await worker.outputPdf('blob');
+  const pdfBase64 = await worker.outputPdf('datauristring');
+  const base64Content = pdfBase64.split(',')[1];
+
+  const payload = { ...data, pdf: base64Content, filename };
+
+  try {
+    const response = await fetch("/api/guardar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    if (result.status !== 'OK') {
+      alert("Error al guardar el reporte: " + result.message);
+      return;
+    }
+
+    const blobUrl = URL.createObjectURL(pdfBlob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+
+    alert("✅ Reporte enviado y PDF descargado correctamente.");
+  } catch (err) {
+    alert("❌ Error al conectar con el servidor.");
+    console.error(err);
+  }
+
+  modal.style.opacity = 0;
+  setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
+};
+</script></body>
+</html>
+<!-- Incluir html2pdf.js desde CDN para generación de PDF -->
+
+<div id="generando_pdf_modal" style="
+  visibility: hidden;
+  opacity: 0;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+  transition: opacity 0.3s ease;">
+<div class="spinner"></div>
+<div style="color:white; font-size:20px; font-weight:bold; margin-top:20px;">
+    Generando PDF, por favor espere...
+  </div>
+</div>

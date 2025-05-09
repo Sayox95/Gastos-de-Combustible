@@ -1007,18 +1007,13 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 <script>
 function validarYVerificarDuplicado() {
-    if (!validarFormulario()) {
-        return; // ⚠️ Si campos están vacíos, no sigue
-    }
+    if (!validarFormulario()) return;
 
-    // ✅ Si pasa la validación, mostrar el loader
     const loader = document.getElementById('verificando_duplicado_modal');
     loader.style.display = 'flex';
 
-    // Simulamos una verificación de duplicados con timeout
     setTimeout(() => {
-        const duplicado = false; // Aquí deberías integrar tu lógica real de duplicado
-
+        const duplicado = false; // Aquí va lógica real de verificación
         if (duplicado) {
             alert("Ya existe un reporte con esta información.");
             loader.style.display = 'none';
@@ -1026,7 +1021,7 @@ function validarYVerificarDuplicado() {
             loader.style.display = 'none';
             siguientePaso(2);
         }
-    }, 1500); // Tiempo simulado de verificación
+    }, 1500);
 }
 </script>
 </body>

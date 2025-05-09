@@ -1024,6 +1024,7 @@ function ocultarLoaderVerificacion() {
 }
 </script>
 
+
 <script>
 function validarYVerificarDuplicado() {
     if (!validarFormulario()) return;
@@ -1037,10 +1038,10 @@ function validarYVerificarDuplicado() {
             alert("Ya existe un reporte con esta información.");
             ocultarLoaderVerificacion();
         } else {
-            ocultarLoaderVerificacion();
             siguientePaso(2);
+            ocultarLoaderVerificacion();
         }
-    }, 1500);
+    }, 1500); // el tiempo simula el procesamiento real
 }
 </script>
 </body>

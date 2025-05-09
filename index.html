@@ -268,7 +268,49 @@
 <button id="enviar_reporte">Enviar Reporte</button>
 <button id="modificar_reporte">Modificar Reporte</button>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+// Mostrar previews para cada campo de imagen
+['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura'].forEach(id => {
+  const input = document.getElementById(id);
+  if (input) {
+    input.addEventListener('change', () => {
+      if (input.files && input.files.length > 0) {
+        const archivo = input.files[0];
+        const url = URL.createObjectURL(archivo);
+        const contenedor = document.getElementById('preview_' + id);
+        if (contenedor) {
+          contenedor.innerHTML = `<img src="${url}" style="max-width:100%; max-height:300px;">`;
+        }
+      }
+    });
+  }
+});
 
+
+function validarFormulario() {
+  let valido = true;
+  const campos = ['sector', 'placa', 'proceso', 'nombre', 'identidad', 'total', 'litros', 'motivo', 'fecha', 'km', 'nombre_comercio', 'factura', 'foto_tablero_antes', 'foto_bomba', 'foto_despues', 'foto_bomba_llenado', 'foto_frontal', 'foto_factura'];
+
+  campos.forEach(id => {
+    const campo = document.getElementById(id);
+    const error = document.getElementById("error_" + id);
+    if (campo && (!campo.value || campo.value.trim() === "")) {
+      if (error) error.style.display = "inline";
+      valido = false;
+    } else {
+      if (error) error.style.display = "none";
+    }
+  });
+
+  if (!valido) {
+    const toast = document.getElementById("toast-alert");
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+  return valido;
+}
+
+</script>
 <script>
     
   // Máscara para No. Identidad: formato ####-####-#####
@@ -798,7 +840,49 @@ function validarFormulario() {
 }
 
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js">
+// Mostrar previews para cada campo de imagen
+['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura'].forEach(id => {
+  const input = document.getElementById(id);
+  if (input) {
+    input.addEventListener('change', () => {
+      if (input.files && input.files.length > 0) {
+        const archivo = input.files[0];
+        const url = URL.createObjectURL(archivo);
+        const contenedor = document.getElementById('preview_' + id);
+        if (contenedor) {
+          contenedor.innerHTML = `<img src="${url}" style="max-width:100%; max-height:300px;">`;
+        }
+      }
+    });
+  }
+});
 
+
+function validarFormulario() {
+  let valido = true;
+  const campos = ['sector', 'placa', 'proceso', 'nombre', 'identidad', 'total', 'litros', 'motivo', 'fecha', 'km', 'nombre_comercio', 'factura', 'foto_tablero_antes', 'foto_bomba', 'foto_despues', 'foto_bomba_llenado', 'foto_frontal', 'foto_factura'];
+
+  campos.forEach(id => {
+    const campo = document.getElementById(id);
+    const error = document.getElementById("error_" + id);
+    if (campo && (!campo.value || campo.value.trim() === "")) {
+      if (error) error.style.display = "inline";
+      valido = false;
+    } else {
+      if (error) error.style.display = "none";
+    }
+  });
+
+  if (!valido) {
+    const toast = document.getElementById("toast-alert");
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+  return valido;
+}
+
+</script>
 <div id="generando_pdf_modal" style="
   visibility: hidden;
   opacity: 0;
@@ -979,91 +1063,52 @@ function validarYVerificarDuplicado() {
     }, 100);
   });
 }
-</script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script><script>
-
-document.getElementById("enviar_reporte").onclick = async () => {
-  const modal = document.getElementById('generando_pdf_modal');
-  modal.style.visibility = 'visible';
-  modal.style.opacity = 1;
-
-  const data = {
-    Sector: document.getElementById('sector').value,
-    Placa: document.getElementById('placa').value,
-    Proceso: document.getElementById('proceso').value,
-    Nombre: document.getElementById('nombre').value,
-    Identidad: document.getElementById('identidad').value,
-    TotalGastado: document.getElementById('total').value,
-    LitrosConsumidos: document.getElementById('litros').value,
-    MotivoDelLlenado: document.getElementById('motivo').value,
-    Fecha: document.getElementById('fecha').value,
-    HorasDelViaje: document.getElementById('horas').value,
-    KmActual: document.getElementById('km').value,
-    NombreComercio: document.getElementById('nombre_comercio').value,
-    NumeroFactura: document.getElementById('factura').value
-  };
-
-  const filename = `${data.Sector}_${data.Fecha}_${data.NumeroFactura}.pdf`;
-  const element = document.getElementById("preview_contenido");
-
-  // Establecer ancho fijo para evitar desbordamiento
-  const originalWidth = element.style.width;
-  element.style.width = "800px";
-
-  const opt = {
-    margin:       [10, 10, 10, 10],
-    filename:     filename,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 1.5, useCORS: true },
-    jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' },
-    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-  };
-
-  const worker = html2pdf().from(element).set(opt);
-  const pdfBlob = await worker.outputPdf('blob');
-  const pdfBase64 = await worker.outputPdf('datauristring');
-  const base64Content = pdfBase64.split(',')[1];
-
-  const payload = { ...data, pdf: base64Content, filename };
-
-  try {
-    const response = await fetch("/api/guardar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-    if (result.status !== 'OK') {
-      alert("Error al guardar el reporte: " + result.message);
-      return;
-    }
-
-    const blobUrl = URL.createObjectURL(pdfBlob);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl);
-
-    alert("✅ Reporte enviado y PDF descargado correctamente.");
-  } catch (err) {
-    alert("❌ Error al conectar con el servidor.");
-    console.error(err);
-  }
-
-  // Restaurar el ancho original después del PDF
-  element.style.width = originalWidth;
-
-  modal.style.opacity = 0;
-  setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
-};
-
 </script></body>
 </html>
 <!-- Incluir html2pdf.js desde CDN para generación de PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js">
+// Mostrar previews para cada campo de imagen
+['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura'].forEach(id => {
+  const input = document.getElementById(id);
+  if (input) {
+    input.addEventListener('change', () => {
+      if (input.files && input.files.length > 0) {
+        const archivo = input.files[0];
+        const url = URL.createObjectURL(archivo);
+        const contenedor = document.getElementById('preview_' + id);
+        if (contenedor) {
+          contenedor.innerHTML = `<img src="${url}" style="max-width:100%; max-height:300px;">`;
+        }
+      }
+    });
+  }
+});
 
+
+function validarFormulario() {
+  let valido = true;
+  const campos = ['sector', 'placa', 'proceso', 'nombre', 'identidad', 'total', 'litros', 'motivo', 'fecha', 'km', 'nombre_comercio', 'factura', 'foto_tablero_antes', 'foto_bomba', 'foto_despues', 'foto_bomba_llenado', 'foto_frontal', 'foto_factura'];
+
+  campos.forEach(id => {
+    const campo = document.getElementById(id);
+    const error = document.getElementById("error_" + id);
+    if (campo && (!campo.value || campo.value.trim() === "")) {
+      if (error) error.style.display = "inline";
+      valido = false;
+    } else {
+      if (error) error.style.display = "none";
+    }
+  });
+
+  if (!valido) {
+    const toast = document.getElementById("toast-alert");
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+  return valido;
+}
+
+</script>
 <div id="generando_pdf_modal" style="
   visibility: hidden;
   opacity: 0;

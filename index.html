@@ -1039,10 +1039,17 @@ function validarYVerificarDuplicado() {
         alert("Ya existe un reporte con esta información.");
         ocultarLoaderVerificacion();
       } else {
-        siguientePaso(2);
-        requestAnimationFrame(() => {
-          ocultarLoaderVerificacion();
+        const paso2 = document.getElementById('paso2');
+
+        const observer = new MutationObserver(() => {
+          if (paso2.style.display === "block") {
+            ocultarLoaderVerificacion();
+            observer.disconnect();
+          }
         });
+
+        observer.observe(paso2, { attributes: true, attributeFilter: ["style"] });
+        siguientePaso(2);
       }
     }, 100);
   });

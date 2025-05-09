@@ -980,6 +980,7 @@ function validarYVerificarDuplicado() {
   });
 }
 </script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script><script>
+
 document.getElementById("enviar_reporte").onclick = async () => {
   const modal = document.getElementById('generando_pdf_modal');
   modal.style.visibility = 'visible';
@@ -1004,12 +1005,17 @@ document.getElementById("enviar_reporte").onclick = async () => {
   const filename = `${data.Sector}_${data.Fecha}_${data.NumeroFactura}.pdf`;
   const element = document.getElementById("preview_contenido");
 
+  // Establecer ancho fijo para evitar desbordamiento
+  const originalWidth = element.style.width;
+  element.style.width = "800px";
+
   const opt = {
-    margin:       0,
+    margin:       [10, 10, 10, 10],
     filename:     filename,
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
-    jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+    html2canvas:  { scale: 1.5, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' },
+    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
   };
 
   const worker = html2pdf().from(element).set(opt);
@@ -1047,9 +1053,13 @@ document.getElementById("enviar_reporte").onclick = async () => {
     console.error(err);
   }
 
+  // Restaurar el ancho original después del PDF
+  element.style.width = originalWidth;
+
   modal.style.opacity = 0;
   setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
 };
+
 </script></body>
 </html>
 <!-- Incluir html2pdf.js desde CDN para generación de PDF -->

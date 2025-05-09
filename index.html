@@ -221,59 +221,25 @@
 <div class="formulario" id="formulario_contenido" style="display:none;">
 <h2>Reporte de Gasto de Combustible</h2>
 <!-- Sector selector populated dinámicamente -->
-<label for="sector">Seleccionar Sector:</label> <span class="error-msg" id="error_sector" style="color:red; display:none;">(Campo obligatorio)</span>
-<select id="sector"><option value="">Seleccione un sector</option></select>
 <!-- Placa selector dependiente del sector -->
-<label for="placa">Seleccionar Placa del Vehículo:</label> <span class="error-msg" id="error_placa" style="color:red; display:none;">(Campo obligatorio)</span>
-<input autocomplete="off" id="placa" list="placas" placeholder="Escribe o selecciona una placa" type="text"/>
 <datalist id="placas"></datalist>
 <!-- Proceso seleccionado por usuario (movido) -->
-<label for="proceso">Proceso:</label> <span class="error-msg" id="error_proceso" style="color:red; display:none;">(Campo obligatorio)</span>
-<select id="proceso"><option value="">Seleccione un proceso</option></select>
 <!-- Datos del colaborador -->
-<label for="nombre">Nombre Completo:</label> <span class="error-msg" id="error_nombre" style="color:red; display:none;">(Campo obligatorio)</span>
-<input id="nombre" required="" type="text"/>
-<label for="identidad">No. Identidad:</label> <span class="error-msg" id="error_identidad" style="color:red; display:none;">(Campo obligatorio)</span>
-<input id="identidad" maxlength="15" oninput="maskIdentidad(this)" required="" type="text"/>
 <!-- Kilometraje y gasto -->
-<label for="total">Total Gastado (L):</label> <span class="error-msg" id="error_total" style="color:red; display:none;">(Campo obligatorio)</span>
-<input id="total" step="0.01" type="number"/>
 <!-- Nuevo campo: Litros Consumidos, no aparece en preview ni PDF -->
-<label for="litros">Litros Consumidos:</label> <span class="error-msg" id="error_litros" style="color:red; display:none;">(Campo obligatorio)</span>
-<input id="litros" step="0.01" type="number"/>
 <!-- Motivación del viaje -->
 <!-- Motivación del viaje -->
-<label for="motivo">Motivo del Llenado:</label> <span class="error-msg" id="error_motivo" style="color:red; display:none;">(Campo obligatorio)</span>
-<textarea id="motivo" rows="3"></textarea>
 <!-- Proceso seleccionado por usuario -->
 <!-- Fecha y duración -->
-<label for="fecha">Fecha:</label> <span class="error-msg" id="error_fecha" style="color:red; display:none;">(Campo obligatorio)</span>
-<input id="fecha" type="date"/>
-<label for="horas">Horas de Viaje:</label>
-<input id="horas" type="text"/>
 <!-- Datos del vehículo y factura -->
-<label for="km">Km Actual del Vehículo:</label> <span class="error-msg" id="error_km" style="color:red; display:none;">(Campo obligatorio)</span>
-<input id="km" type="number"/>
-<label for="nombre_comercio">Nombre del comercio:</label> <span class="error-msg" id="error_nombre_comercio" style="color:red; display:none;">(Campo obligatorio)</span>
-<input id="nombre_comercio" placeholder="Nombre del comercio" type="text"/>
-<label for="factura">Número de Factura:</label> <span class="error-msg" id="error_factura" style="color:red; display:none;">(Campo obligatorio)</span>
-<input id="factura" oninput="maskFactura(this)" type="text"/>
 <!-- Inputs de imágenes (galería o cámara) reordered -->
-<label for="foto_tablero_antes">Fotografía Tablero Antes:</label> <span class="error-msg" id="error_foto_tablero_antes" style="color:red; display:none;">(Campo obligatorio)</span>
-<input accept="image/*" id="foto_tablero_antes" type="file"/>
-<label for="foto_bomba">Fotografía Bomba en 0:</label> <span class="error-msg" id="error_foto_bomba" style="color:red; display:none;">(Campo obligatorio)</span>
-<input accept="image/*" id="foto_bomba" type="file"/>
-<label for="foto_frontal">Fotografía Frontal del Vehículo o VIN con Vehículo:</label> <span class="error-msg" id="error_foto_frontal" style="color:red; display:none;">(Campo obligatorio)</span>
-<input accept="image/*" id="foto_frontal" type="file"/>
-<label for="foto_bomba_llenado">Fotografía Bomba Llena:</label> <span class="error-msg" id="error_foto_bomba_llenado" style="color:red; display:none;">(Campo obligatorio)</span>
-<input accept="image/*" id="foto_bomba_llenado" type="file"/>
-<label for="foto_despues">Fotografía Tablero Después de Llenado:</label> <span class="error-msg" id="error_foto_despues" style="color:red; display:none;">(Campo obligatorio)</span>
-<input accept="image/*" id="foto_despues" type="file"/>
-<label for="foto_factura">Fotografía de la Factura:</label> <span class="error-msg" id="error_foto_factura" style="color:red; display:none;">(Campo obligatorio)</span>
-<input accept="image/*" id="foto_factura" type="file"/>
 <!-- Botón para generar vista previa -->
-<button id="guardar_reporte">Guardar Reporte</button>
+<div class="paso" id="paso1" style="display:block;"><label for="sector">Seleccionar Sector:</label><span class="error-msg" id="error_sector" style="color:red; display:none;">(Campo obligatorio)</span><select id="sector"><option value="">Seleccione un sector</option></select><label for="placa">Seleccionar Placa del Vehículo:</label><span class="error-msg" id="error_placa" style="color:red; display:none;">(Campo obligatorio)</span><input autocomplete="off" id="placa" list="placas" placeholder="Escribe o selecciona una placa" type="text"/><label for="proceso">Proceso:</label><span class="error-msg" id="error_proceso" style="color:red; display:none;">(Campo obligatorio)</span><select id="proceso"><option value="">Seleccione un proceso</option></select><label for="nombre">Nombre Completo:</label><span class="error-msg" id="error_nombre" style="color:red; display:none;">(Campo obligatorio)</span><input id="nombre" required="" type="text"/><label for="identidad">No. Identidad:</label><span class="error-msg" id="error_identidad" style="color:red; display:none;">(Campo obligatorio)</span><input id="identidad" maxlength="15" oninput="maskIdentidad(this)" required="" type="text"/><label for="total">Total Gastado (L):</label><span class="error-msg" id="error_total" style="color:red; display:none;">(Campo obligatorio)</span><input id="total" step="0.01" type="number"/><label for="litros">Litros Consumidos:</label><span class="error-msg" id="error_litros" style="color:red; display:none;">(Campo obligatorio)</span><input id="litros" step="0.01" type="number"/><label for="motivo">Motivo del Llenado:</label><span class="error-msg" id="error_motivo" style="color:red; display:none;">(Campo obligatorio)</span><textarea id="motivo" rows="3"></textarea><label for="fecha">Fecha:</label><span class="error-msg" id="error_fecha" style="color:red; display:none;">(Campo obligatorio)</span><input id="fecha" type="date"/><label for="horas">Horas de Viaje:</label><input id="horas" type="text"/><label for="km">Km Actual del Vehículo:</label><span class="error-msg" id="error_km" style="color:red; display:none;">(Campo obligatorio)</span><input id="km" type="number"/><label for="nombre_comercio">Nombre del comercio:</label><span class="error-msg" id="error_nombre_comercio" style="color:red; display:none;">(Campo obligatorio)</span><input id="nombre_comercio" placeholder="Nombre del comercio" type="text"/><label for="factura">Número de Factura:</label><span class="error-msg" id="error_factura" style="color:red; display:none;">(Campo obligatorio)</span><input id="factura" oninput="maskFactura(this)" type="text"/><div><button onclick="siguientePaso(2)" type="button">Siguiente</button></div></div><div class="paso" id="paso2" style="display:none;;text-align:center;"><label for="foto_tablero_antes">Fotografía Tablero Antes:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Tablero%20antes%20de%20llenado.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_tablero_antes" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_tablero_antes')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_tablero_antes')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_tablero_antes"></div><div><button onclick="mostrarPaso(1)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_tablero_antes')){siguientePaso(3);}" style=" margin: 5px" type="button">Siguiente</button></div><input accept="image/*" hidden="True" id="foto_tablero_antes" type="file"/></div><div class="paso" id="paso3" style="display:none;;text-align:center;"><label for="foto_bomba">Fotografía Bomba en 0:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Bomba%20en%20cero.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_bomba" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_bomba')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_bomba')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_bomba"></div><div><button onclick="mostrarPaso(2)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_bomba')){siguientePaso(4);}" style=" margin: 5px" type="button">Siguiente</button></div><input accept="image/*" hidden="True" id="foto_bomba" type="file"/></div><div class="paso" id="paso4" style="display:none;;text-align:center;"><label for="foto_frontal">Fotografía Frontal del Vehículo o VIN con Vehículo:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Vista%20Frontal.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_frontal" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_frontal')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_frontal')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_frontal"></div><div><button onclick="mostrarPaso(3)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_frontal')){siguientePaso(5);}" style=" margin: 5px" type="button">Siguiente</button></div><input accept="image/*" hidden="True" id="foto_frontal" type="file"/></div><div class="paso" id="paso5" style="display:none;;text-align:center;"><label for="foto_bomba_llenado">Fotografía Bomba Llena:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Bomba%20llena.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_bomba_llenado" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_bomba_llenado')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_bomba_llenado')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_bomba_llenado"></div><div><button onclick="mostrarPaso(4)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_bomba_llenado')){siguientePaso(6);}" style=" margin: 5px" type="button">Siguiente</button></div><input accept="image/*" hidden="True" id="foto_bomba_llenado" type="file"/></div><div class="paso" id="paso6" style="display:none;;text-align:center;"><input accept="image/*" hidden="True" id="foto_despues" type="file"/><label for="foto_despues">Fotografía Tablero Después de Llenado:</label><img alt="Ejemplo de fotografía" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Tablero%20antes%20de%20llenado.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><span class="error-msg" id="error_foto_despues" style="color:red; display:none;">(Campo obligatorio)</span><button onclick="activarCamara('foto_despues')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_despues')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_despues"></div><div><button onclick="mostrarPaso(5)" style=" margin: 5px" type="button">Anterior</button><button onclick="if(validarImagenPaso('foto_despues')){siguientePaso(7);}" style=" margin: 5px" type="button">Siguiente</button></div></div><div class="paso" id="paso7" style="display:none; text-align: center;"><h2>Fotografía de la Factura:</h2><img alt="Ejemplo factura" src="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/main/imagenes/Factura.png" style="display: block; margin: 10px auto; height: 200px; object-fit: contain; border-radius: 8px;"/><input accept="image/*" hidden="True" id="foto_factura" type="file"/><button onclick="activarCamara('foto_factura')" style=" margin: 5px" type="button">Tomar Fotografía</button><button onclick="abrirGaleria('foto_factura')" style=" margin: 5px" type="button">Subir desde Galería</button><div class="preview" id="preview_foto_factura"></div>
+<div style="display: flex; justify-content: center;  margin-top: 20px;">
+<button onclick="mostrarPaso(6)" style="margin: 5px;" type="button">Anterior</button>
+<button id="guardar_reporte" style="margin: 5px;" type="button">Guardar Reporte</button>
 </div>
+</div></div>
 <!-- Contenedor de vista previa: dos páginas A4 simuladas -->
 <div id="preview_contenido" style="display:none;">
 <!-- Página 1: resumen e inserción de factura -->
@@ -486,26 +452,15 @@ function imagenesCompletas() {
 
 // Guardar reporte y generar vista previa
     document.getElementById('guardar_reporte').onclick = async () => {
+
   if (!validarFormulario()) return;
   if (!imagenesCompletas()) {
     alert("⚠️ Faltan fotografías por cargar. Por favor verifica antes de continuar.");
     return;
   }
-
   const placa = document.getElementById('placa').value;
   const fecha = document.getElementById('fecha').value;
-  const factura = document.getElementById('factura').value;
-
-  mostrarLoaderVerificacion();
-  const esDuplicado = await verificarDuplicado(placa, fecha, factura);
-  ocultarLoaderVerificacion();
-
-  if (esDuplicado) {
-    const continuar = confirm("⚠️ Ya existe un reporte con estos datos. ¿Deseas reemplazarlo?");
-    if (!continuar) return;
-  }
-
-  // Continúa con la generación de PDF y carga previa
+  const factura = document.getElementById('factura').value;// Continúa con la generación de PDF y carga previa
   // ... el resto del código de recopilación de datos permanece intacto ...
 
   // Recopilar datos del formulario
@@ -521,7 +476,8 @@ function imagenesCompletas() {
         Km:         document.getElementById('km').value,
         FacturaNo:  document.getElementById('factura').value,
         Placa:      document.getElementById('placa').value
-      };
+      
+};
       // Buscar jefe inmediato por placa
       const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
       data.JefeInmediato = (jefeObj 
@@ -933,7 +889,6 @@ function validarFormulario() {
     Generando PDF, por favor espere...
   </div>
 </div>
-
 <div id="verificando_duplicado_modal" style="
   visibility: hidden;
   opacity: 0;
@@ -962,7 +917,94 @@ function ocultarLoaderVerificacion() {
   setTimeout(() => { if (modal) modal.style.visibility = 'hidden'; }, 300);
 }
 </script>
-</body>
+<script>
+function mostrarPaso(paso) {
+  document.querySelectorAll('.paso').forEach(p => p.style.display = 'none');
+  const siguiente = document.getElementById('paso' + paso);
+  if (siguiente) siguiente.style.display = 'block';
+}
+
+async function siguientePaso(pasoActual) {
+  if (pasoActual === 2) {
+    if (!validarFormulario()) return;const placa = document.getElementById('placa').value;
+    const fecha = document.getElementById('fecha').value;
+    const factura = document.getElementById('factura').value;
+    const duplicado = await verificarDuplicado(placa, fecha, factura);
+    ocultarLoaderVerificacion();
+    if (duplicado) {
+      const continuar = confirm("⚠️ Ya existe un reporte con estos datos. ¿Deseas reemplazarlo?");
+      if (!continuar) return;
+    }
+  }
+  mostrarPaso(pasoActual);
+}
+</script><script>
+function validarFormulario() {
+  const paso1 = document.getElementById("paso1");
+  const campos = Array.from(paso1.querySelectorAll("input, select, textarea")).filter(c => c.id !== "horas")
+              .filter(campo => campo.id !== "horas");
+  let esValido = true;
+
+  campos.forEach(campo => {
+    const error = document.getElementById(`error_${campo.id}`);
+    if (!campo.value.trim()) {
+      esValido = false;
+      if (error) error.style.display = 'inline';
+      campo.classList.add("invalido");
+    } else {
+      if (error) error.style.display = 'none';
+      campo.classList.remove("invalido");
+    }
+  });
+
+  return esValido;
+}
+</script><script>
+function activarCamara(id) {
+  const input = document.getElementById(id);
+  input.setAttribute("capture", "environment");
+  input.click();
+}
+
+function abrirGaleria(id) {
+  const input = document.getElementById(id);
+  input.removeAttribute("capture");
+  input.click();
+}
+
+// Validar imagen cargada por paso antes de avanzar
+function validarImagenPaso(id) {
+  const input = document.getElementById(id);
+  if (!input || !input.files || input.files.length === 0) {
+    alert("Debe tomar o subir una fotografía antes de continuar.");
+    return false;
+  }
+  return true;
+}
+</script><script>
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("guardar_reporte");
+  if (btn && typeof generarPreviewPDF === "function") {
+    btn.onclick = generarPreviewPDF;
+  }
+});
+</script><script>
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("foto_factura");
+  if (input) {
+    input.addEventListener("change", e => {
+      const preview = document.getElementById("preview_foto_factura");
+      if (preview && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          preview.innerHTML = '<img src="' + ev.target.result + '" style="max-width: 100%; max-height: 200px;">';
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      }
+    });
+  }
+});
+</script></body>
 </html>
 <!-- Incluir html2pdf.js desde CDN para generación de PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js">
@@ -1025,5 +1067,3 @@ function validarFormulario() {
     Generando PDF, por favor espere...
   </div>
 </div>
-
-

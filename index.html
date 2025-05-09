@@ -1031,17 +1031,16 @@ function validarYVerificarDuplicado() {
 
     mostrarLoaderVerificacion();
 
-    setTimeout(() => {
-        const duplicado = false; // lógica real iría aquí
+    // Aquí pondrías tu verificación real de duplicado
+    const duplicado = false;
 
-        if (duplicado) {
-            alert("Ya existe un reporte con esta información.");
-            ocultarLoaderVerificacion();
-        } else {
-            siguientePaso(2);
-            ocultarLoaderVerificacion();
-        }
-    }, 1500); // el tiempo simula el procesamiento real
+    if (duplicado) {
+        alert("Ya existe un reporte con esta información.");
+        ocultarLoaderVerificacion();
+    } else {
+        siguientePaso(2);
+        ocultarLoaderVerificacion();
+    }
 }
 </script>
 </body>

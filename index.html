@@ -703,6 +703,13 @@ function imagenesCompletas() {
               .forEach(id => document.getElementById(id).value = '');
             ['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
               .forEach(id => document.getElementById(id).value = null);
+
+// Limpiar previews de imágenes
+['foto_tablero_antes','foto_bomba','foto_frontal','foto_bomba_llenado','foto_despues','foto_factura']
+  .forEach(id => {
+    const preview = document.getElementById('preview_' + id);
+    if (preview) preview.innerHTML = '';
+  });
             document.getElementById('preview_contenido').style.display = 'none';
             const formEl = document.getElementById('formulario_contenido');
             formEl.style.display = 'block';

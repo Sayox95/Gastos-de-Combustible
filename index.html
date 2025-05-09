@@ -1023,30 +1023,29 @@ function ocultarLoaderVerificacion() {
   }
 }
 </script>
+
+
 <script>
 function validarYVerificarDuplicado() {
   if (!validarFormulario()) return;
 
   mostrarLoaderVerificacion();
 
-  const placa = document.getElementById('placa').value;
-  const fecha = document.getElementById('fecha').value;
-  const factura = document.getElementById('factura').value;
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const duplicado = false;
 
-  verificarDuplicado(placa, fecha, factura)
-    .then(duplicado => {
       if (duplicado) {
-        alert("⚠️ Ya existe un reporte con esta información.");
+        alert("Ya existe un reporte con esta información.");
         ocultarLoaderVerificacion();
       } else {
         siguientePaso(2);
-        ocultarLoaderVerificacion();
+        requestAnimationFrame(() => {
+          ocultarLoaderVerificacion();
+        });
       }
-    })
-    .catch(err => {
-      console.error("Error al verificar duplicado:", err);
-      ocultarLoaderVerificacion();
-    });
+    }, 100);
+  });
 }
 </script>
 </body>

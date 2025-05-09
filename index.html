@@ -996,8 +996,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
-
-
 <script>
 function validarYVerificarDuplicado() {
   if (!validarFormulario()) return;
@@ -1017,6 +1015,21 @@ function validarYVerificarDuplicado() {
       }
     }, 100);
   });
+}
+</script>
+
+<script>
+function mostrarLoaderVerificacion() {
+  const modal = document.getElementById("verificando_duplicado_modal");
+  modal.style.visibility = 'visible';
+  modal.style.opacity = 1;
+}
+function ocultarLoaderVerificacion() {
+  const modal = document.getElementById("verificando_duplicado_modal");
+  modal.style.opacity = 0;
+  setTimeout(() => {
+    modal.style.visibility = 'hidden';
+  }, 300);
 }
 </script>
 </body>

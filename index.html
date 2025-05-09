@@ -1013,7 +1013,8 @@ function validarYVerificarDuplicado() {
     loader.style.display = 'flex';
 
     setTimeout(() => {
-        const duplicado = false; // Aquí va lógica real de verificación
+        const duplicado = false; // ← lógica real aquí
+
         if (duplicado) {
             alert("Ya existe un reporte con esta información.");
             loader.style.display = 'none';

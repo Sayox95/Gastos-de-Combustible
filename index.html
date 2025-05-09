@@ -265,7 +265,7 @@
 <img id="factura_only_img" style="width:auto; height:800px; object-fit:contain; display:block; margin:0 auto;"/>
 </div>
 </div>
-<button id="enviar_reporte" onclick="generarPDFEstructurado()">Enviar Reporte</button>
+<button id="enviar_reporte">Enviar Reporte</button>
 <button id="modificar_reporte">Modificar Reporte</button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
@@ -1064,66 +1064,6 @@ function validarYVerificarDuplicado() {
   });
 }
 </script>
-
-<script>
-async function generarPDFEstructurado() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
-
-  const getBase64FromFile = file => new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.readAsDataURL(file);
-  });
-
-  const datos = {
-    Nombre: document.getElementById('nombre').value,
-    Identidad: document.getElementById('identidad').value,
-    Placa: document.getElementById('placa').value,
-    Fecha: document.getElementById('fecha').value,
-    FacturaNo: document.getElementById('factura').value
-  };
-
-  const imagenes = {};
-  const idsImagen = ['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura'];
-  for (const id of idsImagen) {
-    const fileInput = document.getElementById(id);
-    if (fileInput && fileInput.files[0]) {
-      imagenes[id] = await getBase64FromFile(fileInput.files[0]);
-    }
-  }
-
-  doc.setFontSize(12);
-  doc.text(`REPORTE DE GASTO DE COMBUSTIBLE`, 105, 20, { align: 'center' });
-  doc.text(`Nombre: ${datos.Nombre}`, 20, 40);
-  doc.text(`Identidad: ${datos.Identidad}`, 20, 50);
-  doc.text(`Placa: ${datos.Placa}`, 20, 60);
-  doc.text(`Fecha: ${datos.Fecha}`, 20, 70);
-  doc.text(`Factura: ${datos.FacturaNo}`, 20, 80);
-
-  doc.addPage();
-  doc.text("Fotografías", 105, 20, { align: "center" });
-
-  let x = 20, y = 30, w = 80, h = 60;
-  const keys = Object.keys(imagenes).filter(k => k !== 'foto_factura');
-  for (let i = 0; i < keys.length; i++) {
-    const id = keys[i];
-    if (i > 0 && i % 2 === 0) { y += h + 10; x = 20; }
-    else if (i > 0) { x += w + 10; }
-    doc.addImage(imagenes[id], 'JPEG', x, y, w, h);
-  }
-
-  if (imagenes['foto_factura']) {
-    doc.addPage();
-    doc.text("Factura Original", 105, 20, { align: "center" });
-    doc.addImage(imagenes['foto_factura'], 'JPEG', 20, 30, 170, 200);
-  }
-
-  const nombreArchivo = `reporte_${datos.Placa}_${datos.Fecha}.pdf`;
-  doc.save(nombreArchivo);
-}
-</script>
-
 </body>
 </html>
 <!-- Incluir html2pdf.js desde CDN para generación de PDF -->

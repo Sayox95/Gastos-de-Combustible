@@ -1006,20 +1006,38 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
+function mostrarLoaderVerificacion() {
+  const modal = document.getElementById("verificando_duplicado_modal");
+  if (modal) {
+    modal.style.visibility = 'visible';
+    modal.style.opacity = 1;
+  }
+}
+function ocultarLoaderVerificacion() {
+  const modal = document.getElementById("verificando_duplicado_modal");
+  if (modal) {
+    modal.style.opacity = 0;
+    setTimeout(() => {
+      modal.style.visibility = 'hidden';
+    }, 300);
+  }
+}
+</script>
+
+<script>
 function validarYVerificarDuplicado() {
     if (!validarFormulario()) return;
 
-    const loader = document.getElementById('verificando_duplicado_modal');
-    loader.style.display = 'flex';
+    mostrarLoaderVerificacion();
 
     setTimeout(() => {
-        const duplicado = false; // ← lógica real aquí
+        const duplicado = false; // lógica real iría aquí
 
         if (duplicado) {
             alert("Ya existe un reporte con esta información.");
-            loader.style.display = 'none';
+            ocultarLoaderVerificacion();
         } else {
-            loader.style.display = 'none';
+            ocultarLoaderVerificacion();
             siguientePaso(2);
         }
     }, 1500);

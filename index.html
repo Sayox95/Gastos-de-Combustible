@@ -1175,22 +1175,28 @@ FACTURA: ${data.FacturaNo}`],
             ],
             [
               { stack: [{ text: 'TABLERO DESPUÉS DE LLENADO', bold: true }, { image: images['foto_despues'], width: 250 }] },
-              { 
+              {
                 stack: [{ text: 'VISTA FRONTAL DEL VEHÍCULO / VIN CON VEHICULO', bold: true }, { image: images['foto_frontal'], width: 250 }],
                 rowSpan: 2
               }
             ],
             [
               { stack: [{ text: 'BOMBA DE COMBUSTIBLE LLENA', bold: true }, { image: images['foto_bomba_llenado'], width: 250 }] }
-            ],
-            [
-              { text: `PLACA: ${data.Placa}`, bold: true },
-              { text: `FECHA: ${data.Fecha}`, bold: true, alignment: 'center' },
-              { text: `FACTURA: ${data.FacturaNo}`, bold: true, alignment: 'right' }
             ]
           ]
         },
         layout: 'lightHorizontalLines'
+      },
+      {
+        table: {
+          widths: ['33%', '33%', '34%'],
+          body: [[
+            { text: `PLACA: ${data.Placa}`, bold: true },
+            { text: `FECHA: ${data.Fecha}`, bold: true, alignment: 'center' },
+            { text: `FACTURA: ${data.FacturaNo}`, bold: true, alignment: 'right' }
+          ]]
+        },
+        margin: [0, 10, 0, 0]
       },
       { text: 'FACTURA ORIGINAL', style: 'subheader', pageBreak: 'before' },
       images['foto_factura'] ? { image: images['foto_factura'], width: 400, alignment: 'center' } : ''

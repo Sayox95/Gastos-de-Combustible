@@ -1110,57 +1110,58 @@ document.getElementById('enviar_reporte').onclick = async () => {
   const headerText = `FORMATO DE FACTURAS COMBUSTIBLE ${meses[fDate.getMonth()]} ${fDate.getFullYear()}`;
 
   const docDefinition = {
+    pageSize: 'letter',
     pageMargins: [30, 30, 30, 30],
     content: [
       { text: headerText, style: 'header', alignment: 'center' },
       {
-        table: {
-          widths: ['48%', '52%'],
-          heights: [600],  // Forzar altura total
-          body: [[
-            {
-              table: {
-                widths: ['*'],
-                body: [[{ text: 'Pegar Factura Original en este Espacio', italics: true, alignment: 'center' }]]
-              },
-              layout: {
-                hLineWidth: () => 1,
-                vLineWidth: () => 1,
-                hLineColor: () => '#aaa',
-                vLineColor: () => '#aaa',
-                hLineStyle: () => ({ dash: { length: 3, space: 3 } }),
-                vLineStyle: () => ({ dash: { length: 3, space: 3 } })
-              }
+        columns: [
+          {
+            width: '48%',
+            table: {
+              heights: Array(11).fill('*'),
+              widths: ['*'],
+              body: Array(11).fill([{ text: '', border: [false, false, false, false] }])
             },
-            {
-              table: {
-                widths: ['30%', '70%'],
-                body: [
-                  ['Nombre Completo', data.Nombre],
-                  ['No. Identidad', data.Identidad],
-                  ['Firma del Colaborador', ''],
-                  ['Tipo de Gestión', `PLACA: ${data.Placa}`],
-                  ['Total', data.Total],
-                  ['Motivo del llenado de combustible', `Compra de Combustible al Vehículo
+            layout: {
+              hLineWidth: () => 1,
+              vLineWidth: () => 1,
+              hLineColor: () => '#aaa',
+              vLineColor: () => '#aaa',
+              hLineStyle: () => ({ dash: { length: 3, space: 3 } }),
+              vLineStyle: () => ({ dash: { length: 3, space: 3 } })
+            },
+            margin: [0, 10, 5, 0]
+          },
+          {
+            width: '52%',
+            table: {
+              widths: ['30%', '70%'],
+              heights: Array(11).fill('*'),
+              body: [
+                ['Nombre Completo', data.Nombre],
+                ['No. Identidad', data.Identidad],
+                ['Firma del Colaborador', ''],
+                ['Tipo de Gestión', `PLACA: ${data.Placa}`],
+                ['Total', data.Total],
+                ['Motivo del llenado de combustible', `Compra de Combustible al Vehículo
 
 Para Labores de: ${data.Motivo}
 
 Proceso: ${data.Proceso}`],
-                  ['Fecha', data.Fecha],
-                  ['Horas de Viaje', data.Horas],
-                  ['Observación', `SECTOR: ${data.Sector}
+                ['Fecha', data.Fecha],
+                ['Horas de Viaje', data.Horas],
+                ['Observación', `SECTOR: ${data.Sector}
 KM: ${data.Km}
 FACTURA: ${data.FacturaNo}`],
-                  ['Autorizado por Jefe Inmediato', ''],
-                  ['Firma', '']
-                ]
-              },
-              layout: 'grid'
-            }
-          ]]
-        },
-        layout: 'noBorders',
-        margin: [0, 10, 0, 10]
+                ['Autorizado por Jefe Inmediato', ''],
+                ['Firma', '']
+              ]
+            },
+            layout: 'grid',
+            margin: [5, 10, 0, 0]
+          }
+        ]
       },
       { text: 'FOTOGRAFÍAS', style: 'subheader', pageBreak: 'before' },
       {

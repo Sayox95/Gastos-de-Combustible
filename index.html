@@ -1121,7 +1121,7 @@ document.getElementById('enviar_reporte').onclick = async () => {
             table: {
               widths: ['*'],
               body: [[
-                { text: 'Pegar Factura Original en este Espacio', italics: true, alignment: 'center', margin: [0, 350] }
+                { text: 'Pegar Factura Original en este Espacio', italics: true, alignment: 'center', margin: [0, 280] }
               ]]
             },
             layout: {
@@ -1138,7 +1138,7 @@ document.getElementById('enviar_reporte').onclick = async () => {
             width: '52%',
             table: {
               widths: ['30%', '70%'],
-              heights: [32, 32, 32, 32, 32, 72, 32, 32, 72, 32, 32],  // Total: ~430pts
+              heights: [40, 40, 40, 40, 40, 90, 40, 40, 90, 40, 40],  // Ajustado para ocupar ~600pt
               body: [
                 ['Nombre Completo', data.Nombre],
                 ['No. Identidad', data.Identidad],

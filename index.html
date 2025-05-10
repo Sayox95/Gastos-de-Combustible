@@ -214,7 +214,6 @@
 <div id="toast-alert">⚠️ Hay campos obligatorios sin completar.</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 </head>
@@ -1115,10 +1114,24 @@ document.getElementById('enviar_reporte').onclick = async () => {
       { text: headerText, style: 'header', alignment: 'center' },
       {
         columns: [
-          { width: '*', text: 'Pegar Factura Original en este Espacio', margin: [0, 10], italics: true, alignment: 'center', border: [true, true, true, true] },
           {
-            width: '*',
+            width: '50%',
             table: {
+              widths: ['*'],
+              body: [[{ text: 'Pegar Factura Original en este Espacio', italics: true, alignment: 'center', margin: [0, 100] }]]
+            },
+            layout: {
+              hLineWidth: () => 1,
+              vLineWidth: () => 1,
+              hLineColor: () => '#aaa',
+              vLineColor: () => '#aaa'
+            },
+            margin: [0, 10, 5, 10]
+          },
+          {
+            width: '50%',
+            table: {
+              widths: ['30%', '70%'],
               body: [
                 ['Nombre Completo', data.Nombre],
                 ['No. Identidad', data.Identidad],
@@ -1139,8 +1152,8 @@ FACTURA: ${data.FacturaNo}`],
                 ['Firma', '']
               ]
             },
-            layout: 'lightHorizontalLines',
-            margin: [10, 0]
+            layout: 'grid',
+            margin: [5, 10, 0, 10]
           }
         ]
       },

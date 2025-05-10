@@ -1110,12 +1110,13 @@ document.getElementById('enviar_reporte').onclick = async () => {
   const headerText = `FORMATO DE FACTURAS COMBUSTIBLE ${meses[fDate.getMonth()]} ${fDate.getFullYear()}`;
 
   const docDefinition = {
+    pageMargins: [30, 30, 30, 30],
     content: [
       { text: headerText, style: 'header', alignment: 'center' },
       {
         columns: [
           {
-            width: '50%',
+            width: '48%',
             table: {
               widths: ['*'],
               body: [[{ text: 'Pegar Factura Original en este Espacio', italics: true, alignment: 'center', margin: [0, 100] }]]
@@ -1124,12 +1125,14 @@ document.getElementById('enviar_reporte').onclick = async () => {
               hLineWidth: () => 1,
               vLineWidth: () => 1,
               hLineColor: () => '#aaa',
-              vLineColor: () => '#aaa'
+              vLineColor: () => '#aaa',
+              hLineStyle: () => ({ dash: { length: 3, space: 3 } }),
+              vLineStyle: () => ({ dash: { length: 3, space: 3 } })
             },
             margin: [0, 10, 5, 10]
           },
           {
-            width: '50%',
+            width: '52%',
             table: {
               widths: ['30%', '70%'],
               body: [

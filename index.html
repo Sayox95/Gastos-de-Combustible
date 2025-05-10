@@ -1167,21 +1167,27 @@ FACTURA: ${data.FacturaNo}`],
       { text: 'FOTOGRAFÍAS', style: 'subheader', pageBreak: 'before' },
       {
         table: {
-          widths: ['*', '*', '*'],
+          widths: ['50%', '50%'],
           body: [
             [
-              { stack: [{ text: 'TABLERO ANTES DE LLENADO', bold: true }, { image: images['foto_tablero_antes'], width: 150 }] },
-              { stack: [{ text: 'BOMBA DE COMBUSTIBLE 0', bold: true }, { image: images['foto_bomba'], width: 150 }] },
-              { stack: [{ text: 'TABLERO DESPUÉS DE LLENADO', bold: true }, { image: images['foto_despues'], width: 150 }] }
+              { stack: [{ text: 'TABLERO ANTES DE LLENADO', bold: true }, { image: images['foto_tablero_antes'], width: 250 }] },
+              { stack: [{ text: 'BOMBA DE COMBUSTIBLE 0', bold: true }, { image: images['foto_bomba'], width: 250 }] }
             ],
             [
-              { stack: [{ text: 'BOMBA DE COMBUSTIBLE LLENA', bold: true }, { image: images['foto_bomba_llenado'], width: 150 }], colSpan: 2 }, {},
-              { stack: [{ text: 'VISTA FRONTAL DEL VEHÍCULO / VIN CON VEHICULO', bold: true }, { image: images['foto_frontal'], width: 150 }] }
+              { stack: [{ text: 'TABLERO DESPUÉS DE LLENADO', bold: true }, { image: images['foto_despues'], width: 250 }] },
+              { 
+                stack: [{ text: 'VISTA FRONTAL DEL VEHÍCULO / VIN CON VEHICULO', bold: true }, { image: images['foto_frontal'], width: 250 }],
+                rowSpan: 2 
+              }
+            ],
+            [
+              { stack: [{ text: 'BOMBA DE COMBUSTIBLE LLENA', bold: true }, { image: images['foto_bomba_llenado'], width: 250 }] },
+              {}
             ],
             [
               { text: `PLACA: ${data.Placa}`, bold: true },
-              { text: `FECHA: ${data.Fecha}`, bold: true },
-              { text: `FACTURA: ${data.FacturaNo}`, bold: true }
+              { text: `FECHA: ${data.Fecha}`, bold: true, alignment: 'center' },
+              { text: `FACTURA: ${data.FacturaNo}`, bold: true, alignment: 'right' }
             ]
           ]
         },
@@ -1277,3 +1283,4 @@ function validarFormulario() {
     Generando PDF, por favor espere...
   </div>
 </div>
+v

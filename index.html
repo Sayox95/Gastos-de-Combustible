@@ -1168,20 +1168,21 @@ FACTURA: ${data.FacturaNo}`],
       {
         table: {
           widths: ['50%', '50%'],
+          heights: [160, 160, 160],
           body: [
             [
-              { stack: [{ text: 'TABLERO ANTES DE LLENADO', bold: true }, { image: images['foto_tablero_antes'], width: 250 }] },
-              { stack: [{ text: 'BOMBA DE COMBUSTIBLE 0', bold: true }, { image: images['foto_bomba'], width: 250 }] }
+              { stack: [{ text: 'TABLERO ANTES DE LLENADO', bold: true }, { image: images['foto_tablero_antes'], fit: [250, 160] }] },
+              { stack: [{ text: 'BOMBA DE COMBUSTIBLE 0', bold: true }, { image: images['foto_bomba'], fit: [250, 160] }] }
             ],
             [
-              { stack: [{ text: 'TABLERO DESPUÉS DE LLENADO', bold: true }, { image: images['foto_despues'], width: 250 }] },
+              { stack: [{ text: 'TABLERO DESPUÉS DE LLENADO', bold: true }, { image: images['foto_despues'], fit: [250, 160] }] },
               {
-                stack: [{ text: 'VISTA FRONTAL DEL VEHÍCULO / VIN CON VEHICULO', bold: true }, { image: images['foto_frontal'], width: 250 }],
+                stack: [{ text: 'VISTA FRONTAL DEL VEHÍCULO / VIN CON VEHICULO', bold: true }, { image: images['foto_frontal'], fit: [250, 160] }],
                 rowSpan: 2
               }
             ],
             [
-              { stack: [{ text: 'BOMBA DE COMBUSTIBLE LLENA', bold: true }, { image: images['foto_bomba_llenado'], width: 250 }] }
+              { stack: [{ text: 'BOMBA DE COMBUSTIBLE LLENA', bold: true }, { image: images['foto_bomba_llenado'], fit: [250, 160] }] }
             ]
           ]
         },
@@ -1199,7 +1200,7 @@ FACTURA: ${data.FacturaNo}`],
         margin: [0, 10, 0, 0]
       },
       { text: 'FACTURA ORIGINAL', style: 'subheader', pageBreak: 'before' },
-      images['foto_factura'] ? { image: images['foto_factura'], width: 400, alignment: 'center' } : ''
+      images['foto_factura'] ? { image: images['foto_factura'], fit: [400, 500], alignment: 'center' } : ''
     ],
     styles: {
       header: { fontSize: 16, bold: true, margin: [0, 10, 0, 10] },

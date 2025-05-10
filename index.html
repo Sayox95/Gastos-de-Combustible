@@ -1109,8 +1109,6 @@ document.getElementById('enviar_reporte').onclick = async () => {
   const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
   const headerText = `FORMATO DE FACTURAS COMBUSTIBLE ${meses[fDate.getMonth()]} ${fDate.getFullYear()}`;
 
-  const emptyRows = Array(11).fill([{ text: '', border: [false, false, false, false] }]);
-
   const docDefinition = {
     pageSize: 'letter',
     pageMargins: [30, 30, 30, 30],
@@ -1122,12 +1120,9 @@ document.getElementById('enviar_reporte').onclick = async () => {
             width: '48%',
             table: {
               widths: ['*'],
-              heights: Array(11).fill('*'),
-              body: emptyRows.map((_, i) =>
-                i === 5
-                  ? [{ text: 'Pegar Factura Original en este Espacio', italics: true, alignment: 'center', margin: [0, 20] }]
-                  : [{ text: '' }]
-              )
+              body: [[
+                { text: 'Pegar Factura Original en este Espacio', italics: true, alignment: 'center', margin: [0, 200] }
+              ]]
             },
             layout: {
               hLineWidth: () => 1,

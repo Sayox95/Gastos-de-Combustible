@@ -612,13 +612,8 @@ function imagenesCompletas() {
         HorasDelViaje: document.getElementById('horas').value,
         KmActual: document.getElementById('km').value,
         NombreComercio: document.getElementById('nombre_comercio').value,
-    JefeInmediato: (() => {
-        try {
-            return document.getElementById('summary_box').querySelectorAll('table tr')[9].cells[1].innerText;
-        } catch (e) {
-            return '';
-        }
-    })(),
+    JefeInmediato: document.getElementById('summary_box')?.querySelectorAll('table tr')[9]?.cells[1]?.innerText || '',
+    
         NumeroFactura: document.getElementById('factura').value
       };
       // Prepara PDF

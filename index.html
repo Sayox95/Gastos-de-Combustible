@@ -612,6 +612,7 @@ function imagenesCompletas() {
         HorasDelViaje: document.getElementById('horas').value,
         KmActual: document.getElementById('km').value,
         NombreComercio: document.getElementById('nombre_comercio').value,
+    JefeInmediato: document.getElementById('jefe_inmediato').value,
         NumeroFactura: document.getElementById('factura').value
       };
       // Prepara PDF
@@ -1102,7 +1103,8 @@ document.getElementById('enviar_reporte').onclick = async () => {
     Horas: document.getElementById('horas').value,
     Km: document.getElementById('km').value,
     FacturaNo: document.getElementById('factura').value,
-    NombreComercio: document.getElementById('nombre_comercio').value
+    NombreComercio: document.getElementById('nombre_comercio').value,
+    JefeInmediato: document.getElementById('jefe_inmediato').value
   };
 
   const fDate = new Date(data.Fecha);

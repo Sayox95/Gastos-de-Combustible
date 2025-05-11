@@ -1167,7 +1167,7 @@ Proceso: ${data.Proceso}`],
                 ['Observación', `SECTOR: ${data.Sector}
 KM: ${data.Km}
 FACTURA: ${data.FacturaNo}`],
-                ['Autorizado por Jefe Inmediato', ''],
+                ['Autorizado por Jefe Inmediato', data.NombreJefe || ''],
                 ['Firma', '']
               ]
             },
@@ -1226,7 +1226,7 @@ FACTURA: ${data.FacturaNo}`],
       table: {
         widths: ['*'],
         body: [[
-          { text: 'FACTURA ORIGINAL', style: 'subheader', alignment: 'center', bold: true, border: [true, true, true, true] }
+          { text: 'FACTURA ORIGINAL', style: 'subheader', alignment: 'center', bold: true, border: [true, true, true, true], margin: [0, 0, 0, 10] }
         ]]
       },
       layout: {

@@ -1165,7 +1165,7 @@ Proceso: ${data.Proceso}`],
                 ['Fecha', data.Fecha],
                 ['Horas de Viaje', data.Horas],
                 ['Observación', `SECTOR: ${data.Sector}\n\nKM: ${data.Km}\n\nFACTURA: ${data.FacturaNo}`],
-                ['Autorizado por Jefe Inmediato', data.NombreJefe || 'NOMBRE NO DISPONIBLE'],
+                ['Autorizado por Jefe Inmediato', data.JefeInmediato || ''],
                 ['Firma', '']
               ]
             },
@@ -1224,7 +1224,7 @@ Proceso: ${data.Proceso}`],
       table: {
         widths: ['*'],
         body: [[
-          { text: 'FACTURA ORIGINAL', style: 'subheader', alignment: 'center', bold: true, border: [true, true, true, true], margin: [0, 0, 0, 20] }
+          { text: 'FACTURA ORIGINAL', style: 'subheader', alignment: 'center', bold: true, border: [true, true, true, true], margin: [0, 0, 0, 10] }
         ]]
       },
       layout: {

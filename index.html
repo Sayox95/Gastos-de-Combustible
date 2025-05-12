@@ -501,6 +501,8 @@ function imagenesCompletas() {
         Placa:      document.getElementById('placa').value
       
 };
+data.JefeInmediato = document.querySelector("#summary_box table").rows[9]?.cells[1]?.innerText || 'Nombre no disponible';
+
       // Buscar jefe inmediato por placa
       const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
       
@@ -1115,6 +1117,8 @@ document.getElementById('enviar_reporte').onclick = async () => {
     FacturaNo: document.getElementById('factura').value,
     NombreComercio: document.getElementById('nombre_comercio').value
   };
+data.JefeInmediato = document.querySelector("#summary_box table").rows[9]?.cells[1]?.innerText || 'Nombre no disponible';
+
 
   const fDate = new Date(data.Fecha);
   const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
@@ -1122,7 +1126,7 @@ document.getElementById('enviar_reporte').onclick = async () => {
 
   document.getElementById('loader_pdf').style.display = 'flex';
 
-data.JefeInmediato = window._jefeInmediato || "";
+
 
 const docDefinition = {
     pageSize: 'letter',
@@ -1314,8 +1318,8 @@ function validarYVerificarDuplicado() {
     return;
   }
 
-  if (factura.length < 12) {
-    alert("El número de factura debe tener al menos 12 dígitos.");
+  if (factura.length < 16) {
+    alert("El número de factura debe tener al menos 16 dígitos.");
     return;
   }
 

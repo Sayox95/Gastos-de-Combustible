@@ -503,12 +503,7 @@ function imagenesCompletas() {
 };
       // Buscar jefe inmediato por placa
       const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
-      data.JefeInmediato = (jefeObj 
-      ? (jefeObj["Jefe inmediato"] 
-         || jefeObj["Jefe Inmediato"] 
-         || jefeObj.JefeInmediato 
-         || "") 
-      : "");
+      
 
       // Formatear encabezado con mes y año
       const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
@@ -1127,7 +1122,7 @@ document.getElementById('enviar_reporte').onclick = async () => {
 
   document.getElementById('loader_pdf').style.display = 'flex';
 
-data.JefeInmediato = data.JefeInmediato || "";
+data.JefeInmediato = window._jefeInmediato || "";
 
 const docDefinition = {
     pageSize: 'letter',
@@ -1319,8 +1314,8 @@ function validarYVerificarDuplicado() {
     return;
   }
 
-  if (factura.length < 16) {
-    alert("El número de factura debe tener al menos 16 dígitos.");
+  if (factura.length < 12) {
+    alert("El número de factura debe tener al menos 12 dígitos.");
     return;
   }
 

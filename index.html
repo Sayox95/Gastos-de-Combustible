@@ -503,17 +503,15 @@ function imagenesCompletas() {
 };
 
 
-if (vehiculos && vehiculos.length) {
-  jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
-  data.JefeInmediato = (jefeObj 
-    ? (jefeObj["Jefe inmediato"] 
-       || jefeObj["Jefe Inmediato"] 
-       || jefeObj.JefeInmediato 
-       || "") 
-    : "Nombre no disponible");
-} else {
-  data.JefeInmediato = "Nombre no disponible";
-}
+
+const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+data.JefeInmediato = (jefeObj 
+  ? (jefeObj["Jefe inmediato"] 
+     || jefeObj["Jefe Inmediato"] 
+     || jefeObj.JefeInmediato 
+     || "") 
+  : "");
+
 
 
       // Buscar jefe inmediato por placa
@@ -1132,17 +1130,15 @@ document.getElementById('enviar_reporte').onclick = async () => {
   };
 
 
-if (vehiculos && vehiculos.length) {
-  jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
-  data.JefeInmediato = (jefeObj 
-    ? (jefeObj["Jefe inmediato"] 
-       || jefeObj["Jefe Inmediato"] 
-       || jefeObj.JefeInmediato 
-       || "") 
-    : "Nombre no disponible");
-} else {
-  data.JefeInmediato = "Nombre no disponible";
-}
+
+const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+data.JefeInmediato = (jefeObj 
+  ? (jefeObj["Jefe inmediato"] 
+     || jefeObj["Jefe Inmediato"] 
+     || jefeObj.JefeInmediato 
+     || "") 
+  : "");
+
 
 
 

@@ -501,8 +501,17 @@ function imagenesCompletas() {
         Placa:      document.getElementById('placa').value
       
 };
+
+jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+data.JefeInmediato = (jefeObj 
+  ? (jefeObj["Jefe inmediato"] 
+     || jefeObj["Jefe Inmediato"] 
+     || jefeObj.JefeInmediato 
+     || "") 
+  : "");
+
       // Buscar jefe inmediato por placa
-      const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+      jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
       
 
       // Formatear encabezado con mes y año
@@ -1115,6 +1124,15 @@ document.getElementById('enviar_reporte').onclick = async () => {
     FacturaNo: document.getElementById('factura').value,
     NombreComercio: document.getElementById('nombre_comercio').value
   };
+
+jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+data.JefeInmediato = (jefeObj 
+  ? (jefeObj["Jefe inmediato"] 
+     || jefeObj["Jefe Inmediato"] 
+     || jefeObj.JefeInmediato 
+     || "") 
+  : "");
+
 
   const fDate = new Date(data.Fecha);
   const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];

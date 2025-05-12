@@ -1128,6 +1128,10 @@ document.getElementById('enviar_reporte').onclick = async () => {
 
 data.JefeInmediato = window._jefeInmediato || "";
 
+// Asignar Jefe Inmediato para PDF desde el resumen
+    data.JefeInmediato = document.querySelector('#summary_box table').rows
+      .find((r, idx) => r.cells[0].innerText.trim() === 'Autorizado por Jefe Inmediato')
+      ?.cells[1]?.innerText || '';
 const docDefinition = {
     pageSize: 'letter',
     pageMargins: [30, 30, 30, 30],

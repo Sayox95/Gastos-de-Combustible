@@ -1109,7 +1109,9 @@ document.getElementById('enviar_reporte').onclick = async () => {
   const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
   const headerText = `FORMATO DE FACTURAS COMBUSTIBLE ${meses[fDate.getMonth()]} ${fDate.getFullYear()}`;
 
-  const docDefinition = {
+  document.getElementById('loader_pdf').style.display = 'flex';
+
+const docDefinition = {
     pageSize: 'letter',
     pageMargins: [30, 30, 30, 30],
     content: [

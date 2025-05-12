@@ -502,13 +502,19 @@ function imagenesCompletas() {
       
 };
 
-jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
-data.JefeInmediato = (jefeObj 
-  ? (jefeObj["Jefe inmediato"] 
-     || jefeObj["Jefe Inmediato"] 
-     || jefeObj.JefeInmediato 
-     || "") 
-  : "");
+
+if (vehiculos && vehiculos.length) {
+  jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+  data.JefeInmediato = (jefeObj 
+    ? (jefeObj["Jefe inmediato"] 
+       || jefeObj["Jefe Inmediato"] 
+       || jefeObj.JefeInmediato 
+       || "") 
+    : "Nombre no disponible");
+} else {
+  data.JefeInmediato = "Nombre no disponible";
+}
+
 
       // Buscar jefe inmediato por placa
       jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
@@ -1125,13 +1131,19 @@ document.getElementById('enviar_reporte').onclick = async () => {
     NombreComercio: document.getElementById('nombre_comercio').value
   };
 
-jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
-data.JefeInmediato = (jefeObj 
-  ? (jefeObj["Jefe inmediato"] 
-     || jefeObj["Jefe Inmediato"] 
-     || jefeObj.JefeInmediato 
-     || "") 
-  : "");
+
+if (vehiculos && vehiculos.length) {
+  jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+  data.JefeInmediato = (jefeObj 
+    ? (jefeObj["Jefe inmediato"] 
+       || jefeObj["Jefe Inmediato"] 
+       || jefeObj.JefeInmediato 
+       || "") 
+    : "Nombre no disponible");
+} else {
+  data.JefeInmediato = "Nombre no disponible";
+}
+
 
 
   const fDate = new Date(data.Fecha);

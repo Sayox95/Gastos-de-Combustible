@@ -1274,41 +1274,24 @@ pdfMake.createPdf(docDefinition).download(filename, () => {
   Información enviada con éxito
 </div>
 <script>
-  function resetFormulario() {
-    document.getElementById('formulario_reporte').reset();
-    document.querySelectorAll('.paso').forEach(p => p.style.display = 'none');
-    document.getElementById('paso1').style.display = 'block';
-    window.scrollTo(0, 0);
-  }
-
-  // Ejecutar después de mostrar el mensaje de éxito
-  function mostrarSuccessYReset() {
-    const alerta = document.getElementById('success_alert');
-    alerta.style.display = 'block';
-    setTimeout(() => {
-      alerta.style.display = 'none';
-      resetFormulario();
-    }, 2500);
-  }
+function resetFormulario() {
+  // Limpiar inputs existentes
+  document.querySelectorAll('input[type=text], input[type=number], input[type=date], textarea, select').forEach(el => el.value = '');
+  document.querySelectorAll('input[type=file]').forEach(el => el.value = '');
+  document.querySelectorAll('.preview-img').forEach(img => img.src = '');
+  // Reiniciar pasos
+  document.querySelectorAll('.paso').forEach(p => p.style.display = 'none');
+  document.getElementById('paso1').style.display = 'block';
+  window.scrollTo(0, 0);
+}
 </script>
 <script>
 function resetFormulario() {
-  // Limpiar campos manualmente
-  document.getElementById('km_input').value = '';
-  document.getElementById('factura_input').value = '';
-  document.getElementById('sector_select').value = '';
-  document.getElementById('nombre_comercio').value = '';
-  document.getElementById('fecha_input').value = '';
-  document.getElementById('monto_input').value = '';
-  document.getElementById('galones_input').value = '';
-  document.getElementById('metodo_pago').value = '';
-  document.getElementById('observaciones').value = '';
-  document.getElementById('placa_select').value = '';
-  document.getElementById('resumen_contenedor').innerHTML = '';
-  document.querySelectorAll('.preview-img').forEach(e => e.src = '');
-  document.querySelectorAll('input[type=file]').forEach(e => e.value = '');
-
-  // Regresar al paso 1
+  // Limpiar inputs existentes
+  document.querySelectorAll('input[type=text], input[type=number], input[type=date], textarea, select').forEach(el => el.value = '');
+  document.querySelectorAll('input[type=file]').forEach(el => el.value = '');
+  document.querySelectorAll('.preview-img').forEach(img => img.src = '');
+  // Reiniciar pasos
   document.querySelectorAll('.paso').forEach(p => p.style.display = 'none');
   document.getElementById('paso1').style.display = 'block';
   window.scrollTo(0, 0);

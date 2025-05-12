@@ -1124,6 +1124,11 @@ document.getElementById('enviar_reporte').onclick = async () => {
 
 data.JefeInmediato = window._jefeInmediato || "";
 
+
+const jefeCelda = document.querySelector("#summary_box table").rows[9]?.cells[1];
+const jefePreview = jefeCelda ? jefeCelda.textContent.trim() : "Nombre no disponible";
+data.JefeInmediato = jefePreview;
+
 const docDefinition = {
     pageSize: 'letter',
     pageMargins: [30, 30, 30, 30],

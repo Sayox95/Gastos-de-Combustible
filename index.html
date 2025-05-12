@@ -234,6 +234,7 @@
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 </head>
 <body>
 <div id="notification" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#28a745; color:white; padding:15px 30px; border-radius:5px; opacity:0; transition:opacity 0.5s ease-in-out; z-index:1000;">Información enviada correctamente</div>
@@ -501,6 +502,8 @@ function imagenesCompletas() {
         Placa:      document.getElementById('placa').value
       
 };
+    // Capturar firma digital
+    data.Firma = window.colaboradorFirma || '';
       // Buscar jefe inmediato por placa
       const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
       data.JefeInmediato = jefeObj
@@ -521,7 +524,7 @@ function imagenesCompletas() {
       const rows = [
         ['Nombre Completo', data.Nombre],
         ['No. Identidad', data.Identidad],
-        ['Firma del Colaborador', ''],
+        ['Firma del Colaborador', data.Firma ? `<img src="${data.Firma}" style="max-width:150px;"/>` : ''],
         ['Tipo de Gestión', `PLACA: ${data.Placa}`],
         ['Total', data.Total],
         ['Motivo del llenado de combustible',
@@ -1177,7 +1180,7 @@ const docDefinition = {
               body: [
                 ['Nombre Completo', data.Nombre],
                 ['No. Identidad', data.Identidad],
-                ['Firma del Colaborador', ''],
+                ['Firma del Colaborador', window.colaboradorFirma ? { image: window.colaboradorFirma, width: 150 } : ''],
                 ['Tipo de Gestión', `PLACA: ${data.Placa}`],
                 ['Total', data.Total],
                 ['Motivo del llenado de combustible', `Compra de Combustible al Vehículo
@@ -1407,6 +1410,56 @@ function mostrarPaso(paso) {
     siguiente.classList.add('fade-in-down');
   }
 }
+</script>
+
+
+<!-- Modal Firma Digital -->
+<div id="modal-signature" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:3000; ">
+  <div style="background:#fff; padding:20px; border-radius:8px; max-width:500px; width:90%;">
+    <h3>Firma de Aprobación</h3>
+    <canvas id="canvas-signature" width="460" height="180" style="border:1px solid #ccc; border-radius:4px;"></canvas>
+    <div style="margin-top:10px; text-align:right;">
+      <button type="button" id="clear-signature">Limpiar</button>
+      <button type="button" id="confirm-signature">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Inicializar Signature Pad
+  const canvas = document.getElementById('canvas-signature');
+  const signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgba(255,255,255,0)', penColor: 'black' });
+
+  // Capturar handler original
+  const btnEnviar = document.getElementById('enviar_reporte');
+  const originalHandler = btnEnviar.onclick;
+
+  // Mostrar modal al enviar
+  btnEnviar.onclick = () => {
+    signaturePad.clear();
+    document.getElementById('modal-signature').style.display = 'flex';
+  };
+
+  // Limpiar firma
+  document.getElementById('clear-signature').onclick = () => {
+    signaturePad.clear();
+  };
+
+  // Confirmar firma
+  document.getElementById('confirm-signature').onclick = () => {
+    if (signaturePad.isEmpty()) {
+      alert('Por favor, firma antes de confirmar.');
+      return;
+    }
+    // Guardar firma
+    window.colaboradorFirma = signaturePad.toDataURL();
+    document.getElementById('modal-signature').style.display = 'none';
+    // Llamar flujo original
+    originalHandler();
+  };
+});
 </script>
 
 </body>

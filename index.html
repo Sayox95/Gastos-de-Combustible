@@ -498,8 +498,10 @@ function imagenesCompletas() {
         Sector:     document.getElementById('sector').value,
         Km:         document.getElementById('km').value,
         FacturaNo:  document.getElementById('factura').value,
-        Placa:      document.getElementById('placa').value
+        Placa:      document.getElementById('placa').value,
       
+    JefeInmediato: (vehiculos.find(v => v.PLACA === document.getElementById('placa').value)?.Jefe || ''),
+        JefeInmediato: (vehiculos.find(v => v.PLACA === document.getElementById('placa').value)?.Jefe || '')
 };
       // Buscar jefe inmediato por placa
       const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
@@ -1123,11 +1125,6 @@ document.getElementById('enviar_reporte').onclick = async () => {
   document.getElementById('loader_pdf').style.display = 'flex';
 
 data.JefeInmediato = window._jefeInmediato || "";
-
-
-const jefeCelda = document.querySelector("#summary_box table").rows[9]?.cells[1];
-const jefePreview = jefeCelda ? jefeCelda.textContent.trim() : "Nombre no disponible";
-data.JefeInmediato = jefePreview;
 
 const docDefinition = {
     pageSize: 'letter',

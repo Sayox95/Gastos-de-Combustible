@@ -501,28 +501,8 @@ function imagenesCompletas() {
         Placa:      document.getElementById('placa').value
       
 };
-
-
-
-
-
-let jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
-data.JefeInmediato = (jefeObj 
-  ? (jefeObj["Jefe inmediato"] 
-     || jefeObj["Jefe Inmediato"] 
-     || jefeObj.JefeInmediato 
-     || "") 
-  : "");
-console.log("📌 Placa:", data.Placa);
-console.log("📌 jefeObj:", jefeObj);
-console.log("📌 Jefe Inmediato:", data.JefeInmediato);
-
-
-
-
-
       // Buscar jefe inmediato por placa
-      jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
+      const jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
       
 
       // Formatear encabezado con mes y año
@@ -1136,26 +1116,6 @@ document.getElementById('enviar_reporte').onclick = async () => {
     NombreComercio: document.getElementById('nombre_comercio').value
   };
 
-
-
-
-
-let jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
-data.JefeInmediato = (jefeObj 
-  ? (jefeObj["Jefe inmediato"] 
-     || jefeObj["Jefe Inmediato"] 
-     || jefeObj.JefeInmediato 
-     || "") 
-  : "");
-console.log("📌 Placa:", data.Placa);
-console.log("📌 jefeObj:", jefeObj);
-console.log("📌 Jefe Inmediato:", data.JefeInmediato);
-
-
-
-
-
-
   const fDate = new Date(data.Fecha);
   const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
   const headerText = `FORMATO DE FACTURAS COMBUSTIBLE ${meses[fDate.getMonth()]} ${fDate.getFullYear()}`;
@@ -1205,7 +1165,7 @@ const docDefinition = {
             width: '52%',
             table: {
               widths: ['30%', '70%'],
-              H0, 70],
+              heights: [40, 40, 40, 40, 40, 90, 40, 40, 90, 70, 70],
               body: [
                 ['Nombre Completo', data.Nombre],
                 ['No. Identidad', data.Identidad],

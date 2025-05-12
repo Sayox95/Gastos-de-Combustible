@@ -514,8 +514,7 @@ function imagenesCompletas() {
         ['Observación',
          `SECTOR: ${data.Sector}<br><br>KM: ${data.Km}<br><br>FACTURA: ${data.FacturaNo}`],
         ['Autorizado por Jefe Inmediato', data.JefeInmediato],
-        ['Autorizado por Jefe Inmediato', data.JefeInmediato || ''],
-                ['Firma', '']
+        ['Firma', '']
       ];
       rows.forEach(([k,v]) => {
         const r = tbl.insertRow();
@@ -1112,6 +1111,8 @@ document.getElementById('enviar_reporte').onclick = async () => {
 
   document.getElementById('loader_pdf').style.display = 'flex';
 
+data.JefeInmediato = document.querySelector("#summary_box table").rows[9]?.cells[1]?.innerText || 'Nombre no disponible';
+
 const docDefinition = {
     pageSize: 'letter',
     pageMargins: [30, 30, 30, 30],
@@ -1168,7 +1169,6 @@ Proceso: ${data.Proceso}`],
                 ['Fecha', data.Fecha],
                 ['Horas de Viaje', data.Horas],
                 ['Observación', `SECTOR: ${data.Sector}\n\nKM: ${data.Km}\n\nFACTURA: ${data.FacturaNo}`],
-                ['Autorizado por Jefe Inmediato', data.JefeInmediato || ''],
                 ['Autorizado por Jefe Inmediato', data.JefeInmediato || ''],
                 ['Firma', '']
               ]
@@ -1259,8 +1259,6 @@ Proceso: ${data.Proceso}`],
       body: JSON.stringify(savePayload)
     }).then(() => {
       pdfMake.createPdf(docDefinition).download(filename);
-    document.getElementById('loader_pdf').style.display = 'none';
-    mostrarSuccessYReset();
     });
   });
 };
@@ -1295,6 +1293,29 @@ Proceso: ${data.Proceso}`],
   }
 </script>
 
+<script>
+function resetFormulario() {
+  // Limpiar campos manualmente
+  document.getElementById('km_input').value = '';
+  document.getElementById('factura_input').value = '';
+  document.getElementById('sector_select').value = '';
+  document.getElementById('nombre_comercio').value = '';
+  document.getElementById('fecha_input').value = '';
+  document.getElementById('monto_input').value = '';
+  document.getElementById('galones_input').value = '';
+  document.getElementById('metodo_pago').value = '';
+  document.getElementById('observaciones').value = '';
+  document.getElementById('placa_select').value = '';
+  document.getElementById('resumen_contenedor').innerHTML = '';
+  document.querySelectorAll('.preview-img').forEach(e => e.src = '');
+  document.querySelectorAll('input[type=file]').forEach(e => e.value = '');
+
+  // Regresar al paso 1
+  document.querySelectorAll('.paso').forEach(p => p.style.display = 'none');
+  document.getElementById('paso1').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+</script>
 </body>
 </html>
 <!-- Incluir html2pdf.js desde CDN para generación de PDF -->

@@ -1297,7 +1297,20 @@ function resetFormulario() {
   window.scrollTo(0, 0);
 }
 </script>
-</body>
+<script>
+function mostrarSuccessYReset() {
+  const alerta = document.getElementById('success_alert');
+  if (alerta) {
+    alerta.style.display = 'block';
+    setTimeout(() => {
+      alerta.style.display = 'none';
+      resetFormulario();
+    }, 2500);
+  } else {
+    resetFormulario();
+  }
+}
+</script></body>
 </html>
 <!-- Incluir html2pdf.js desde CDN para generación de PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js">

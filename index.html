@@ -1123,11 +1123,9 @@ document.getElementById('enviar_reporte').onclick = async () => {
   document.getElementById('loader_pdf').style.display = 'flex';
 
 
-const tablaResumen = document.querySelector("#summary_box table");
-data.JefeInmediato = (
-  tablaResumen?.rows?.[9]?.cells?.[1]?.innerText?.trim() || "Nombre no disponible"
-);
 
+
+data.JefeInmediato = document.querySelector("#summary_box table").rows[9]?.cells[1]?.innerText || 'Nombre no disponible';
 
 const docDefinition = {
     pageSize: 'letter',
@@ -1319,8 +1317,8 @@ function validarYVerificarDuplicado() {
     return;
   }
 
-  if (factura.length < 16) {
-    alert("El número de factura debe tener al menos 16 dígitos.");
+  if (factura.length < 12) {
+    alert("El número de factura debe tener al menos 12 dígitos.");
     return;
   }
 

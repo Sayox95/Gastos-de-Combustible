@@ -1273,32 +1273,8 @@ pdfMake.createPdf(docDefinition).download(filename, () => {
 <div id="success_alert" style="display:none; position:fixed; top:20px; right:20px; background-color:#4CAF50; color:white; padding:15px; border-radius:5px; z-index:10000;">
   Información enviada con éxito
 </div>
-<script>
-function resetFormulario() {
-  // Limpiar inputs existentes
-  document.querySelectorAll('input[type=text], input[type=number], input[type=date], textarea, select').forEach(el => el.value = '');
-  document.querySelectorAll('input[type=file]').forEach(el => el.value = '');
-  document.querySelectorAll('.preview-img').forEach(img => img.src = '');
-  // Reiniciar pasos
-  document.querySelectorAll('.paso').forEach(p => p.style.display = 'none');
-  document.getElementById('paso1').style.display = 'block';
-  document.getElementById('preview_resumen').style.display = 'none';
-  window.scrollTo(0, 0);
-}
-</script>
-<script>
-function resetFormulario() {
-  // Limpiar inputs existentes
-  document.querySelectorAll('input[type=text], input[type=number], input[type=date], textarea, select').forEach(el => el.value = '');
-  document.querySelectorAll('input[type=file]').forEach(el => el.value = '');
-  document.querySelectorAll('.preview-img').forEach(img => img.src = '');
-  // Reiniciar pasos
-  document.querySelectorAll('.paso').forEach(p => p.style.display = 'none');
-  document.getElementById('paso1').style.display = 'block';
-  document.getElementById('preview_resumen').style.display = 'none';
-  window.scrollTo(0, 0);
-}
-</script>
+
+
 <script>
 function mostrarSuccessYReset() {
   const alerta = document.getElementById('success_alert');
@@ -1306,10 +1282,10 @@ function mostrarSuccessYReset() {
     alerta.style.display = 'block';
     setTimeout(() => {
       alerta.style.display = 'none';
-      resetFormulario();
+      location.reload();
     }, 2500);
   } else {
-    resetFormulario();
+    location.reload();
   }
 }
 </script></body>

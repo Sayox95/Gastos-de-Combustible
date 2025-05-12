@@ -505,6 +505,7 @@ function imagenesCompletas() {
 
 
 
+
 let jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
 data.JefeInmediato = (jefeObj 
   ? (jefeObj["Jefe inmediato"] 
@@ -512,6 +513,10 @@ data.JefeInmediato = (jefeObj
      || jefeObj.JefeInmediato 
      || "") 
   : "");
+console.log("📌 Placa:", data.Placa);
+console.log("📌 jefeObj:", jefeObj);
+console.log("📌 Jefe Inmediato:", data.JefeInmediato);
+
 
 
 
@@ -1134,6 +1139,7 @@ document.getElementById('enviar_reporte').onclick = async () => {
 
 
 
+
 let jefeObj = vehiculos.find(v => v.PLACA === data.Placa);
 data.JefeInmediato = (jefeObj 
   ? (jefeObj["Jefe inmediato"] 
@@ -1141,6 +1147,10 @@ data.JefeInmediato = (jefeObj
      || jefeObj.JefeInmediato 
      || "") 
   : "");
+console.log("📌 Placa:", data.Placa);
+console.log("📌 jefeObj:", jefeObj);
+console.log("📌 Jefe Inmediato:", data.JefeInmediato);
+
 
 
 

@@ -1068,8 +1068,6 @@ function validarYVerificarDuplicado() {
   });
 }
 </script>
-
-
 <script>
 async function fileToBase64(inputId) {
   return new Promise((resolve, reject) => {
@@ -1256,22 +1254,28 @@ Proceso: ${data.Proceso}`],
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(savePayload)
     }).then(() => {
-      pdfMake.createPdf(docDefinition).download(filename);
+      pdfMake.createPdf(docDefinition).download(
+            () => {
+                document.getElementById('loader_pdf').style.display = 'none';
+                mostrarSuccessYReset();
+            },filename);
     });
   });
 };
 </script>
-
-<div id="loader_pdf" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; align-items:center; justify-content:center;">
-  <div style="font-size:20px; font-weight:bold;">Generando PDF...</div>
+<div id="loader_pdf" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; align-items:center; justify-content:center; flex-direction: column;">
+<div class="spinner" style="border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite;"></div>
+<div style="font-size:20px; font-weight:bold; margin-top:20px;">Generando PDF...</div>
+<style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        </style>
 </div>
-
-
 <div id="success_alert" style="display:none; position:fixed; top:20px; right:20px; background-color:#4CAF50; color:white; padding:15px; border-radius:5px; z-index:10000;">
   Información enviada con éxito
 </div>
-
-
 <script>
   function resetFormulario() {
     document.getElementById('formulario_reporte').reset();
@@ -1290,7 +1294,6 @@ Proceso: ${data.Proceso}`],
     }, 2500);
   }
 </script>
-
 </body>
 </html>
 <!-- Incluir html2pdf.js desde CDN para generación de PDF -->

@@ -1113,7 +1113,7 @@ document.getElementById('enviar_reporte').onclick = async () => {
     Proceso: document.getElementById('proceso').value,
     Nombre: document.getElementById('nombre').value,
     Identidad: document.getElementById('identidad').value,
-    TotalGastado: document.getElementById('total').value + ' L',
+    TotalGastado: document.getElementById('total').value,
     LitrosConsumidos: document.getElementById('litros').value,
     MotivoDelLlenado: document.getElementById('motivo').value,
     Fecha: document.getElementById('fecha').value,
@@ -1182,7 +1182,7 @@ const docDefinition = {
                 ['No. Identidad', data.Identidad],
                 ['Firma del Colaborador', window.colaboradorFirma ? { image: window.colaboradorFirma, width: 150 } : ''],
                 ['Tipo de Gestión', `PLACA: ${data.Placa}`],
-                ['Total', data.TotalGastado],
+                ['Total', data.TotalGastado + ' L'],
                 ['Motivo del llenado de combustible', `Compra de Combustible al Vehículo
 
 Para Labores de: ${data.MotivoDelLlenado}

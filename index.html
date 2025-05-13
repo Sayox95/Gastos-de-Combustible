@@ -488,20 +488,23 @@ function imagenesCompletas() {
   // ... el resto del código de recopilación de datos permanece intacto ...
 
   // Recopilar datos del formulario
-      const data = {
-        Fecha:      document.getElementById('fecha').value,
-        Nombre:     document.getElementById('nombre').value,
-        Identidad:  document.getElementById('identidad').value,
-        Total:      document.getElementById('total').value + ' L',
-        Motivo:     document.getElementById('motivo').value,
-        Proceso:    document.getElementById('proceso').value,
-        Horas:      document.getElementById('horas').value,
-        Sector:     document.getElementById('sector').value,
-        Km:         document.getElementById('km').value,
-        FacturaNo:  document.getElementById('factura').value,
-        Placa:      document.getElementById('placa').value
       
-};
+      const data = {
+        Fecha:            document.getElementById('fecha').value,
+        Nombre:           document.getElementById('nombre').value,
+        Identidad:        document.getElementById('identidad').value,
+        TotalGastado:     document.getElementById('total').value,
+        LitrosConsumidos: document.getElementById('litros').value,
+        MotivoDelLlenado: document.getElementById('motivo').value,
+        Proceso:          document.getElementById('proceso').value,
+        HorasDelViaje:    document.getElementById('horas').value,
+        Sector:           document.getElementById('sector').value,
+        KmActual:         document.getElementById('km').value,
+        NumeroFactura:    document.getElementById('factura').value,
+        NombreComercio:   document.getElementById('comercio').value,
+        Placa:            document.getElementById('placa').value
+      };
+
     // Capturar firma digital
     data.Firma = window.colaboradorFirma || '';
       // Buscar jefe inmediato por placa
@@ -661,7 +664,14 @@ function imagenesCompletas() {
       // Envío del PDF a Drive/Sheet
       const pdfDataUri = pdf.output('datauristring');
       const pdfBase64 = pdfDataUri.split(',')[1];
-      const savePayload = {...reportData, pdf: pdfBase64, filename};
+      
+      const savePayload = {
+        ...data,
+        pdf: pdfBase64,
+        filename: fileName,
+        validarDuplicado: false
+      };
+
       
 
       // Primero, guarda los datos (espera confirmación)
@@ -1107,21 +1117,23 @@ document.getElementById('enviar_reporte').onclick = async () => {
     images[id] = await fileToBase64(id);
   }
 
-  const data = {
-    Sector: document.getElementById('sector').value,
-    Placa: document.getElementById('placa').value,
-    Proceso: document.getElementById('proceso').value,
-    Nombre: document.getElementById('nombre').value,
-    Identidad: document.getElementById('identidad').value,
-    Total: document.getElementById('total').value + ' L',
-    Litros: document.getElementById('litros').value,
-    Motivo: document.getElementById('motivo').value,
-    Fecha: document.getElementById('fecha').value,
-    Horas: document.getElementById('horas').value,
-    Km: document.getElementById('km').value,
-    FacturaNo: document.getElementById('factura').value,
-    NombreComercio: document.getElementById('nombre_comercio').value
-  };
+  
+      const data = {
+        Fecha:            document.getElementById('fecha').value,
+        Nombre:           document.getElementById('nombre').value,
+        Identidad:        document.getElementById('identidad').value,
+        TotalGastado:     document.getElementById('total').value,
+        LitrosConsumidos: document.getElementById('litros').value,
+        MotivoDelLlenado: document.getElementById('motivo').value,
+        Proceso:          document.getElementById('proceso').value,
+        HorasDelViaje:    document.getElementById('horas').value,
+        Sector:           document.getElementById('sector').value,
+        KmActual:         document.getElementById('km').value,
+        NumeroFactura:    document.getElementById('factura').value,
+        NombreComercio:   document.getElementById('comercio').value,
+        Placa:            document.getElementById('placa').value
+      };
+
 
   const fDate = new Date(data.Fecha);
   const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
@@ -1273,7 +1285,14 @@ Proceso: ${data.Proceso}`],
   const filename = `${data.Sector}_${data.Fecha}_${data.FacturaNo}.pdf`;
 
   pdfMake.createPdf(docDefinition).getBase64(function(base64) {
-    const savePayload = { ...data, pdf: base64, filename };
+    
+      const savePayload = {
+        ...data,
+        pdf: pdfBase64,
+        filename: fileName,
+        validarDuplicado: false
+      };
+
 
     fetch('/api/guardar', {
       method: 'POST',

@@ -1113,13 +1113,13 @@ document.getElementById('enviar_reporte').onclick = async () => {
     Proceso: document.getElementById('proceso').value,
     Nombre: document.getElementById('nombre').value,
     Identidad: document.getElementById('identidad').value,
-    TotalGastado: document.getElementById('total').value + ' L',
-    LitrosConsumidos: document.getElementById('litros').value,
-    MotivoDelLlenado: document.getElementById('motivo').value,
+    Total: document.getElementById('total').value + ' L',
+    Litros: document.getElementById('litros').value,
+    Motivo: document.getElementById('motivo').value,
     Fecha: document.getElementById('fecha').value,
-    HorasDelViaje: document.getElementById('horas').value,
-    KmActual: document.getElementById('km').value,
-    NumeroFactura: document.getElementById('factura').value,
+    Horas: document.getElementById('horas').value,
+    Km: document.getElementById('km').value,
+    FacturaNo: document.getElementById('factura').value,
     NombreComercio: document.getElementById('nombre_comercio').value
   };
 
@@ -1270,7 +1270,7 @@ Proceso: ${data.Proceso}`],
     }
   };
 
-  const filename = `${data.Sector}_${data.Fecha}_${data.NumeroFactura}.pdf`;
+  const filename = `${data.Sector}_${data.Fecha}_${data.FacturaNo}.pdf`;
 
   pdfMake.createPdf(docDefinition).getBase64(function(base64) {
     const savePayload = { ...data, pdf: base64, filename };

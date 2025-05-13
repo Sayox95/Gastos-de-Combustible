@@ -489,19 +489,19 @@ function imagenesCompletas() {
 
   // Recopilar datos del formulario
       const data = {
-  Fecha:            document.getElementById('fecha').value,
-  Nombre:           document.getElementById('nombre').value,
-  Identidad:        document.getElementById('identidad').value,
-  TotalGastado:     document.getElementById('total').value + ' L',
-  MotivoDelLlenado: document.getElementById('motivo').value,
-  Proceso:          document.getElementById('proceso').value,
-  HorasDelViaje:    document.getElementById('horas').value,
-  Sector:           document.getElementById('sector').value,
-  KmActual:         document.getElementById('km').value,
-  NumeroFactura:    document.getElementById('factura').value,
-  Placa:            document.getElementById('placa').value
+        Fecha:      document.getElementById('fecha').value,
+        Nombre:     document.getElementById('nombre').value,
+        Identidad:  document.getElementById('identidad').value,
+        Total:      document.getElementById('total').value + ' L',
+        Motivo:     document.getElementById('motivo').value,
+        Proceso:    document.getElementById('proceso').value,
+        Horas:      document.getElementById('horas').value,
+        Sector:     document.getElementById('sector').value,
+        Km:         document.getElementById('km').value,
+        FacturaNo:  document.getElementById('factura').value,
+        Placa:      document.getElementById('placa').value
+      
 };
-
     // Capturar firma digital
     data.Firma = window.colaboradorFirma || '';
       // Buscar jefe inmediato por placa
@@ -619,21 +619,7 @@ function imagenesCompletas() {
   modal.style.opacity = 1;
   await new Promise(r => setTimeout(r, 100));
       // Guardar datos en Google Sheets (no-cors)
-      const reportData = {
-        Sector: document.getElementById('sector').value,
-        Placa: document.getElementById('placa').value,
-        Proceso: document.getElementById('proceso').value,
-        Nombre: document.getElementById('nombre').value,
-        Identidad: document.getElementById('identidad').value,
-        TotalGastado: document.getElementById('total').value,
-        LitrosConsumidos: document.getElementById('litros').value,
-        MotivoDelLlenado: document.getElementById('motivo').value,
-        Fecha: document.getElementById('fecha').value,
-        HorasDelViaje: document.getElementById('horas').value,
-        KmActual: document.getElementById('km').value,
-        NombreComercio: document.getElementById('nombre_comercio').value,
-        NumeroFactura: document.getElementById('factura').value
-      };
+      
       // Prepara PDF
       const btnEnviar = document.getElementById('enviar_reporte');
       const btnMod = document.getElementById('modificar_reporte');

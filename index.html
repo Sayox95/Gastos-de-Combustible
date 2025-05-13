@@ -526,13 +526,13 @@ function imagenesCompletas() {
         ['No. Identidad', data.Identidad],
         ['Firma del Colaborador', data.Firma ? `<img src="${data.Firma}" style="max-width:150px;"/>` : ''],
         ['Tipo de Gestión', `PLACA: ${data.Placa}`],
-        ['Total', data.TotalGastado],
+        ['Total', data.Total],
         ['Motivo del llenado de combustible',
-         `Compra de Combustible al Vehículo<br><br>Para Labores de: ${data.MotivoDelLlenado}<br><br>Proceso: ${data.Proceso}`],
+         `Compra de Combustible al Vehículo<br><br>Para Labores de: ${data.Motivo}<br><br>Proceso: ${data.Proceso}`],
         ['Fecha', data.Fecha],
-        ['Horas de Viaje', data.HorasDelViaje],
+        ['Horas de Viaje', data.Horas],
         ['Observación',
-         `SECTOR: ${data.Sector}<br><br>KM: ${data.KmActual}<br><br>FACTURA: ${data.NumeroFactura}`],
+         `SECTOR: ${data.Sector}<br><br>KM: ${data.Km}<br><br>FACTURA: ${data.FacturaNo}`],
         ['Autorizado por Jefe Inmediato', data.JefeInmediato],
         ['Firma', '']
       ];
@@ -566,7 +566,7 @@ function imagenesCompletas() {
           <tr>
             <td class="photo-footer">PLACA: ${data.Placa}</td>
             <td class="photo-footer">FECHA: ${data.Fecha}</td>
-            <td class="photo-footer">FACTURA: ${data.NumeroFactura}</td>
+            <td class="photo-footer">FACTURA: ${data.FacturaNo}</td>
           </tr>
         </table>`;
       // Cargar imagen de factura en la página 3
@@ -1182,15 +1182,15 @@ const docDefinition = {
                 ['No. Identidad', data.Identidad],
                 ['Firma del Colaborador', window.colaboradorFirma ? { image: window.colaboradorFirma, width: 150 } : ''],
                 ['Tipo de Gestión', `PLACA: ${data.Placa}`],
-                ['Total', data.TotalGastado],
+                ['Total', data.Total],
                 ['Motivo del llenado de combustible', `Compra de Combustible al Vehículo
 
-Para Labores de: ${data.MotivoDelLlenado}
+Para Labores de: ${data.Motivo}
 
 Proceso: ${data.Proceso}`],
                 ['Fecha', data.Fecha],
-                ['Horas de Viaje', data.HorasDelViaje],
-                ['Observación', `SECTOR: ${data.Sector}\n\nKM: ${data.KmActual}\n\nFACTURA: ${data.NumeroFactura}`],
+                ['Horas de Viaje', data.Horas],
+                ['Observación', `SECTOR: ${data.Sector}\n\nKM: ${data.Km}\n\nFACTURA: ${data.FacturaNo}`],
                 ['Autorizado por Jefe Inmediato', data.JefeInmediato || ''],
                 ['Firma', '']
               ]
@@ -1241,7 +1241,7 @@ Proceso: ${data.Proceso}`],
           body: [[
             { text: `PLACA: ${data.Placa}`, bold: true, margin: [0, 0, 0, 5] },
             { text: `FECHA: ${data.Fecha}`, bold: true, alignment: 'center' },
-            { text: `FACTURA: ${data.NumeroFactura}`, bold: true, alignment: 'right' }
+            { text: `FACTURA: ${data.FacturaNo}`, bold: true, alignment: 'right' }
           ]]
         },
         margin: [0, 10, 0, 0]

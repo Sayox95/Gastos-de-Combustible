@@ -514,7 +514,8 @@ function imagenesCompletas() {
         : "";
       // Formatear encabezado con mes y año
       const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
-      const fDate = new Date(data.Fecha);
+      const [year, month, day] = data.Fecha.split('-').map(Number);
+      const fDate = new Date(year, month - 1, day);
       document.getElementById('format_header').textContent =
         `FORMATO DE FACTURAS COMBUSTIBLE ${meses[fDate.getMonth()]} ${fDate.getFullYear()}`;
 
@@ -1123,7 +1124,8 @@ document.getElementById('enviar_reporte').onclick = async () => {
     NombreComercio: document.getElementById('nombre_comercio').value
   };
 
-  const fDate = new Date(data.Fecha);
+  const [year, month, day] = data.Fecha.split('-').map(Number);
+      const fDate = new Date(year, month - 1, day);
   const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
   const headerText = `FORMATO DE FACTURAS COMBUSTIBLE ${meses[fDate.getMonth()]} ${fDate.getFullYear()}`;
 

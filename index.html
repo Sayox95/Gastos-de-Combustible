@@ -1273,7 +1273,7 @@ Proceso: ${data.Proceso}`],
   const filename = `${data.Sector}_${data.Fecha}_${data.FacturaNo}.pdf`;
 
   pdfMake.createPdf(docDefinition).getBase64(function(base64) {
-    const savePayload = { ...data, pdf: base64, filename };
+    const savePayload = { ...reportData, pdf: pdfBase64, filename };
 
     fetch('/api/guardar', {
       method: 'POST',

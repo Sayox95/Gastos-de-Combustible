@@ -647,7 +647,7 @@ function imagenesCompletas() {
       // Envío del PDF a Drive/Sheet
       const pdfDataUri = pdf.output('datauristring');
       const pdfBase64 = pdfDataUri.split(',')[1];
-      const savePayload = {...reportData, pdf: pdfBase64, filename};
+      
       
 
       // Primero, guarda los datos (espera confirmación)
@@ -656,7 +656,7 @@ function imagenesCompletas() {
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(savePayload)
+          body: JSON.stringify(data)
         });
 
         const saveResult = await saveResponse.json();
@@ -1259,12 +1259,12 @@ Proceso: ${data.Proceso}`],
   const filename = `${data.Sector}_${data.Fecha}_${data.FacturaNo}.pdf`;
 
   pdfMake.createPdf(docDefinition).getBase64(function(base64) {
-    const savePayload = { ...data, pdf: base64, filename };
+    
 
     fetch('/api/guardar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(savePayload)
+      body: JSON.stringify(data)
     }).then(() => {
       
 pdfMake.createPdf(docDefinition).download(filename, () => {

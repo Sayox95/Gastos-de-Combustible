@@ -619,7 +619,21 @@ function imagenesCompletas() {
   modal.style.opacity = 1;
   await new Promise(r => setTimeout(r, 100));
       // Guardar datos en Google Sheets (no-cors)
-      
+      const reportData = {
+        Sector: document.getElementById('sector').value,
+        Placa: document.getElementById('placa').value,
+        Proceso: document.getElementById('proceso').value,
+        Nombre: document.getElementById('nombre').value,
+        Identidad: document.getElementById('identidad').value,
+        TotalGastado: document.getElementById('total').value,
+        LitrosConsumidos: document.getElementById('litros').value,
+        MotivoDelLlenado: document.getElementById('motivo').value,
+        Fecha: document.getElementById('fecha').value,
+        HorasDelViaje: document.getElementById('horas').value,
+        KmActual: document.getElementById('km').value,
+        NombreComercio: document.getElementById('nombre_comercio').value,
+        NumeroFactura: document.getElementById('factura').value
+      };
       // Prepara PDF
       const btnEnviar = document.getElementById('enviar_reporte');
       const btnMod = document.getElementById('modificar_reporte');
@@ -647,7 +661,7 @@ function imagenesCompletas() {
       // Envío del PDF a Drive/Sheet
       const pdfDataUri = pdf.output('datauristring');
       const pdfBase64 = pdfDataUri.split(',')[1];
-      
+      const savePayload = {...reportData, pdf: pdfBase64, filename};
       
 
       // Primero, guarda los datos (espera confirmación)
@@ -656,7 +670,7 @@ function imagenesCompletas() {
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+          body: JSON.stringify(savePayload)
         });
 
         const saveResult = await saveResponse.json();
@@ -1259,12 +1273,12 @@ Proceso: ${data.Proceso}`],
   const filename = `${data.Sector}_${data.Fecha}_${data.FacturaNo}.pdf`;
 
   pdfMake.createPdf(docDefinition).getBase64(function(base64) {
-    
+    const savePayload = { ...data, pdf: base64, filename };
 
     fetch('/api/guardar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(savePayload)
     }).then(() => {
       
 pdfMake.createPdf(docDefinition).download(filename, () => {

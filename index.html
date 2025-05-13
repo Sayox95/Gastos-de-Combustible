@@ -489,18 +489,19 @@ function imagenesCompletas() {
 
   // Recopilar datos del formulario
       const data = {
-        Fecha:      document.getElementById('fecha').value,
-        Nombre:     document.getElementById('nombre').value,
-        Identidad:  document.getElementById('identidad').value,
-        Total:      document.getElementById('total').value + ' L',
-        Motivo:     document.getElementById('motivo').value,
-        Proceso:    document.getElementById('proceso').value,
-        Horas:      document.getElementById('horas').value,
-        Sector:     document.getElementById('sector').value,
-        Km:         document.getElementById('km').value,
-        FacturaNo:  document.getElementById('factura').value,
-        Placa:      document.getElementById('placa').value
-      
+    Sector: document.getElementById('sector').value,
+    Placa: document.getElementById('placa').value,
+    Proceso: document.getElementById('proceso').value,
+    Nombre: document.getElementById('nombre').value,
+    Identidad: document.getElementById('identidad').value,
+    TotalGastado: document.getElementById('total').value,
+    LitrosConsumidos: document.getElementById('litros').value,
+    MotivoDelLlenado: document.getElementById('motivo').value,
+    Fecha: document.getElementById('fecha').value,
+    HorasDelViaje: document.getElementById('horas').value,
+    KmActual: document.getElementById('km').value,
+    NombreComercio: document.getElementById('nombre_comercio').value,
+    NumeroFactura: document.getElementById('factura').value
 };
     // Capturar firma digital
     data.Firma = window.colaboradorFirma || '';
@@ -528,11 +529,11 @@ function imagenesCompletas() {
         ['Tipo de Gestión', `PLACA: ${data.Placa}`],
         ['Total', data.Total],
         ['Motivo del llenado de combustible',
-         `Compra de Combustible al Vehículo<br><br>Para Labores de: ${data.Motivo}<br><br>Proceso: ${data.Proceso}`],
+         `Compra de Combustible al Vehículo<br><br>Para Labores de: ${data.MotivoDelLlenado}<br><br>Proceso: ${data.Proceso}`],
         ['Fecha', data.Fecha],
-        ['Horas de Viaje', data.Horas],
+        ['Horas de Viaje', data.HorasDelViaje],
         ['Observación',
-         `SECTOR: ${data.Sector}<br><br>KM: ${data.Km}<br><br>FACTURA: ${data.FacturaNo}`],
+         `SECTOR: ${data.Sector}<br><br>KM: ${data.KmActual}<br><br>FACTURA: ${data.NumeroFactura}`],
         ['Autorizado por Jefe Inmediato', data.JefeInmediato],
         ['Firma', '']
       ];
@@ -566,7 +567,7 @@ function imagenesCompletas() {
           <tr>
             <td class="photo-footer">PLACA: ${data.Placa}</td>
             <td class="photo-footer">FECHA: ${data.Fecha}</td>
-            <td class="photo-footer">FACTURA: ${data.FacturaNo}</td>
+            <td class="photo-footer">FACTURA: ${data.NumeroFactura}</td>
           </tr>
         </table>`;
       // Cargar imagen de factura en la página 3
@@ -1185,12 +1186,12 @@ const docDefinition = {
                 ['Total', data.Total],
                 ['Motivo del llenado de combustible', `Compra de Combustible al Vehículo
 
-Para Labores de: ${data.Motivo}
+Para Labores de: ${data.MotivoDelLlenado}
 
 Proceso: ${data.Proceso}`],
                 ['Fecha', data.Fecha],
-                ['Horas de Viaje', data.Horas],
-                ['Observación', `SECTOR: ${data.Sector}\n\nKM: ${data.Km}\n\nFACTURA: ${data.FacturaNo}`],
+                ['Horas de Viaje', data.HorasDelViaje],
+                ['Observación', `SECTOR: ${data.Sector}\n\nKM: ${data.KmActual}\n\nFACTURA: ${data.NumeroFactura}`],
                 ['Autorizado por Jefe Inmediato', data.JefeInmediato || ''],
                 ['Firma', '']
               ]
@@ -1241,7 +1242,7 @@ Proceso: ${data.Proceso}`],
           body: [[
             { text: `PLACA: ${data.Placa}`, bold: true, margin: [0, 0, 0, 5] },
             { text: `FECHA: ${data.Fecha}`, bold: true, alignment: 'center' },
-            { text: `FACTURA: ${data.FacturaNo}`, bold: true, alignment: 'right' }
+            { text: `FACTURA: ${data.NumeroFactura}`, bold: true, alignment: 'right' }
           ]]
         },
         margin: [0, 10, 0, 0]
@@ -1270,7 +1271,7 @@ Proceso: ${data.Proceso}`],
     }
   };
 
-  const filename = `${data.Sector}_${data.Fecha}_${data.FacturaNo}.pdf`;
+  const filename = `${data.Sector}_${data.Fecha}_${data.NumeroFactura}.pdf`;
 
   pdfMake.createPdf(docDefinition).getBase64(function(base64) {
     const savePayload = { ...data, pdf: base64, filename };

@@ -625,7 +625,7 @@ function imagenesCompletas() {
         Proceso: document.getElementById('proceso').value,
         Nombre: document.getElementById('nombre').value,
         Identidad: document.getElementById('identidad').value,
-        TotalGastado: document.getElementById('total').value,
+        TotalGastado: document.getElementById('total').value.replace(/\s?L$/,''),
         LitrosConsumidos: document.getElementById('litros').value,
         MotivoDelLlenado: document.getElementById('motivo').value,
         Fecha: document.getElementById('fecha').value,

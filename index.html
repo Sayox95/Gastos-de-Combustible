@@ -566,7 +566,7 @@ function imagenesCompletas() {
           <tr>
             <td class="photo-footer">PLACA: ${data.Placa}</td>
             <td class="photo-footer">FECHA: ${data.Fecha}</td>
-            <td class="photo-footer">FACTURA: ${data.FacturaNo}</td>
+            <td class="photo-footer">FACTURA: ${data.NumeroFactura}</td>
           </tr>
         </table>`;
       // Cargar imagen de factura en la página 3
@@ -1113,13 +1113,13 @@ document.getElementById('enviar_reporte').onclick = async () => {
     Proceso: document.getElementById('proceso').value,
     Nombre: document.getElementById('nombre').value,
     Identidad: document.getElementById('identidad').value,
-    Total: document.getElementById('total').value + ' L',
-    Litros: document.getElementById('litros').value,
-    Motivo: document.getElementById('motivo').value,
+    TotalGastado: document.getElementById('total').value + ' L',
+    LitrosConsumidos: document.getElementById('litros').value,
+    MotivoDelLlenado: document.getElementById('motivo').value,
     Fecha: document.getElementById('fecha').value,
-    Horas: document.getElementById('horas').value,
-    Km: document.getElementById('km').value,
-    FacturaNo: document.getElementById('factura').value,
+    HorasDelViaje: document.getElementById('horas').value,
+    KmActual: document.getElementById('km').value,
+    NumeroFactura: document.getElementById('factura').value,
     NombreComercio: document.getElementById('nombre_comercio').value
   };
 
@@ -1182,15 +1182,15 @@ const docDefinition = {
                 ['No. Identidad', data.Identidad],
                 ['Firma del Colaborador', window.colaboradorFirma ? { image: window.colaboradorFirma, width: 150 } : ''],
                 ['Tipo de Gestión', `PLACA: ${data.Placa}`],
-                ['Total', data.Total],
+                ['Total', data.TotalGastado],
                 ['Motivo del llenado de combustible', `Compra de Combustible al Vehículo
 
-Para Labores de: ${data.Motivo}
+Para Labores de: ${data.MotivoDelLlenado}
 
 Proceso: ${data.Proceso}`],
                 ['Fecha', data.Fecha],
-                ['Horas de Viaje', data.Horas],
-                ['Observación', `SECTOR: ${data.Sector}\n\nKM: ${data.Km}\n\nFACTURA: ${data.FacturaNo}`],
+                ['Horas de Viaje', data.HorasDelViaje],
+                ['Observación', `SECTOR: ${data.Sector}\n\nKM: ${data.KmActual}\n\nFACTURA: ${data.NumeroFactura}`],
                 ['Autorizado por Jefe Inmediato', data.JefeInmediato || ''],
                 ['Firma', '']
               ]
@@ -1241,7 +1241,7 @@ Proceso: ${data.Proceso}`],
           body: [[
             { text: `PLACA: ${data.Placa}`, bold: true, margin: [0, 0, 0, 5] },
             { text: `FECHA: ${data.Fecha}`, bold: true, alignment: 'center' },
-            { text: `FACTURA: ${data.FacturaNo}`, bold: true, alignment: 'right' }
+            { text: `FACTURA: ${data.NumeroFactura}`, bold: true, alignment: 'right' }
           ]]
         },
         margin: [0, 10, 0, 0]
@@ -1270,7 +1270,7 @@ Proceso: ${data.Proceso}`],
     }
   };
 
-  const filename = `${data.Sector}_${data.Fecha}_${data.FacturaNo}.pdf`;
+  const filename = `${data.Sector}_${data.Fecha}_${data.NumeroFactura}.pdf`;
 
   pdfMake.createPdf(docDefinition).getBase64(function(base64) {
     const savePayload = { ...data, pdf: base64, filename };

@@ -1176,7 +1176,7 @@ const docDefinition = {
             width: '52%',
             table: {
               widths: ['30%', '70%'],
-              heights: [40, 40, 40, 40, 40, 90, 40, 40, 90, 70, 70],
+              heights: [40, 40, 40, 40, 40, 90, 40, 40, 90, 65, 65],
               body: [
                 ['Nombre Completo', data.Nombre],
                 ['No. Identidad', data.Identidad],
@@ -1325,8 +1325,8 @@ function validarYVerificarDuplicado() {
     return;
   }
 
-  if (factura.length < 12) {
-    alert("El número de factura debe tener al menos 12 dígitos.");
+  if (factura.length < 16) {
+    alert("El número de factura debe tener al menos 16 dígitos.");
     return;
   }
 

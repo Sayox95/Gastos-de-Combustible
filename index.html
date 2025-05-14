@@ -299,14 +299,6 @@
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
-        
-        // Validar antigüedad de la foto (no mayor a 48 horas)
-        const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
-          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
-          input.value = '';
-          return;
-        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {
@@ -794,14 +786,6 @@ function imagenesCompletas() {
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
-        
-        // Validar antigüedad de la foto (no mayor a 48 horas)
-        const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
-          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
-          input.value = '';
-          return;
-        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {
@@ -846,14 +830,6 @@ function validarFormulario() {
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
-        
-        // Validar antigüedad de la foto (no mayor a 48 horas)
-        const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
-          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
-          input.value = '';
-          return;
-        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {
@@ -897,14 +873,6 @@ function validarFormulario() {
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
-        
-        // Validar antigüedad de la foto (no mayor a 48 horas)
-        const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
-          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
-          input.value = '';
-          return;
-        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {
@@ -1521,14 +1489,6 @@ document.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
-        
-        // Validar antigüedad de la foto (no mayor a 48 horas)
-        const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
-          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
-          input.value = '';
-          return;
-        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {

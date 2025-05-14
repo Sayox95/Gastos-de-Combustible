@@ -1332,6 +1332,20 @@ function validarYVerificarDuplicado() {
     return;
   }
 
+  // Validación de Monto Gastado (>5000)
+  const totalVal = parseFloat(document.getElementById('total').value) || 0;
+  if (totalVal > 5000) {
+    alert('El monto ingresado es muy elevado. El máximo permitido es 5000.');
+    return;
+  }
+
+  // Validación de Litros Consumidos (>100)
+  const litrosVal = parseFloat(document.getElementById('litros').value) || 0;
+  if (litrosVal > 100) {
+    alert('El valor de litros consumidos es muy elevado. El máximo permitido es 100.');
+    return;
+  }
+
   mostrarLoaderVerificacion();
 
   requestAnimationFrame(() => {

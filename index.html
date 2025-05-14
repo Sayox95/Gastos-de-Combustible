@@ -1371,10 +1371,10 @@ function validarYVerificarDuplicado() {
     return;
   }
 
-  // Validación de Litros Consumidos (>200)
+  // Validación de Litros Consumidos (>250)
   const litrosVal = parseFloat(document.getElementById('litros').value) || 0;
-  if (litrosVal > 200) {
-    alert('El valor de litros consumidos es muy elevado. El máximo permitido es 200.');
+  if (litrosVal > 250) {
+    alert('El valor de litros consumidos es muy elevado. El máximo permitido es 250.');
     return;
   }
 

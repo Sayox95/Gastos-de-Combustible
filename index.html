@@ -299,6 +299,14 @@
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
+        
+        // Validar antigüedad de la foto (no mayor a 48 horas)
+        const fileDate = new Date(archivo.lastModified);
+        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
+          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
+          input.value = '';
+          return;
+        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {
@@ -786,6 +794,14 @@ function imagenesCompletas() {
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
+        
+        // Validar antigüedad de la foto (no mayor a 48 horas)
+        const fileDate = new Date(archivo.lastModified);
+        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
+          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
+          input.value = '';
+          return;
+        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {
@@ -830,6 +846,14 @@ function validarFormulario() {
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
+        
+        // Validar antigüedad de la foto (no mayor a 48 horas)
+        const fileDate = new Date(archivo.lastModified);
+        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
+          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
+          input.value = '';
+          return;
+        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {
@@ -873,6 +897,14 @@ function validarFormulario() {
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
+        
+        // Validar antigüedad de la foto (no mayor a 48 horas)
+        const fileDate = new Date(archivo.lastModified);
+        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
+          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
+          input.value = '';
+          return;
+        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {
@@ -1222,16 +1254,16 @@ Proceso: ${data.Proceso}`],
           heights: [200, 200, 200],
           body: [
             [
-              { stack: [{ text: 'TABLERO ANTES DE LLENADO', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_tablero_antes'], fit: [300, 180] }], alignment: 'center' },
-              { stack: [{ text: 'BOMBA DE COMBUSTIBLE 0', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_bomba'], fit: [300, 180] }], alignment: 'center' },
+              { stack: [{ text: 'TABLERO ANTES DE LLENADO', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_tablero_antes'], fit: [250, 180] }], alignment: 'center' },
+              { stack: [{ text: 'BOMBA DE COMBUSTIBLE 0', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_bomba'], fit: [250, 180] }], alignment: 'center' },
             ],
             [
-              { stack: [{ text: 'TABLERO DESPUÉS DE LLENADO', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_despues'], fit: [300, 180] }], alignment: 'center' },
+              { stack: [{ text: 'TABLERO DESPUÉS DE LLENADO', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_despues'], fit: [250, 180] }], alignment: 'center' },
               {
                 stack: [{ text: 'VISTA FRONTAL DEL VEHÍCULO / VIN CON VEHICULO', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_frontal'], fit: [250, 200] }], alignment: 'center' , rowSpan: 2 },
             ],
             [
-              { stack: [{ text: 'BOMBA DE COMBUSTIBLE LLENA', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_bomba_llenado'], fit: [300, 180] }], alignment: 'center' },
+              { stack: [{ text: 'BOMBA DE COMBUSTIBLE LLENA', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_bomba_llenado'], fit: [250, 180] }], alignment: 'center' },
             ]
           ]
         },
@@ -1339,10 +1371,10 @@ function validarYVerificarDuplicado() {
     return;
   }
 
-  // Validación de Litros Consumidos (>100)
+  // Validación de Litros Consumidos (>200)
   const litrosVal = parseFloat(document.getElementById('litros').value) || 0;
-  if (litrosVal > 100) {
-    alert('El valor de litros consumidos es muy elevado. El máximo permitido es 100.');
+  if (litrosVal > 200) {
+    alert('El valor de litros consumidos es muy elevado. El máximo permitido es 200.');
     return;
   }
 
@@ -1489,6 +1521,14 @@ document.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('change', () => {
       if (input.files && input.files.length > 0) {
         const archivo = input.files[0];
+        
+        // Validar antigüedad de la foto (no mayor a 48 horas)
+        const fileDate = new Date(archivo.lastModified);
+        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
+          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
+          input.value = '';
+          return;
+        }
         const url = URL.createObjectURL(archivo);
         const contenedor = document.getElementById('preview_' + id);
         if (contenedor) {

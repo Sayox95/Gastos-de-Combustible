@@ -396,6 +396,8 @@ function validarFormulario() {
           const sel = document.getElementById('sector');
           // Eliminar duplicados usando Set
           [...new Set(data.map(x => x.Sector))].forEach(s => sel.add(new Option(s, s)));
+          // Agregar sector CORPORATIVO manualmente
+          sel.add(new Option('CORPORATIVO', 'CORPORATIVO'));
           document.getElementById('mensaje_cargando').style.display = 'none';
           // Animar formulario al aparecer
           const formEl = document.getElementById('formulario_contenido');
@@ -430,7 +432,9 @@ function validarFormulario() {
     document.getElementById('sector').addEventListener('change', function() {
       const dataList = document.getElementById('placas');
       dataList.innerHTML = '';
-      vehiculos.filter(v => v.Sector === this.value).forEach(v => {
+      // Si es CORPORATIVO, mostrar todas las placas
+      const lista = (this.value === 'CORPORATIVO') ? vehiculos : vehiculos.filter(v => v.Sector === this.value);
+      lista.forEach(v => {
         const opt = document.createElement('option');
         opt.value = v.PLACA;
         dataList.appendChild(opt);
@@ -520,6 +524,10 @@ function imagenesCompletas() {
            || jefeObj.JefeInmediato
            || "")
         : "";
+          // Para sector CORPORATIVO no hay jefe inmediato
+          if (data.Sector === 'CORPORATIVO') {
+            data.JefeInmediato = '';
+          }
       // Formatear encabezado con mes y año
       const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
       const [year, month, day] = data.Fecha.split('-').map(Number);

@@ -1135,12 +1135,17 @@ async function fileToBase64(inputId) {
   return new Promise((resolve, reject) => {
     const file = document.getElementById(inputId).files[0];
     if (!file) return resolve(null);
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    // Use blueimp-load-image to correct orientation based on EXIF
+    loadImage(
+      file,
+      function (canvas) {
+        const orientedDataUrl = canvas.toDataURL('image/jpeg');
+        resolve(orientedDataUrl);
+      },
+      { canvas: true, orientation: true }
+    );
   });
-}
+};
 
 document.getElementById('enviar_reporte').onclick = async () => {
   const fields = ['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura'];

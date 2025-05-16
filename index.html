@@ -214,8 +214,6 @@
 <div id="toast-alert">⚠️ Hay campos obligatorios sin completar.</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
 <style>
 @keyframes fadeOutUp {
@@ -292,7 +290,8 @@
 <button id="enviar_reporte">Enviar Reporte</button>
 <button id="modificar_reporte">Modificar Reporte</button>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
 // Mostrar previews para cada campo de imagen
 ['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura'].forEach(id => {
   const input = document.getElementById(id);
@@ -1062,7 +1061,6 @@ function validarImagenPaso(id) {
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("guardar_reporte");
   if (btn && typeof generarPreviewPDF === "function") {
-    btn.onclick = generarPreviewPDF;
   }
 });
 </script><script>
@@ -1526,58 +1524,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-<!-- Incluir html2pdf.js desde CDN para generación de PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js">
-// Mostrar previews para cada campo de imagen
-['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura'].forEach(id => {
-  const input = document.getElementById(id);
-  if (input) {
-    input.addEventListener('change', () => {
-      if (input.files && input.files.length > 0) {
-        const archivo = input.files[0];
-        
-        // Validar antigüedad de la foto (no mayor a 48 horas)
-        const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
-          alert('La fotografía debe ser reciente (no mayor a 48 horas).');
-          input.value = '';
-          return;
-        }
-        const url = URL.createObjectURL(archivo);
-        const contenedor = document.getElementById('preview_' + id);
-        if (contenedor) {
-          contenedor.innerHTML = `<img src="${url}" style="max-width:100%; max-height:300px;">`;
-        }
-      }
-    });
-  }
-});
-
-
-function validarFormulario() {
-  let valido = true;
-  const campos = ['sector', 'placa', 'proceso', 'nombre', 'identidad', 'total', 'litros', 'motivo', 'fecha', 'km', 'nombre_comercio', 'factura', 'foto_tablero_antes', 'foto_bomba', 'foto_despues', 'foto_bomba_llenado', 'foto_frontal', 'foto_factura'];
-
-  campos.forEach(id => {
-    const campo = document.getElementById(id);
-    const error = document.getElementById("error_" + id);
-    if (campo && (!campo.value || campo.value.trim() === "")) {
-      if (error) error.style.display = "inline";
-      valido = false;
-    } else {
-      if (error) error.style.display = "none";
-    }
-  });
-
-  if (!valido) {
-    const toast = document.getElementById("toast-alert");
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 3000);
-  }
-  return valido;
-}
-
-</script>
 <div id="generando_pdf_modal" style="
   visibility: hidden;
   opacity: 0;

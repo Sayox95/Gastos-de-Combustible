@@ -1265,23 +1265,35 @@ const docDefinition = {
     content: [
 
       {
-        columns: [
-          { image: logoBase64, width: 100 },
-          { text: 'DETALLE DE LA FACTURA DE COMBUSTIBLE', style: 'header', alignment: 'center', bold: true },
-          {
-            table: {
-              widths: ['30%','*'],
-              body: [
-                ['Código',   'CLS-PAU-F-19'],
-                ['Versión',  '1'],
-                ['Fecha',    '20/5/2025']
-              ]
-            },
-            layout: 'lightHorizontalLines'
-          }
-        ],
-        margin: [0, 0, 0, 10]
-      },
+  table: {
+    widths: [100, '*', 'auto', 'auto'],
+    body: [
+      [
+        { image: logoBase64, width: 90, rowSpan: 3, alignment: 'center', margin: [0, 10, 0, 0] },
+        { text: 'DETALLE DE LA FACTURA DE COMBUSTIBLE', style: 'header', fontSize: 14, alignment: 'center', bold: true, rowSpan: 3, margin: [0, 20, 0, 0] , verticalAlignment: 'middle' },
+        { text: 'Código', bold: true , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' },
+        { text: 'CLS-PAU-F-19' , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' }
+      ],
+      [
+        {}, {},
+        { text: 'Versión', bold: true , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' },
+        { text: '1' , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' }
+      ],
+      [
+        {}, {},
+        { text: 'Fecha', bold: true , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' },
+        { text: '20/5/2025' , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' }
+      ]
+    ]
+  },
+  layout: {
+    hLineWidth: function () { return 1; },
+    vLineWidth: function () { return 1; },
+    hLineColor: function () { return '#000'; },
+    vLineColor: function () { return '#000'; }
+  },
+  margin: [0, 0, 0, 10]
+},,
 
       {
         columns: [
@@ -1290,7 +1302,7 @@ const docDefinition = {
             table: {
               widths: ['*'],
               body: [[
-                { text: 'Pegar Factura Original en este Espacio', italics: true, alignment: 'center', margin: [0, 320] }
+                { text: 'Pegar Factura Original en este Espacio', italics: true, alignment: 'center', margin: [0, 309] , verticalAlignment: 'middle' }
               ]]
             },
             layout: {
@@ -1307,7 +1319,7 @@ const docDefinition = {
             width: '52%',
             table: {
               widths: ['30%', '70%'],
-              heights: [40, 40, 40, 40, 40, 90, 40, 40, 90, 65, 65],
+              heights: [40, 40, 40, 40, 40, 80, 40, 40, 80, 60, 60],
               body: [
                 ['Nombre Completo', data.Nombre],
                 ['No. Identidad', data.Identidad],
@@ -1320,7 +1332,7 @@ Para Labores de: ${data.MotivoDelLlenado}
 
 Proceso: ${data.Proceso}`],
                 ['Fecha', data.Fecha],
-                ['Horas de Viaje', data.HorasDelViaje],
+                ['Placa o VIN', data.Placa],
                 ['Observación', `SECTOR: ${data.Sector}
 
 KM: ${data.KmActual}
@@ -1339,7 +1351,7 @@ FACTURA: ${data.NumeroFactura}`],
       table: {
         widths: ['*'],
         body: [[
-          { text: 'FOTOGRAFÍAS', style: 'subheader', alignment: 'center', bold: true, border: [true, true, true, true] }
+          { text: 'FOTOGRAFÍAS', style: 'subheader', alignment: 'center', bold: true, border: [true, true, true, true] , verticalAlignment: 'middle' }
         ]]
       },
       layout: {
@@ -1355,16 +1367,16 @@ FACTURA: ${data.NumeroFactura}`],
           heights: [200, 200, 200],
           body: [
             [
-              { stack: [{ text: 'TABLERO ANTES DE LLENADO', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_tablero_antes'], fit: [250, 180] }], alignment: 'center' },
-              { stack: [{ text: 'BOMBA DE COMBUSTIBLE 0', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_bomba'], fit: [250, 180] }], alignment: 'center' },
+              { stack: [{ text: 'TABLERO ANTES DE LLENADO', bold: true, margin: [0, 0, 0, 5] , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' }, { image: images['foto_tablero_antes'], fit: [250, 180] }], alignment: 'center' },
+              { stack: [{ text: 'BOMBA DE COMBUSTIBLE 0', bold: true, margin: [0, 0, 0, 5] , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' }, { image: images['foto_bomba'], fit: [250, 180] }], alignment: 'center' },
             ],
             [
-              { stack: [{ text: 'TABLERO DESPUÉS DE LLENADO', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_despues'], fit: [250, 180] }], alignment: 'center' },
+              { stack: [{ text: 'TABLERO DESPUÉS DE LLENADO', bold: true, margin: [0, 0, 0, 5] , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' }, { image: images['foto_despues'], fit: [250, 180] }], alignment: 'center' },
               {
-                stack: [{ text: 'VISTA FRONTAL DEL VEHÍCULO / VIN CON VEHICULO', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_frontal'], fit: [250, 200] }], alignment: 'center' , rowSpan: 2 },
+                stack: [{ text: 'VISTA FRONTAL DEL VEHÍCULO / VIN CON VEHICULO', bold: true, margin: [0, 0, 0, 5] , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' }, { image: images['foto_frontal'], fit: [250, 200] }], alignment: 'center' , rowSpan: 2 },
             ],
             [
-              { stack: [{ text: 'BOMBA DE COMBUSTIBLE LLENA', bold: true, margin: [0, 0, 0, 5] }, { image: images['foto_bomba_llenado'], fit: [250, 180] }], alignment: 'center' },
+              { stack: [{ text: 'BOMBA DE COMBUSTIBLE LLENA', bold: true, margin: [0, 0, 0, 5] , verticalAlignment: 'middle', alignment: 'center', verticalAlignment: 'middle' }, { image: images['foto_bomba_llenado'], fit: [250, 180] }], alignment: 'center' },
             ]
           ]
         },
@@ -1385,7 +1397,7 @@ FACTURA: ${data.NumeroFactura}`],
       table: {
         widths: ['*'],
         body: [[
-          { text: 'FACTURA ORIGINAL', style: 'subheader', alignment: 'center', bold: true, border: [true, true, true, true], margin: [0, 0, 0, 10] }
+          { text: 'FACTURA ORIGINAL', style: 'subheader', alignment: 'center', bold: true, border: [true, true, true, true], margin: [0, 0, 0, 10] , verticalAlignment: 'middle' }
         ]]
       },
       layout: {

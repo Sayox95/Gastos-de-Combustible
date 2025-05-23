@@ -1312,7 +1312,7 @@ const docDefinition = {
                 ['Nombre Completo', data.Nombre],
                 ['No. Identidad', data.Identidad],
                 ['Firma del Colaborador', window.colaboradorFirma ? { image: window.colaboradorFirma, width: 150 } : ''],
-                ['Tipo de Gestión', 'Liquidación de gastos de combustible'],
+                ['Tipo de Gestión', `PLACA: ${data.Placa}`],
                 ['Total', data.TotalGastado + ' L'],
                 ['Motivo del llenado de combustible', `Compra de Combustible al Vehículo
 
@@ -1321,7 +1321,11 @@ Para Labores de: ${data.MotivoDelLlenado}
 Proceso: ${data.Proceso}`],
                 ['Fecha', data.Fecha],
                 ['Horas de Viaje', data.HorasDelViaje],
-                ['Observación', `SECTOR: ${data.Sector}\n\nKM: ${data.KmActual}\n\nFACTURA: ${data.NumeroFactura}`],
+                ['Observación', `SECTOR: ${data.Sector}
+
+KM: ${data.KmActual}
+
+FACTURA: ${data.NumeroFactura}`],
                 ['Autorizado por Jefe Inmediato', data.JefeInmediato || ''],
                 ['Firma', '']
               ]

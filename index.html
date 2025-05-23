@@ -614,7 +614,7 @@ function imagenesCompletas() {
         ['Nombre Completo', data.Nombre],
         ['No. Identidad', data.Identidad],
         ['Firma del Colaborador', data.Firma ? `<img src="${data.Firma}" style="max-width:150px;"/>` : ''],
-        ['Tipo de Gestión', `PLACA: ${data.Placa}`],
+        ['Tipo de Gestión', 'Liquidación de gastos de combustible'],
         ['Total', data.Total],
         ['Motivo del llenado de combustible',
          `Compra de Combustible al Vehículo<br><br>Para Labores de: ${data.Motivo}<br><br>Proceso: ${data.Proceso}`],
@@ -1312,7 +1312,7 @@ const docDefinition = {
                 ['Nombre Completo', data.Nombre],
                 ['No. Identidad', data.Identidad],
                 ['Firma del Colaborador', window.colaboradorFirma ? { image: window.colaboradorFirma, width: 150 } : ''],
-                ['Tipo de Gestión', `PLACA: ${data.Placa}`],
+                ['Tipo de Gestión', 'Liquidación de gastos de combustible'],
                 ['Total', data.TotalGastado + ' L'],
                 ['Motivo del llenado de combustible', `Compra de Combustible al Vehículo
 

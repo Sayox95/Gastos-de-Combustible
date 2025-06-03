@@ -788,21 +788,16 @@ function imagenesCompletas() {
         
         const pdfBlob = pdf.output('blob');
         
-if (typeof saveAs === 'function') {
-  saveAs(pdfBlob, filename);
-} else if (navigator.userAgent.includes("SamsungBrowser")) {
-  const blobUrl = URL.createObjectURL(pdfBlob);
-  window.location.href = blobUrl;
-} else {
-  const blobUrl = URL.createObjectURL(pdfBlob);
-  const a = document.createElement('a');
-  a.href = blobUrl;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(blobUrl);
-}
+
+const blobUrl = URL.createObjectURL(pdfBlob);
+const a = document.createElement('a');
+a.href = blobUrl;
+a.download = filename;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(blobUrl);
+
 
 
 
@@ -1661,7 +1656,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </body>
 </html>
 <div id="generando_pdf_modal" style="

@@ -787,13 +787,7 @@ function imagenesCompletas() {
 
         
         const pdfBlob = pdf.output('blob');
-        if (navigator.userAgent.includes("SamsungBrowser")) {
-  console.log("Samsung Internet detectado. Abriendo PDF en nueva pestaña.");
-  const blobUrl = URL.createObjectURL(pdfBlob);
-  window.open(blobUrl, '_blank');
-} else {
-  
-}
+        
 
 
         modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);

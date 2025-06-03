@@ -787,18 +787,22 @@ function imagenesCompletas() {
 
         
         const pdfBlob = pdf.output('blob');
-        modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
-        if (confirm("¿Deseas descargar el PDF generado?")) {
-          const blobUrl = URL.createObjectURL(pdfBlob);
-          const a = document.createElement('a');
-          a.href = blobUrl;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(blobUrl);
-        }
-        location.reload();
+        if (navigator.userAgent.includes("SamsungBrowser")) {
+  console.log("Samsung Internet detectado. Abriendo PDF en nueva pestaña.");
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  window.open(blobUrl, '_blank');
+} else {
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(blobUrl);
+}
+
+
         modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
         // Mostrar confirmación y limpiar
         const notif = document.getElementById('notification');

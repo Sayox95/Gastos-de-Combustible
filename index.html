@@ -292,7 +292,6 @@
 
 </head>
 <body>
-<button id="botonDescargarPDF" style="display:none;">Descargar PDF</button>
 <div id="notification" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#28a745; color:white; padding:15px 30px; border-radius:5px; opacity:0; transition:opacity 0.5s ease-in-out; z-index:1000;">Información enviada correctamente</div>
 <!-- Initial loading message displayed while fetching data -->
 <div id="mensaje_cargando">Cargando información, por favor espere...</div>
@@ -788,10 +787,12 @@ function imagenesCompletas() {
 
         
         const pdfBlob = pdf.output('blob');
-        if (navigator.userAgent.includes("SamsungBrowser")) {
-  console.log("Samsung Internet detectado. Abriendo PDF en nueva pestaña.");
+        
+if (typeof saveAs === 'function') {
+  saveAs(pdfBlob, filename);
+} else if (navigator.userAgent.includes("SamsungBrowser")) {
   const blobUrl = URL.createObjectURL(pdfBlob);
-  window.open(blobUrl, '_blank');
+  window.location.href = blobUrl;
 } else {
   const blobUrl = URL.createObjectURL(pdfBlob);
   const a = document.createElement('a');
@@ -802,6 +803,7 @@ function imagenesCompletas() {
   document.body.removeChild(a);
   URL.revokeObjectURL(blobUrl);
 }
+
 
 
         modal.style.opacity = 0; setTimeout(() => { modal.style.visibility = 'hidden'; }, 300);
@@ -1659,6 +1661,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </body>
 </html>
 <div id="generando_pdf_modal" style="

@@ -741,6 +741,7 @@ function imagenesCompletas() {
         const pdfHeight = pdf.internal.pageSize.getHeight() - margins.top - margins.bottom;
         if (i > 0) pdf.addPage();
         pdf.addImage(imgData, 'PNG', margins.left, margins.top, pdfWidth, pdfHeight);
+          pdf.save(filename);  // Forzar descarga inmediata
       }
       // Generar nombre de archivo
       const sector = document.getElementById('sector').value;

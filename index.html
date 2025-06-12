@@ -789,17 +789,7 @@ function imagenesCompletas() {
       // Animar vista previa al aparecer
       const previewEl = document.getElementById('preview_contenido');
       previewEl.classList.add('fade-in-up');
-        // Ajustar scroll y zoom al mostrar preview
-  window.scrollTo(0, 0);
-  document.activeElement.blur();
-  // Reset zoom and ensure full preview display
-  document.body.style.zoom = '1';
-  previewEl.style.transform = 'none';
-  previewEl.style.zoom = '1';
-  const viewportMeta = document.querySelector('meta[name="viewport"]');
-  if (viewportMeta) {
-    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
-  }
+
 // Asegurar mostrar botones en la vista previa
       document.getElementById('enviar_reporte').style.display = 'inline-block';
       document.getElementById('modificar_reporte').style.display = 'inline-block';

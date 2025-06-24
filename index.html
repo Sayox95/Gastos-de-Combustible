@@ -485,7 +485,7 @@
         
         // Validar antigüedad de la foto (no mayor a 48 horas)
         const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
+        if (Date.now() - fileDate.getTime() > 168 * 3600 * 1000) {
           alert('La fotografía debe ser reciente (no mayor a 48 horas).');
           input.value = '';
           return;
@@ -893,7 +893,7 @@ function imagenesCompletas() {
         
         // Validar antigüedad de la foto (no mayor a 48 horas)
         const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
+        if (Date.now() - fileDate.getTime() > 168 * 3600 * 1000) {
           alert('La fotografía debe ser reciente (no mayor a 48 horas).');
           input.value = '';
           return;
@@ -946,7 +946,7 @@ function validarFormulario() {
         
         // Validar antigüedad de la foto (no mayor a 48 horas)
         const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
+        if (Date.now() - fileDate.getTime() > 168 * 3600 * 1000) {
           alert('La fotografía debe ser reciente (no mayor a 48 horas).');
           input.value = '';
           return;
@@ -998,7 +998,7 @@ function validarFormulario() {
         
         // Validar antigüedad de la foto (no mayor a 48 horas)
         const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
+        if (Date.now() - fileDate.getTime() > 168 * 3600 * 1000) {
           alert('La fotografía debe ser reciente (no mayor a 48 horas).');
           input.value = '';
           return;

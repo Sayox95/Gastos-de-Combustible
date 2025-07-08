@@ -485,7 +485,7 @@
         
         // Validar antigüedad de la foto (no mayor a 48 horas)
         const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 504 * 3600 * 1000) {
+        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
           alert('La fotografía debe ser reciente (no mayor a 48 horas).');
           input.value = '';
           return;
@@ -893,7 +893,7 @@ function imagenesCompletas() {
         
         // Validar antigüedad de la foto (no mayor a 48 horas)
         const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 504 * 3600 * 1000) {
+        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
           alert('La fotografía debe ser reciente (no mayor a 48 horas).');
           input.value = '';
           return;
@@ -946,7 +946,7 @@ function validarFormulario() {
         
         // Validar antigüedad de la foto (no mayor a 48 horas)
         const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 504 * 3600 * 1000) {
+        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
           alert('La fotografía debe ser reciente (no mayor a 48 horas).');
           input.value = '';
           return;
@@ -998,7 +998,7 @@ function validarFormulario() {
         
         // Validar antigüedad de la foto (no mayor a 48 horas)
         const fileDate = new Date(archivo.lastModified);
-        if (Date.now() - fileDate.getTime() > 504 * 3600 * 1000) {
+        if (Date.now() - fileDate.getTime() > 48 * 3600 * 1000) {
           alert('La fotografía debe ser reciente (no mayor a 48 horas).');
           input.value = '';
           return;
@@ -1666,9 +1666,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- Modal de Confirmación de Descarga -->
 <div class="modal-overlay" id="downloadModal" style="display:none;">
 <div class="modal-content">
-<p>El PDF generado está listo. ¿Deseas descargarlo?</p>
+<p>Se descargara el PDF</p>
 <button id="downloadAccept">Aceptar</button>
-<button id="downloadCancel">Cancelar</button>
 </div>
 </div>
 <style>
@@ -1690,7 +1689,7 @@ document.getElementById('downloadAccept').addEventListener('click', () => {
     if (generatedPDF) {
         generatedPDF.download(generatedFilename);
         // Retrasar la recarga para asegurar la descarga en Samsung Internet
-        setTimeout(() => { window.location.reload(); }, 1500);
+        setTimeout(() => { window.location.reload(); }, 2500);
     } else {
         window.location.reload();
     }

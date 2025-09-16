@@ -1528,7 +1528,7 @@ function validarYVerificarDuplicado() {
 
   // Validación de Monto Gastado (>5000)
   const totalVal = parseFloat(document.getElementById('total').value) || 0;
-  if (totalVal > 5000) {
+  if (totalVal > 6000) {
     alert('El monto ingresado es muy elevado. El máximo permitido es 5000.');
     return;
   }
@@ -1743,3 +1743,4 @@ document.addEventListener('DOMContentLoaded', function() {
     Generando PDF, por favor espere...
   </div>
 </div>
+

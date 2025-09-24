@@ -1,10 +1,6 @@
 // functions/api/guardar.js
 
-/**
- * Preflight OPTIONS para habilitar CORS
- */
 export async function onRequestOptions({ request }) {
-  // En lugar de '*' usamos el Origin real para maximizar compatibilidad
   const origin = request.headers.get('Origin') || '*';
   return new Response(null, {
     status: 204,
@@ -12,55 +8,61 @@ export async function onRequestOptions({ request }) {
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
-      // quitamos Access-Control-Allow-Credentials si no usamos cookies
+      'Vary': 'Origin'
     }
   });
 }
 
-/**
- * POST: reenvía el JSON al Apps Script y devuelve su respuesta
- */
-export async function onRequestPost({ request }) {
+export async function onRequestPost({ request, env }) {
   const origin = request.headers.get('Origin') || '*';
-  const bodyText = await request.text();
+  const bodyText = await request.text(); // payload original (incluye base64 del PDF)
 
-  // Para depurar:
-  console.log('📤 Proxy body:', bodyText);
+  const upstream =
+    env?.APPS_SCRIPT_POST_URL ||
+    'https://script.google.com/macros/s/AKfycby-zReunHtHx3ziMwnyAXbeyGpQ6D5LTqsd9cB_WuZhFU43jyNBmRdf5ifiucpYA1SY/exec';
 
   let resp;
   try {
-    resp = await fetch(
-      "https://script.google.com/macros/s/AKfycbzvgP22GVS1qTADoa6Ifk5rwOEbd_GStWetQRbVpFtvQduYgW9o1gkSLb9a-6l4v8NIMQ/exec",
+    // Timeout (ajústalo o quítalo si prefieres el default de CF ~50s)
+    const controller = new AbortController();
+    const timeoutMs = 45000;
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+
+    resp = await fetch(upstream, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyText,
+      signal: controller.signal
+    });
+
+    clearTimeout(id);
+  } catch (e) {
+    return new Response(
+      JSON.stringify({ status: 'ERROR', message: 'No se pudo conectar con Apps Script' }),
       {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: bodyText,
+        status: 502,
+        headers: {
+          'Access-Control-Allow-Origin': origin,
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+          'Vary': 'Origin'
+        }
       }
     );
-  } catch (e) {
-    console.error('⚠️ Error conectando a Apps Script:', e);
-    return new Response(JSON.stringify({
-      status: 'ERROR',
-      message: 'No se pudo conectar con Apps Script'
-    }), {
-      status: 502,
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Content-Type': 'application/json'
-      }
-    });
   }
 
-  const text = await resp.text();
-  console.log('📥 Respuesta Apps Script:', resp.status, text);
+  const text = await resp.text(); // lee SOLO una vez
 
-  // Si el script devolvió HTML por algún error de despliegue, lo verás aquí
-  // (en la consola remote de Safari).  
+  // Content-Type del upstream, con fallback a JSON
+  const upstreamCT = resp.headers.get('content-type') || 'application/json';
+
   return new Response(text, {
     status: resp.status,
     headers: {
       'Access-Control-Allow-Origin': origin,
-      'Content-Type': 'application/json'
+      'Content-Type': upstreamCT,
+      'Cache-Control': 'no-store',
+      'Vary': 'Origin'
     }
   });
 }

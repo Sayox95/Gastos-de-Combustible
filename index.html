@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reporte de Gastos de Combustible</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
@@ -942,7 +942,8 @@ document.addEventListener('DOMContentLoaded', function(){
       ? debounce(validarFacturaSoloNumero, 350)
       : null;
 
-    input.addEventListener('input', function(){
+    if (!input.__facturaListenerAttached) {
+      input.addEventListener('input', function(){
       applyMaskAndPreserveCaret(input);
       var digits = (input.value.match(/\d/g)||[]).length;
       var complete = digits === 16 && /^\d{3}-\d{3}-\d{2}-\d{8}$/.test(input.value);
@@ -966,6 +967,8 @@ document.addEventListener('DOMContentLoaded', function(){
         try { validarFacturaSoloNumero(); } catch(e){}
       }, 350);
     }, {passive:false});
+      input.__facturaListenerAttached = true;
+    }
   }
 
   document.addEventListener('DOMContentLoaded', function(){
@@ -1196,7 +1199,7 @@ async function validarFacturaSoloNumero(){
   document.addEventListener('DOMContentLoaded', function(){
     var f = document.getElementById('factura') || document.getElementById('NumeroFactura');
     if(f){
-      f.addEventListener('input', debounce(validarFacturaSoloNumero, 450));
+      if (!f.__facturaListenerAttached) { f.addEventListener('input', debounce(validarFacturaSoloNumero, 450)); f.__facturaListenerAttached = true; }
       if(f.value){ validarFacturaSoloNumero(); }
     }
   });
@@ -1676,4 +1679,3 @@ document.addEventListener('DOMContentLoaded', function(){
   }, true);
 })();
 </script>
-

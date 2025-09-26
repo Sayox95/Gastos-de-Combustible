@@ -18,7 +18,7 @@ export async function onRequestPost({ request, env }) {
 
   const upstream =
     env?.APPS_SCRIPT_POST_URL ||
-    'https://script.google.com/macros/s/AKfycby-zReunHtHx3ziMwnyAXbeyGpQ6D5LTqsd9cB_WuZhFU43jyNBmRdf5ifiucpYA1SY/exec';
+    'https://script.google.com/macros/s/AKfycbzOnARKPvpMeRo1SYonzEZXZ97ejZCcXbuUYJYDT-6YzvMlZO9CqQEvu4QQE23I2c5v4A/exec';
 
   try {
     const resp = await fetch(upstream, {

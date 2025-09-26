@@ -615,7 +615,7 @@ var page3={ stack:[ {text:'FACTURA ORIGINAL',style:'tSub',margin:[0,0,0,8],align
       var controller = new AbortController();
       var t = setTimeout(function(){ controller.abort(); }, timeoutMs);
       try{
-        var res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json','Cache-Control':'no-cache'}, body: JSON.stringify(payload), signal: controller.signal });
+        var res = await fetch(url, { method:'POST', headers: {'Content-Type':'application/json',}, body: JSON.stringify(payload), signal: controller.signal });
         clearTimeout(t);
         if(!res.ok){
           var txtErr = await res.text().catch(function(){ return ''; });
@@ -1086,7 +1086,7 @@ async function postJSONTolerant(url, payload, opts){
   var ctrl = new AbortController(); var timer = setTimeout(()=>ctrl.abort(), timeoutMs);
   var merged = ctrl.signal; try{ if(signal){ merged = AbortSignal.any([signal, ctrl.signal]); } }catch(_){}
   try{
-    var res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json','Cache-Control':'no-cache'}, body: JSON.stringify(payload), signal: merged });
+    var res = await fetch(url, { method:'POST', headers: {'Content-Type':'application/json',}, body: JSON.stringify(payload), signal: merged });
     clearTimeout(timer);
     if(!res.ok){
       var t = ''; try{ t = await res.text(); }catch(_){}
@@ -1199,7 +1199,7 @@ async function validarFacturaSoloNumero(){
   document.addEventListener('DOMContentLoaded', function(){
     var f = document.getElementById('factura') || document.getElementById('NumeroFactura');
     if(f){
-      if (!f.__facturaListenerAttached) { f.addEventListener('input', debounce(validarFacturaSoloNumero, 450)); f.__facturaListenerAttached = true; }
+      
       if(f.value){ validarFacturaSoloNumero(); }
     }
   });
@@ -1679,3 +1679,4 @@ document.addEventListener('DOMContentLoaded', function(){
   }, true);
 })();
 </script>
+

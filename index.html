@@ -144,6 +144,14 @@
 .vscomp-option.selected{ background:#0b1222; }
 </style>
 
+
+<style>
+/* Ensures Virtual Select fills the full grid column width like other inputs */
+.vscomp-wrapper{ width:100% !important; min-width:0 !important; }
+.vscomp-toggle{ width:100% !important; max-width:none !important; }
+.vscomp-toggle-button{ width:100% !important; box-sizing:border-box; margin:0; }
+</style>
+
 </head>
 <body>
   <header class="no-print">
@@ -397,7 +405,7 @@
 
     async function handleImageInput(inputId){ const input=$(inputId); const file=input&&input.files&&input.files[0]; if(!file){ ImageState[inputId]=null; return; } const isRecent=(Date.now()-file.lastModified)<=672*3600*1000; if(!isRecent){ showError(input,'La foto debe ser ≤ 48 horas'); input.value=''; return; } try{ const optimized=await fileToOptimizedBase64(file, 1280, 1280, 0.6); ImageState[inputId]=optimized; requestAnimationFrame(()=>{ const prev=$('preview_'+inputId); if(prev) prev.innerHTML='<img alt="" src="'+optimized+'">'; }); }catch(err){ if(err&&err.code==='UNSUPPORTED_FORMAT') showError(input,'Formato no soportado ('+(err.type||'')+'). Usa JPG/PNG/WebP.'); else showError(input,'No se pudo leer la imagen'); } }
 
-    function validateForm(){ let ok=true; document.querySelectorAll('#form [required]').forEach(inp=>{ if(!inp.checkValidity()){ ok=false; showError(inp, inp.validationMessage); } else { showError(inp,''); } }); const ids=['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura']; for(const id of ids){ const el=$(id); if(!el.files||!el.files[0]){ ok=false; showError(el,'Requerido'); continue; } const f=el.files[0]; const recent=(Date.now()-f.lastModified)<=672*3600*1000; if(!recent){ ok=false; showError(el,'La foto debe ser ≤ 48 horas'); } } return ok; }
+    function validateForm(){ let ok=true; document.querySelectorAll('#form [required]').forEach(inp=>{ if(!(inp && typeof inp.checkValidity==='function' ? inp.checkValidity() : true)){ ok=false; showError(inp, inp.validationMessage); } else { showError(inp,''); } }); const ids=['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura']; for(const id of ids){ const el=$(id); if(!el.files||!el.files[0]){ ok=false; showError(el,'Requerido'); continue; } const f=el.files[0]; const recent=(Date.now()-f.lastModified)<=672*3600*1000; if(!recent){ ok=false; showError(el,'La foto debe ser ≤ 48 horas'); } } return ok; }
 
     function getFormData(){ return { Sector: trimAny($('sector').value), Placa: trimUpper($('placa').value), Proceso: trimAny($('proceso').value), Nombre: trimAny($('nombre').value), Identidad: trimAny($('identidad').value), TotalGastado: normalizeNumberForSave($('total').value), LitrosConsumidos: normalizeNumberForSave($('litros').value), MotivoDelLlenado: trimAny($('motivo').value), Fecha: trimAny($('fecha').value), HorasDelViaje: trimAny($('horas').value), KmActual: trimAny($('km').value), NumeroFactura: trimAny($('factura').value), NombreComercio: trimAny($('nombre_comercio').value), JefeInmediato: trimAny(($('jefe').value)||'') }; }
 

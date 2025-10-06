@@ -103,6 +103,47 @@
 .sig-btn.secondary {background:#e5e7eb; color:#111827;}
 .sig-btn.warn {background:#fee2e2; color:#991b1b;}
 </style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/virtual-select-plugin/dist/virtual-select.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/virtual-select-plugin/dist/virtual-select.min.js"></script>
+
+<style>
+/* Virtual Select dark styling to match inputs */
+.vscomp-wrapper{ width:100%; font-family: inherit; }
+.vscomp-toggle{ width:100%; }
+.vscomp-toggle-button{
+  width:100%;
+  background:#0f1525;
+  color: var(--text);
+  border:1px solid #223052;
+  border-radius:.75rem;
+  padding:.85rem 2.25rem .85rem 1rem;
+}
+.vscomp-placeholder{ color:#8aa0bc; }
+.vscomp-arrow{ border-top-color:#8aa0bc !important; }
+.vscomp-wrapper.disabled .vscomp-toggle-button{ opacity:.6; cursor:not-allowed; }
+
+.vscomp-dropbox{
+  background:#0f172a;
+  border:1px solid #2a3a5a;
+  border-radius:.75rem;
+  box-shadow:0 10px 20px rgba(0,0,0,.35);
+  color: var(--text);
+}
+.vscomp-search{ padding:8px; }
+.vscomp-search-input{
+  width:100%;
+  background:#0f1525;
+  color:var(--text);
+  border:1px solid #223052;
+  border-radius:.5rem;
+  padding:.5rem .75rem;
+}
+.vscomp-option{ color: var(--text); }
+.vscomp-option:hover, .vscomp-option.focused{ background:#13213d; }
+.vscomp-option.selected{ background:#0b1222; }
+</style>
+
 </head>
 <body>
   <header class="no-print">
@@ -310,7 +351,7 @@
       window.resetSubmissionId = function(){ __submissionId = null; };
     })();
 
-    const Catalogos = { sectores: [], placasPorSector: {}, jefePorSector: {} };
+    const Catalogos = { sectores: [], placasPorSector: {}, jefePorSector: {}, todasPlacas: [] };
     const urlCatalogos = 'https://script.google.com/macros/s/AKfycbxp2yVp4hF-t9f2LdU9NhZxVt6RwXyL3uKrKzXk4a_l4na2Rkd1LZMB02pEJeRQ_eCF/exec';
 
     function $(id){ return document.getElementById(id); }
@@ -642,10 +683,81 @@ var page3={ stack:[ {text:'FACTURA ORIGINAL',style:'tSub',margin:[0,0,0,8],align
       }
     }
 
-    async function cargarCatalogos(){ const selSector=$('sector'); const selPlaca=$('placa'); if(selSector) selSector.disabled=true; if(selPlaca) selPlaca.disabled=true; try{ const res=await fetch(urlCatalogos,{method:'GET',mode:'cors'}); const json=await res.json(); if(Array.isArray(json)){ const setSect=new Set(); const placasPorSector={}; const jefePorSector={}; for(const row of json){ const placa=(row&&row.PLACA?String(row.PLACA).trim():''); const sector=(row&&row.Sector?String(row.Sector).trim():''); const jefe=(row&&row['Jefe inmediato']?String(row['Jefe inmediato']).trim():''); if(!placa||!sector) continue; setSect.add(sector); (placasPorSector[sector]=placasPorSector[sector]||[]).push(placa); if(jefe && !jefePorSector[sector]) jefePorSector[sector]=jefe; } Catalogos.sectores=Array.from(setSect).sort(); Catalogos.placasPorSector=placasPorSector; Catalogos.jefePorSector=jefePorSector; setSelectOptions(selSector,Catalogos.sectores,'Selecciona…'); if(selSector) selSector.disabled=false; } }catch(e){ console.error('Catálogos:',e); } }
+    async function cargarCatalogos(){ const selSector=$('sector'); const selPlaca=$('placa'); if(selSector) selSector.disabled=true; if(selPlaca) selPlaca.disabled=true; try{ const res=await fetch(urlCatalogos,{method:'GET',mode:'cors'}); const json=await res.json(); if(Array.isArray(json)){ const setSect=new Set(); const placasPorSector={}; const jefePorSector={}; const todasPlacasSet=new Set(); for(const row of json){ const placa=(row&&row.PLACA?String(row.PLACA).trim():''); const sector=(row&&row.Sector?String(row.Sector).trim():''); const jefe=(row&&row['Jefe inmediato']?String(row['Jefe inmediato']).trim():''); if(!placa||!sector) continue; setSect.add(sector); (placasPorSector[sector]=placasPorSector[sector]||[]).push(placa); todasPlacasSet.add(placa); if(jefe && !jefePorSector[sector]) jefePorSector[sector]=jefe; } 
+    // Build sectors list including the manual "Corporativo" option (not present in DB)
+    const sectoresOrdenados = Array.from(setSect).sort();
+    const sectoresConCorporativo = ['Corporativo', ...sectoresOrdenados];
+    Catalogos.sectores = sectoresConCorporativo;
+    Catalogos.placasPorSector = placasPorSector;
+    Catalogos.jefePorSector = jefePorSector;
+    Catalogos.todasPlacas = Array.from(todasPlacasSet).sort();
+    setSelectOptions(selSector, Catalogos.sectores, 'Selecciona…'); if(selSector) selSector.disabled=false; } }catch(e){ console.error('Catálogos:',e); } }
 
-    function setSelectOptions(sel,arr,placeholder){ if(!sel) return; var opts=['<option value="">'+(placeholder||'Selecciona…')+'</option>'].concat((arr||[]).map(function(v){return '<option>'+String(v)+'</option>'})); sel.innerHTML=opts.join(''); }
-    function onSectorChange(){ const selSector=$('sector'), selPlaca=$('placa'), jefeInput=$('jefe'); const sector=selSector?selSector.value:''; const placas=(Catalogos.placasPorSector[sector]||[]).slice().sort(); setSelectOptions(selPlaca,placas,'Selecciona…'); if(selPlaca) selPlaca.disabled=placas.length===0; if(jefeInput) jefeInput.value=Catalogos.jefePorSector[sector]||''; }
+    
+function setSelectOptions(sel, arr, placeholder){
+  if(!sel) return;
+  var isPlaca = (sel.id === 'placa');
+  // When target is #placa and VirtualSelect is loaded, use its API
+  if (isPlaca && window.VirtualSelect){
+    try{
+      var vsEl = document.getElementById('placa');
+      var options = (arr || []).map(function(v){ return { label: String(v), value: String(v) }; });
+      if (vsEl && typeof vsEl.setOptions === 'function'){
+        // Update existing instance
+        vsEl.setOptions(options, false);
+        try{ vsEl.setValue(''); }catch(_){}
+        try{ if (options.length===0) vsEl.disable(); else vsEl.enable(); }catch(_){}
+      } else {
+        // Initialize instance
+        VirtualSelect.init({
+          ele: '#placa',
+          options: options,
+          search: true,
+          multiple: false,
+          placeholder: (placeholder || 'Selecciona…'),
+          noOptionsText: 'Sin opciones',
+          noSearchResultsText: 'Sin resultados',
+          dropboxWrapper: 'body',
+          disableSelectAll: true,
+          autoSelectFirstOption: false,
+          showSelectedOptionsFirst: false
+        });
+        try{
+          var inst = document.getElementById('placa');
+          if (options.length===0) inst.disable(); else inst.enable();
+        }catch(_){}
+      }
+      return; // handled
+    }catch(_){ /* graceful fallback below */ }
+  }
+  // Fallback: plain select population
+  var opts = [];
+  if (placeholder){ opts.push('<option value="">'+String(placeholder)+'</option>'); }
+  (arr||[]).forEach(function(v){ opts.push('<option>'+String(v)+'</option>'); });
+  sel.innerHTML = opts.join('');
+}
+function onSectorChange(){
+  const selSector=$('sector'), selPlaca=$('placa'), jefeInput=$('jefe');
+  const sector=selSector?selSector.value:'';
+  let placas = [];
+  // If "Corporativo" is chosen, show all plates from the DB; otherwise show only the sector's plates
+  if (sector === 'Corporativo') {
+    placas = (Catalogos.todasPlacas||[]).slice();
+    if (jefeInput) jefeInput.value = ''; // Corporativo has no jefe
+  } else {
+    placas = (Catalogos.placasPorSector[sector]||[]).slice().sort();
+    if (jefeInput) jefeInput.value = Catalogos.jefePorSector[sector] || '';
+  }
+  setSelectOptions(selPlaca, placas, 'Selecciona…');
+  if (selPlaca) selPlaca.disabled = placas.length === 0;
+  try{
+    var vsEl = document.getElementById('placa');
+    if (vsEl && typeof vsEl.disable === 'function'){
+      if (placas.length===0) vsEl.disable();
+      else vsEl.enable();
+    }
+  }catch(_){}
+}
 
     async function enviarReporte(){
   if(isSaving) return;
@@ -1604,6 +1716,119 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 })();
+
+// 🔧 Ajuste especial: remover formato de miles solo en el campo de 'litros_consumidos'
+document.addEventListener('DOMContentLoaded', () => {
+  const litrosInput = document.getElementById('litros_consumidos');
+  if (litrosInput) {
+    litrosInput.addEventListener('input', () => {
+      // Limpia caracteres que no sean dígitos o punto
+      litrosInput.value = litrosInput.value.replace(/[^\\d.]/g, '');
+    });
+    litrosInput.addEventListener('blur', () => {
+      // No aplicar formato de miles, solo mantener número plano
+      let v = parseFloat(litrosInput.value);
+      if (isNaN(v)) v = '';
+      else litrosInput.value = v.toString();
+    });
+  }
+});
+
+</script>
+<script>
+// === Patch: excluir formato de miles SOLO para #litros ===
+(function(){
+  function sanitizeLitrosValue(raw){
+    if (raw == null) return '';
+    // Quitar comas y espacios
+    let v = String(raw).replace(/,/g, '').replace(/\s+/g, '');
+    // Permitir solo dígitos y un punto
+    // 1) quitar todo lo que no sea dígito o punto
+    v = v.replace(/[^0-9.]/g, '');
+    // 2) si hay más de un punto, dejar solo el primero
+    const firstDot = v.indexOf('.');
+    if (firstDot !== -1){
+      // eliminar puntos extra
+      const head = v.slice(0, firstDot + 1);
+      const tail = v.slice(firstDot + 1).replace(/\./g, '');
+      v = head + tail;
+    }
+    return v;
+  }
+  function attachLitrosHandlers(el){
+    if (!el) return;
+    el.setAttribute('inputmode','decimal');
+    el.addEventListener('input', function(){
+      const cur = el.value;
+      const clean = sanitizeLitrosValue(cur);
+      if (cur !== clean) el.value = clean;
+      // Opcional: feedback en vivo si excede 250
+      const max = 250;
+      const n = parseFloat(el.value || '0');
+      const lbl = document.getElementById('err_litros_lbl');
+      if (lbl){
+        if (!isNaN(n) && n > max) lbl.textContent = 'Excede el máximo ' + String(max);
+        else lbl.textContent = 'Máximo ' + String(max);
+      }
+      try { if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled(); } catch(_){}
+    }, {passive:true});
+    el.addEventListener('blur', function(){
+      // No aplicar formato de miles al salir; solo mantener valor plano
+      const clean = sanitizeLitrosValue(el.value);
+      el.value = clean;
+      try { if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled(); } catch(_){}
+    }, {passive:true});
+  }
+  
+  window.addEventListener('load', function(){
+    try{
+      var litros = document.getElementById('litros');
+      if (!litros) return;
+      // Clonar y reemplazar para eliminar handlers previos que apliquen formato con comas
+      var clone = litros.cloneNode(true);
+      litros.parentNode.replaceChild(clone, litros);
+      // Reasignar id y name si fuera necesario (al clonar se conservan)
+      attachLitrosHandlers(clone);
+      // Inicializar texto de ayuda como "Máximo 250"
+      var lbl = document.getElementById('err_litros_lbl');
+      if (lbl) lbl.textContent = 'Máximo 250';
+    }catch(_){}
+  });
+
+})();
+</script>
+
+
+<script>
+// Initialize Virtual Select for #placa if not already initialized
+document.addEventListener('DOMContentLoaded', function(){
+  try{
+    if (!window.VirtualSelect) return;
+    var sel = document.getElementById('placa');
+    if (!sel) return;
+    if (typeof sel.setOptions === 'function') return; // already initialized
+    var opts = [];
+    var placeholder = 'Selecciona…';
+    var first = sel.querySelector('option[value=""]');
+    if (first) placeholder = first.textContent || placeholder;
+    sel.querySelectorAll('option').forEach(function(o){
+      if (o.value !== '') opts.push({ label: o.textContent, value: o.value || o.textContent });
+    });
+    VirtualSelect.init({
+      ele: '#placa',
+      options: opts,
+      search: true,
+      multiple: false,
+      placeholder: placeholder,
+      noOptionsText: 'Sin opciones',
+      noSearchResultsText: 'Sin resultados',
+      dropboxWrapper: 'body',
+      disableSelectAll: true,
+      autoSelectFirstOption: false,
+      showSelectedOptionsFirst: false
+    });
+  }catch(_){}
+});
 </script>
 
 </body>
@@ -1679,4 +1904,5 @@ document.addEventListener('DOMContentLoaded', function(){
   }, true);
 })();
 </script>
+
 

@@ -179,7 +179,7 @@
             <div class="error" id="err_proceso"></div>
           </div>
           <div>
-            <label for="placa">Placa</label>
+            <label id="label_placa" for="placa_proxy">Placa</label>
             <select id="placa" name="placa" required disabled>
               <option value="">Selecciona…</option>
             </select>
@@ -1839,6 +1839,41 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  try{
+    var lbl = document.getElementById('label_placa');
+    var vs  = document.getElementById('placa');
+    if (lbl && vs){
+      vs.setAttribute('aria-labelledby', 'label_placa');
+      lbl.addEventListener('click', function(){
+        var btn = vs.querySelector('.vscomp-toggle-button, .vscomp-toggle');
+        if (btn) { btn.click(); } else { vs.click(); }
+      });
+    }
+  }catch(_){}
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  try{
+    var lbl = document.getElementById('label_placa');
+    var vs  = document.getElementById('placa'); // Virtual Select wrapper/host
+    if (lbl && vs){
+      vs.setAttribute('aria-labelledby', 'label_placa');
+      lbl.addEventListener('click', function(){
+        // focus the proxy and open the dropdown for UX parity
+        var proxy = document.getElementById('placa_proxy');
+        if (proxy) try { proxy.focus({preventScroll:true}); } catch(_) {}
+        var btn = vs.querySelector('.vscomp-toggle-button, .vscomp-toggle');
+        if (btn) { try { btn.click(); } catch(_){ } }
+      });
+    }
+  }catch(_){}
+});
+</script>
+
 </body>
 </html>
 \n
@@ -1912,6 +1947,3 @@ document.addEventListener('DOMContentLoaded', function(){
   }, true);
 })();
 </script>
-
-
-

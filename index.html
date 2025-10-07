@@ -692,10 +692,10 @@ var page3={ stack:[ {text:'FACTURA ORIGINAL',style:'tSub',margin:[0,0,0,8],align
     }
 
     async function cargarCatalogos(){ const selSector=$('sector'); const selPlaca=$('placa'); if(selSector) selSector.disabled=true; if(selPlaca) selPlaca.disabled=true; try{ const res=await fetch(urlCatalogos,{method:'GET',mode:'cors'}); const json=await res.json(); if(Array.isArray(json)){ const setSect=new Set(); const placasPorSector={}; const jefePorSector={}; const todasPlacasSet=new Set(); for(const row of json){ const placa=(row&&row.PLACA?String(row.PLACA).trim():''); const sector=(row&&row.Sector?String(row.Sector).trim():''); const jefe=(row&&row['Jefe inmediato']?String(row['Jefe inmediato']).trim():''); if(!placa||!sector) continue; setSect.add(sector); (placasPorSector[sector]=placasPorSector[sector]||[]).push(placa); todasPlacasSet.add(placa); if(jefe && !jefePorSector[sector]) jefePorSector[sector]=jefe; } 
-    // Build sectors list including the manual "Corporativo" option (not present in DB)
+    // Build sectors list including the manual "CORPORATIVO" option (not present in DB)
     const sectoresOrdenados = Array.from(setSect).sort();
-    const sectoresConCorporativo = ['Corporativo', ...sectoresOrdenados];
-    Catalogos.sectores = sectoresConCorporativo;
+    const sectoresConCORPORATIVO = ['CORPORATIVO', ...sectoresOrdenados];
+    Catalogos.sectores = sectoresConCORPORATIVO;
     Catalogos.placasPorSector = placasPorSector;
     Catalogos.jefePorSector = jefePorSector;
     Catalogos.todasPlacas = Array.from(todasPlacasSet).sort();
@@ -748,10 +748,10 @@ function onSectorChange(){
   const selSector=$('sector'), selPlaca=$('placa'), jefeInput=$('jefe');
   const sector=selSector?selSector.value:'';
   let placas = [];
-  // If "Corporativo" is chosen, show all plates from the DB; otherwise show only the sector's plates
-  if (sector === 'Corporativo') {
+  // If "CORPORATIVO" is chosen, show all plates from the DB; otherwise show only the sector's plates
+  if (sector === 'CORPORATIVO') {
     placas = (Catalogos.todasPlacas||[]).slice();
-    if (jefeInput) jefeInput.value = ''; // Corporativo has no jefe
+    if (jefeInput) jefeInput.value = ''; // CORPORATIVO has no jefe
   } else {
     placas = (Catalogos.placasPorSector[sector]||[]).slice().sort();
     if (jefeInput) jefeInput.value = Catalogos.jefePorSector[sector] || '';
@@ -1912,5 +1912,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }, true);
 })();
 </script>
+
 
 

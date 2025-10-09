@@ -364,7 +364,7 @@
     const urlCatalogos = 'https://script.google.com/macros/s/AKfycbxp2yVp4hF-t9f2LdU9NhZxVt6RwXyL3uKrKzXk4a_l4na2Rkd1LZMB02pEJeRQ_eCF/exec';
 
     function $(id){ return document.getElementById(id); }
-    function showToast(msg){ const t=$('toast'); if(!t) return; t.textContent=msg||'Hecho'; t.style.display='block'; clearTimeout(showToast._t); showToast._t=setTimeout(()=>{ t.style.display='none'; }, 2500); }
+    function showToast(msg){ const t=$('toast'); if(!t) return; t.textContent=msg||'Hecho'; t.style.display='block'; clearTimeout(showToast._t); showToast._t=setTimeout(()=>{ t.style.display='none'; }, 2500); } 
     function setBusy(b){ document.querySelectorAll('button').forEach(x=>x.disabled=!!b); }
 
     function showError(input,text){ const e=$('err_'+input.id); if(e) e.textContent=text||''; }
@@ -1948,4 +1948,5 @@ document.addEventListener('DOMContentLoaded', function(){
   }, true);
 })();
 </script>
+
 

@@ -1255,23 +1255,10 @@ function setDuplicadaState(isDup){
 window.__forceReplaceByFactura = window.__forceReplaceByFactura || false;
 var __facturaAbort = null;
 async function validarFacturaSoloNumero(){
-  // Solo validar con 16 dígitos exactos
-  var fld = document.getElementById('factura') || document.getElementById('NumeroFactura');
-  if (fld){
-    var raw = (fld.value||'').replace(/\D+/g,'');
-    if (raw.length !== 16){
-      var faltan = Math.max(0, 16 - raw.length);
-      var txt = (faltan === 1) ? 'Falta 1 de 16 dígitos' : ('Faltan ' + faltan + ' de 16 dígitos');
-      try { setFacturaStatus('warn', txt); setDuplicadaState(false); } catch(e){}
-      if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
-      return;
-    }
-  }
-
   // Gate: solo validar cuando hay exactamente 16 dígitos (formato 3-3-2-8)
-  var fld = document.getElementById('factura') || document.getElementById('NumeroFactura');
-  if (fld) {
-    var raw = (fld.value||'').replace(/\D+/g,'');
+  var inp = document.getElementById('factura') || document.getElementById('NumeroFactura');
+  if (inp) {
+    var raw = (inp.value||'').replace(/\D+/g,'');
     if (raw.length !== 16) {
       var faltan = Math.max(0, 16 - raw.length);
       var txt = (faltan === 1) ? 'Falta 1 de 16 dígitos' : ('Faltan ' + faltan + ' de 16 dígitos');
@@ -1948,5 +1935,4 @@ document.addEventListener('DOMContentLoaded', function(){
   }, true);
 })();
 </script>
-
 

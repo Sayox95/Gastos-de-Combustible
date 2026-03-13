@@ -656,7 +656,7 @@ var page3={ stack:[ {text:'FACTURA ORIGINAL',style:'tSub',margin:[0,0,0,8],align
       });
     }
 
-    var _previewTimer; function schedulePreview(){ clearTimeout(_previewTimer); _previewTimer=setTimeout(function(){ try{ var data=getFormData(); var dd=buildDocDefinition(data,ImageState); renderPdfPreview(dd); }catch(e){} },250); }
+    var _previewTimer; function schedulePreview(){ clearTimeout(_previewTimer); _previewTimer=setTimeout(function(){ try{ var data=getFormData(); var dd=buildDocDefinition(data,ImageState); dd.watermark={ text:'Factura Preliminar', color:'#cc0000', opacity:0.12, bold:true, italics:true, fontSize:52, angle:-45 }; renderPdfPreview(dd); }catch(e){} },250); }
 
     async function postJSONWithRetry(url,payload,retries,timeoutMs){
       retries = Number(retries||0);
@@ -1255,10 +1255,23 @@ function setDuplicadaState(isDup){
 window.__forceReplaceByFactura = window.__forceReplaceByFactura || false;
 var __facturaAbort = null;
 async function validarFacturaSoloNumero(){
+  // Solo validar con 16 dígitos exactos
+  var fld = document.getElementById('factura') || document.getElementById('NumeroFactura');
+  if (fld){
+    var raw = (fld.value||'').replace(/\D+/g,'');
+    if (raw.length !== 16){
+      var faltan = Math.max(0, 16 - raw.length);
+      var txt = (faltan === 1) ? 'Falta 1 de 16 dígitos' : ('Faltan ' + faltan + ' de 16 dígitos');
+      try { setFacturaStatus('warn', txt); setDuplicadaState(false); } catch(e){}
+      if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
+      return;
+    }
+  }
+
   // Gate: solo validar cuando hay exactamente 16 dígitos (formato 3-3-2-8)
-  var inp = document.getElementById('factura') || document.getElementById('NumeroFactura');
-  if (inp) {
-    var raw = (inp.value||'').replace(/\D+/g,'');
+  var fld = document.getElementById('factura') || document.getElementById('NumeroFactura');
+  if (fld) {
+    var raw = (fld.value||'').replace(/\D+/g,'');
     if (raw.length !== 16) {
       var faltan = Math.max(0, 16 - raw.length);
       var txt = (faltan === 1) ? 'Falta 1 de 16 dígitos' : ('Faltan ' + faltan + ' de 16 dígitos');

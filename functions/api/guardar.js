@@ -59,9 +59,8 @@ export async function onRequestPost({ request, env }) {
     appJson.rowId &&
     !appJson.alreadySaved &&       // no era idempotente (ya existía)
     !appJson.pago &&               // no era un pago
-    !appJson.actualizado &&        // no era cambio de estado
     bodyJson &&
-    bodyJson.NumeroFactura;        // tiene datos de factura
+    bodyJson.NumeroFactura;        // tiene datos de factura (cubre creado y reemplazo)
 
   if (esGuardadoReal) {
     try {

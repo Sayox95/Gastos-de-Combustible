@@ -25,7 +25,7 @@ export async function onRequestPost({ request, env }) {
 
   const upstream =
     env?.APPS_SCRIPT_POST_URL ||
-    'https://script.google.com/macros/s/AKfycbznSLsTh5_BBp88VJbjWhaBD-6CKXjns2rywJbwQ8FkK5c5evp7-2_oGF-MFZZC3i4AxA/exec';
+    'https://script.google.com/macros/s/AKfycbxC62s5NqxX-V2IRYL99bMwC3kPcml5OVsX2pumEGaJCVklI5KiVERhWb4mYfZMONMtag/exec';
 
   // ── 1) Enviar a AppScript ────────────────────────────────────────────────
   let resp;
@@ -85,6 +85,8 @@ export async function onRequestPost({ request, env }) {
         NumeroFactura:    String(bodyJson.NumeroFactura   || "").trim() || null,
         FechaRegistro:    new Date().toISOString().slice(0, 10),
         IDvehiculo:       String(appJson.idVehiculo || "").trim() || null,
+        Marca:            String(appJson.marca  || "").trim() || null,
+        Modelo:           String(appJson.modelo || "").trim() || null,
         EnlacePDF:        fileUrl,
         Estado:           "Registrada",
         Fondo:            null,

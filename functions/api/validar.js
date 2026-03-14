@@ -2,7 +2,7 @@
 // Valida duplicados de factura consultando D1 en vez de AppScript/Sheets
 
 const APPSCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbxC62s5NqxX-V2IRYL99bMwC3kPcml5OVsX2pumEGaJCVklI5KiVERhWb4mYfZMONMtag/exec';
+  'https://script.google.com/macros/s/AKfycbxoZWFvLJczXhZIkI4O-G6N1PZT4UDDWX-KkGYlgwr86bcgQVMCUNGdgYjtUiLXmgfccg/exec';
 
 const CORS = (origin) => ({
   'Access-Control-Allow-Origin': origin,

@@ -1293,9 +1293,11 @@ async function validarFacturaSoloNumero(){
   if(__facturaAbort){ try{ __facturaAbort.abort(); }catch(_){ } }
   __facturaAbort = new AbortController();
   try{
+    var sector = (document.getElementById('sector') ? document.getElementById('sector').value : '') || '';
     var resp = await postJSONTolerant(getValidacionEndpoint(), {
       validarDuplicadoSoloFactura: true,
-      NumeroFactura: numero
+      NumeroFactura: numero,
+      Sector: sector.trim()
     }, { timeoutMs: 20000, signal: __facturaAbort.signal });
     var dup = !!(resp && resp.duplicado === true);
     if(dup){
@@ -1948,4 +1950,3 @@ document.addEventListener('DOMContentLoaded', function(){
   }, true);
 })();
 </script>
-

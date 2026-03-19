@@ -24,18 +24,27 @@ export async function onRequestPost({ request, env }) {
   try { bodyJson = JSON.parse(await request.text()); } catch (_) {}
 
   const numeroFactura = (bodyJson?.NumeroFactura || "").toString().trim();
+  const sector        = (bodyJson?.Sector        || "").toString().trim();
 
   // Si no viene número de factura o no hay D1, caer al AppScript
   if (!numeroFactura || !env.DB) {
     return fallbackAppScript(bodyJson, origin);
   }
 
-  // ── Validar duplicado en D1 ──────────────────────────────────────────────
+  // ── Validar duplicado en D1 (por NumeroFactura + Sector si viene) ────────
   try {
-    const { results } = await env.DB
-      .prepare("SELECT fila FROM facturas WHERE NumeroFactura = ? LIMIT 1")
-      .bind(numeroFactura)
-      .all();
+    let results;
+    if (sector) {
+      ({ results } = await env.DB
+        .prepare("SELECT fila FROM facturas WHERE NumeroFactura = ? AND Sector = ? LIMIT 1")
+        .bind(numeroFactura, sector)
+        .all());
+    } else {
+      ({ results } = await env.DB
+        .prepare("SELECT fila FROM facturas WHERE NumeroFactura = ? LIMIT 1")
+        .bind(numeroFactura)
+        .all());
+    }
 
     const duplicado = results && results.length > 0;
     return new Response(JSON.stringify({ duplicado }), {

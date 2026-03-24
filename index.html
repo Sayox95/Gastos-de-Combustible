@@ -251,7 +251,7 @@
     </div>
           <div>
             <label for="nombre_comercio">Nombre del comercio</label>
-            <input id="nombre_comercio" name="nombre_comercio" required />
+            <input id="nombre_comercio" name="nombre_comercio" required style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" />
             <div class="error" id="err_nombre_comercio"></div>
           </div>
 </div>

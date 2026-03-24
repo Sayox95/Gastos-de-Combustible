@@ -25,7 +25,7 @@ export async function onRequestPost({ request, env }) {
 
   const upstream =
     env?.APPS_SCRIPT_POST_URL ||
-    'https://script.google.com/macros/s/AKfycbxoZWFvLJczXhZIkI4O-G6N1PZT4UDDWX-KkGYlgwr86bcgQVMCUNGdgYjtUiLXmgfccg/exec';
+    'https://script.google.com/macros/s/AKfycbz0yqZOeSxZohrbiWtlizFpbvryrnqi38_70xvdvKD2YSNTGGdlc7pqrlDIZs8aIuJp_A/exec';
 
   // ── 1) Enviar a AppScript ────────────────────────────────────────────────
   let resp;

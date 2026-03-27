@@ -5,7 +5,7 @@ const SYNC_URL    = "https://repositorio-de-pruebas.pages.dev/api/sincronizar";
 const SYNC_SECRET = "utcd-facturas-2026-sync-xK9mP";
 const R2_PUBLIC   = "https://pub-9a4726fe82ba459fa6542b01ec3b1f4f.r2.dev";
 
-const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZ2pIfZy4aJ4NT3xQTHKNjFSEYfSUxiV1aBpgIXIZVthOUYbjbm-mllTQc2ZLkdTL1Ww/exec";
+const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOnARKPvpMeRo1SYonzEZXZ97ejZCcXbuUYJYDT-6YzvMlZO9CqQEvu4QQE23I2c5v4A/exec";
 
 export async function onRequestOptions({ request }) {
   const origin = request.headers.get('Origin') || '*';

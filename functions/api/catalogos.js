@@ -6,7 +6,7 @@ const CORS = {
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json',
-  'Cache-Control': 'public, max-age=300', // cache 5 minutos
+  'Cache-Control': 'no-store',
   'Vary': 'Origin'
 };
 

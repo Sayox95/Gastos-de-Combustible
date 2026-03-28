@@ -1,11 +1,8 @@
 // functions/api/guardar.js (Formulario)
 // Flujo: PDF → R2, datos → D1, IDvehiculo/Marca/Modelo → D1 (tabla vehiculos)
 
-const SYNC_URL    = "https://repositorio-de-pruebas.pages.dev/api/sincronizar";
-const SYNC_SECRET = "utcd-facturas-2026-sync-xK9mP";
-const R2_PUBLIC   = "https://pub-9a4726fe82ba459fa6542b01ec3b1f4f.r2.dev";
+const R2_PUBLIC     = "https://pub-9a4726fe82ba459fa6542b01ec3b1f4f.r2.dev";
 
-const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOnARKPvpMeRo1SYonzEZXZ97ejZCcXbuUYJYDT-6YzvMlZO9CqQEvu4QQE23I2c5v4A/exec";
 
 export async function onRequestOptions({ request }) {
   const origin = request.headers.get('Origin') || '*';
@@ -29,15 +26,6 @@ export async function onRequestPost({ request, env }) {
 
   if (!bodyJson) {
     return new Response(JSON.stringify({ ok: false, status: 'ERROR', message: 'Payload inválido' }), { status: 400, headers: CORS });
-  }
-
-  // ── Validaciones / flujos que siguen yendo al AppScript ─────────────────
-  const isValidacion  = bodyJson.validarDuplicadoSoloFactura || bodyJson.validarDuplicado;
-  const isEstado      = bodyJson.actualizarEstado || bodyJson.accion === 'pagoLote' || bodyJson.accion === 'actualizarEstadoLote';
-  const isLiquidacion = bodyJson.accion === 'generarLiquidacion';
-
-  if (isValidacion || isEstado || isLiquidacion) {
-    return forwardToAppScript(bodyJson, origin);
   }
 
   // ── Flujo principal: guardar nueva factura ───────────────────────────────
@@ -129,45 +117,56 @@ export async function onRequestPost({ request, env }) {
   const fechaRegistro = new Date().toISOString().slice(0, 10);
   const submissionId  = (bodyJson.submissionId || "").trim() || null;
 
-  // ── 5) Guardar en D1 ────────────────────────────────────────────────────
-  const record = {
-    fila,
-    Sector:           sector || null,
-    Placa:            String(bodyJson.Placa            || "").trim() || null,
-    Proceso:          String(bodyJson.Proceso          || "").trim() || null,
-    Nombre:           String(bodyJson.Nombre           || "").trim() || null,
-    Identidad:        String(bodyJson.Identidad        || "").trim() || null,
-    TotalGastado:     bodyJson.TotalGastado != null ? Number(bodyJson.TotalGastado) || null : null,
-    LitrosConsumidos: String(bodyJson.LitrosConsumidos || "").trim() || null,
-    MotivoLlenado:    String(bodyJson.MotivoDelLlenado || "").trim() || null,
-    Fecha:            bodyJson.Fecha ? String(bodyJson.Fecha).slice(0, 10) : null,
-    HorasViaje:       String(bodyJson.HorasDelViaje   || "").trim() || null,
-    KmActual:         String(bodyJson.KmActual        || "").trim() || null,
-    NombreComercio:   String(bodyJson.NombreComercio  || "").trim() || null,
-    NumeroFactura:    numeroFactura || null,
-    FechaRegistro:    fechaRegistro,
-    IDvehiculo:       idVehiculo,
-    EnlacePDF:        fileUrl,
-    Estado:           "Registrada",
-    Fondo:            null,
-    FechaPago:        null,
-    FechaRevision:    null,
-    submission_id:    submissionId,
-    EstatusF:         null,
-    FacturaPrevia:    null,
-    ID_PAGO:          null,
-    Marca:            marca,
-    Modelo:           modelo,
-  };
-
+  // ── 5) Guardar en D1 directamente ──────────────────────────────────────
   try {
-    await fetch(SYNC_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Sync-Token": SYNC_SECRET },
-      body: JSON.stringify({ rows: [record], truncate: false })
-    });
+    await env.DB.prepare(`
+      INSERT OR REPLACE INTO facturas (
+        fila, Sector, Placa, Proceso, Nombre, Identidad,
+        TotalGastado, LitrosConsumidos, MotivoLlenado, Fecha,
+        HorasViaje, KmActual, NombreComercio, NumeroFactura,
+        FechaRegistro, IDvehiculo, EnlacePDF, Estado, Fondo,
+        FechaPago, FechaRevision, submission_id, EstatusF,
+        FacturaPrevia, ID_PAGO, Marca, Modelo
+      ) VALUES (
+        ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?
+      )
+    `).bind(
+      fila,
+      sector || null,
+      String(bodyJson.Placa            || "").trim() || null,
+      String(bodyJson.Proceso          || "").trim() || null,
+      String(bodyJson.Nombre           || "").trim() || null,
+      String(bodyJson.Identidad        || "").trim() || null,
+      bodyJson.TotalGastado != null ? Number(bodyJson.TotalGastado) || null : null,
+      String(bodyJson.LitrosConsumidos || "").trim() || null,
+      String(bodyJson.MotivoDelLlenado || "").trim() || null,
+      bodyJson.Fecha ? String(bodyJson.Fecha).slice(0, 10) : null,
+      String(bodyJson.HorasDelViaje    || "").trim() || null,
+      String(bodyJson.KmActual         || "").trim() || null,
+      String(bodyJson.NombreComercio   || "").trim() || null,
+      numeroFactura || null,
+      fechaRegistro,
+      idVehiculo,
+      fileUrl,
+      "Registrada",
+      null,
+      null,
+      null,
+      submissionId,
+      null,
+      null,
+      null,
+      marca,
+      modelo
+    ).run();
   } catch (e) {
-    console.error("D1 sync error:", e.message);
+    console.error("D1 insert error:", e.message);
+    return new Response(JSON.stringify({ ok: false, status: 'ERROR', message: 'No se pudo guardar en D1: ' + e.message }), { status: 500, headers: CORS });
   }
 
   // ── 6) Responder al formulario ───────────────────────────────────────────
@@ -183,17 +182,4 @@ export async function onRequestPost({ request, env }) {
   }), { status: 200, headers: CORS });
 }
 
-async function forwardToAppScript(bodyJson, origin) {
-  const CORS = { 'Access-Control-Allow-Origin': origin, 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Vary': 'Origin' };
-  try {
-    const resp = await fetch(APPSCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyJson)
-    });
-    const text = await resp.text();
-    return new Response(text, { status: resp.status, headers: CORS });
-  } catch (e) {
-    return new Response(JSON.stringify({ ok: false, status: 'ERROR', message: 'No se pudo conectar con Apps Script' }), { status: 502, headers: CORS });
-  }
-}
+

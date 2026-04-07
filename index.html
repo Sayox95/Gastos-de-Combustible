@@ -406,7 +406,13 @@
 
     async function handleImageInput(inputId){ const input=$(inputId); const file=input&&input.files&&input.files[0]; if(!file){ ImageState[inputId]=null; return; } const isRecent=(Date.now()-file.lastModified)<=960*3600*1000; if(!isRecent){ showError(input,'La foto debe ser ≤ 48 horas'); input.value=''; return; } try{ const optimized=await fileToOptimizedBase64(file, 1280, 1280, 0.6); ImageState[inputId]=optimized; requestAnimationFrame(()=>{ const prev=$('preview_'+inputId); if(prev) prev.innerHTML='<img alt="" src="'+optimized+'">'; }); }catch(err){ if(err&&err.code==='UNSUPPORTED_FORMAT') showError(input,'Formato no soportado ('+(err.type||'')+'). Usa JPG/PNG/WebP.'); else showError(input,'No se pudo leer la imagen'); } }
 
-    function validateForm(){ let ok=true; document.querySelectorAll('#form [required]').forEach(inp=>{ if(!(inp && typeof inp.checkValidity==='function' ? inp.checkValidity() : true)){ ok=false; showError(inp, inp.validationMessage); } else { showError(inp,''); } }); const ids=['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura']; for(const id of ids){ const el=$(id); if(!el.files||!el.files[0]){ ok=false; showError(el,'Requerido'); continue; } const f=el.files[0]; const recent=(Date.now()-f.lastModified)<=960*3600*1000; if(!recent){ ok=false; showError(el,'La foto debe ser ≤ 48 horas'); } } return ok; }
+    function validateForm(){ let ok=true; document.querySelectorAll('#form [required]').forEach(inp=>{ if(!(inp && typeof inp.checkValidity==='function' ? inp.checkValidity() : true)){ ok=false; showError(inp, inp.validationMessage); } else { showError(inp,''); } }); const ids=['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura']; for(const id of ids){ const el=$(id); if(!el.files||!el.files[0]){ ok=false; showError(el,'Requerido'); continue; } const f=el.files[0]; const recent=(Date.now()-f.lastModified)<=960*3600*1000; if(!recent){ ok=false; showError(el,'La foto debe ser ≤ 48 horas'); } }
+      // Validación dura de máximos
+      var litrosVal = normalizeNumberForSave($('litros').value);
+      var totalVal  = normalizeNumberForSave($('total').value);
+      if(litrosVal > 250){ ok=false; showError($('litros'), 'Excede el máximo permitido de 250 litros'); }
+      if(totalVal  > 5000){ ok=false; showError($('total'),  'Excede el máximo permitido de L 5,000'); }
+      return ok; }
 
     function getFormData(){ return { Sector: trimAny($('sector').value), Placa: trimUpper($('placa').value), Proceso: trimAny($('proceso').value), Nombre: trimAny($('nombre').value), Identidad: trimAny($('identidad').value), TotalGastado: normalizeNumberForSave($('total').value), LitrosConsumidos: normalizeNumberForSave($('litros').value), MotivoDelLlenado: trimAny($('motivo').value), Fecha: trimAny($('fecha').value), HorasDelViaje: trimAny($('horas').value), KmActual: trimAny($('km').value), NumeroFactura: trimAny($('factura').value), NombreComercio: trimAny($('nombre_comercio').value), JefeInmediato: trimAny(($('jefe').value)||'') }; }
 
@@ -1443,6 +1449,16 @@ async function validarFacturaSoloNumero(){
   document.addEventListener('DOMContentLoaded', function(){
     bindMaxValidation('total',  'err_total_lbl',  5000, {decimals:2, fixedOnBlur:true});
     bindMaxValidation('litros', 'err_litros_lbl', 250,  {decimals:2, fixedOnBlur:false});
+
+    // También disparar validación en paste para capturar valores pegados
+    ['total','litros'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el){
+        el.addEventListener('paste', function(){
+          setTimeout(function(){ el.dispatchEvent(new Event('input')); el.dispatchEvent(new Event('blur')); }, 50);
+        });
+      }
+    });
   });
 
   (function(){

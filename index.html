@@ -61,6 +61,10 @@
 }
 
 
+/* Estado de factura debajo del campo */
+.factura-status{display:block;margin:.35rem 0 0;line-height:1.35;min-height:1.15em;font-size:.9rem;font-weight:600}
+.factura-status:empty{min-height:0;margin-top:0}
+
 /* Spinner con pseudo-elemento (robusto) */
 .factura-status{font-size:.9rem;font-weight:600;margin-left:.5rem;vertical-align:middle}
 .factura-status.ok{color:#16a34a}
@@ -241,8 +245,9 @@
         </div>
         <div class="grid cols-3">
           <div>
-            <label for="factura">Número de factura <span id="facturaStatus" class="factura-status" aria-live="polite"></span></label>
+            <label for="factura">Número de factura</label>
             <input id="factura" name="factura" inputmode="numeric" autocomplete="off" minlength="19" maxlength="19" pattern="\d{3}-\d{3}-\d{2}-\d{8}" placeholder="000-000-00-00000000" required />
+            <span id="facturaStatus" class="factura-status mute" aria-live="polite" aria-atomic="true"></span>
             <div class="error" id="err_factura"></div>
           
     <div id="dupReplaceBlock" class="inline-actions" style="display:none;margin-top:.25rem">
@@ -1500,8 +1505,7 @@ async function validarFacturaSoloNumero(){
         setFacturaStatus('err','Factura duplicada · Estado: ' + estado + ' · No se puede reemplazar');
         setDuplicadaState(true, estado, false);
 
-        // Avisar una sola vez por combinación factura/sector/estado para no abrir
-        // el modal repetidamente mientras el usuario sigue en el mismo campo.
+        // El estado queda visible debajo del campo y el modal notifica el bloqueo una sola vez.
         var noticeKey = numero + '|' + sector.trim() + '|' + estado;
         if (__lastBlockedNoticeKey !== noticeKey) {
           __lastBlockedNoticeKey = noticeKey;

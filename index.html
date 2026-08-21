@@ -689,8 +689,15 @@ var page3={ stack:[ {text:'FACTURA ORIGINAL',style:'tSub',margin:[0,0,0,8],align
         try { json = JSON.parse(txt); } catch(_){ json = null; }
         // Si se trata de la validación de duplicado, requiere JSON
         if (payload && payload.validarDuplicado === true && !json) { throw new Error('Respuesta no JSON'); }
-        // Algunos endpoints devuelven {status:'OK'}
-        if (json && json.status && json.status !== 'OK') { throw new Error(json.message || 'Respuesta lógica inválida'); }
+        // Algunos endpoints devuelven errores lógicos con HTTP 200. Conservamos
+        // code/payload/estado igual que en los errores HTTP para poder informar al usuario.
+        if (json && json.status && json.status !== 'OK') {
+          var logicalErr = new Error(json.message || 'Respuesta lógica inválida');
+          logicalErr.status = res.status;
+          logicalErr.code = json.code || 'LOGICAL_ERROR';
+          logicalErr.payload = json;
+          throw logicalErr;
+        }
         return json || { status:'OK', raw: txt };
       }catch(e){
         clearTimeout(t);
@@ -855,6 +862,37 @@ function onSectorChange(){
         return;
       }
 
+      // El backend es la autoridad final. Si el Estado cambió o alguien intentó
+      // forzar un reemplazo, conservar los datos y explicar exactamente el bloqueo.
+      if (e && (e.code === 'FACTURA_REEMPLAZO_BLOQUEADO' || e.code === 'FACTURA_DUP')) {
+        var payload = e.payload || {};
+        var estado = String(payload.estado || '').trim() || 'No disponible';
+        var reemplazable = payload.reemplazable === true;
+        window.__forceReplaceByFactura = false;
+        setDuplicadaState(true, estado, reemplazable);
+        if (reemplazable) {
+          setFacturaStatus('err','Factura duplicada · Estado: ' + estado);
+        } else {
+          setFacturaStatus('err','Factura duplicada · Estado: ' + estado + ' · No se puede reemplazar');
+          if (typeof window.showFacturaBloqueadaModal === 'function') {
+            window.showFacturaBloqueadaModal(estado, payload.message || ('La factura se encuentra en estado ' + estado + ' y no puede ser reemplazada.'));
+          } else {
+            alert(payload.message || ('La factura se encuentra en estado ' + estado + ' y no puede ser reemplazada.'));
+          }
+        }
+        if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
+        return;
+      }
+
+      if (e && e.code === 'FACTURA_REEMPLAZO_NO_ENCONTRADA') {
+        window.__forceReplaceByFactura = false;
+        setDuplicadaState(false, null, false);
+        setFacturaStatus('warn','La factura original ya no está disponible. Valide nuevamente.');
+        if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
+        alert((e.payload && e.payload.message) || 'No se encontró la factura original que se intentó reemplazar. Valide nuevamente.');
+        return;
+      }
+
       if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
       alert('Error al guardar el reporte. Inténtalo de nuevo.');
     }
@@ -920,7 +958,23 @@ function onSectorChange(){
 
     document.addEventListener('DOMContentLoaded',function(){ attachImageInputs();
   var br = document.getElementById('btnReemplazar');
-  if(br){ br.addEventListener('click', function(){ __forceReplaceByFactura = true; setFacturaStatus('warn','Reemplazo activado'); if (typeof updateEnviarEnabled==='function') updateEnviarEnabled();  br.style.display='none'; }, {passive:true}); }
+  if(br){ br.addEventListener('click', function(){
+    // Defensa de UI: el backend vuelve a verificar el Estado de todos modos.
+    if (!window.__facturaDuplicada || !window.__facturaReemplazable) {
+      window.__forceReplaceByFactura = false;
+      var estado = window.__facturaEstado || 'No disponible';
+      setFacturaStatus('err','Factura duplicada · Estado: ' + estado + ' · No se puede reemplazar');
+      if (typeof window.showFacturaBloqueadaModal === 'function') {
+        window.showFacturaBloqueadaModal(estado, 'La factura se encuentra en estado ' + estado + ' y no puede ser reemplazada.');
+      }
+      if (typeof updateEnviarEnabled==='function') updateEnviarEnabled();
+      return;
+    }
+    window.__forceReplaceByFactura = true;
+    setFacturaStatus('warn','Reemplazo activado · Estado: Registrada');
+    if (typeof updateEnviarEnabled==='function') updateEnviarEnabled();
+    br.style.display='none';
+  }, {passive:true}); }
  ['sector','proceso','placa','nombre','identidad','fecha','horas','km','total','litros','motivo','factura','nombre_comercio','jefe'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change',schedulePreview); }); });
     window.addEventListener('load', async function(){ try{ await waitForPdfMake(); await cargarCatalogos(); $('btnPreview').disabled=false; if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled(); $('btnPreview').addEventListener('click',schedulePreview); $('btnEnviar').addEventListener('click',enviarReporte); $('sector')&&$('sector').addEventListener('change', onSectorChange); }catch(e){} });
     window.addEventListener('beforeunload',function(){ if(window.lastBlobUrl) URL.revokeObjectURL(window.lastBlobUrl); });
@@ -1004,6 +1058,19 @@ document.addEventListener('DOMContentLoaded', function(){
   </div>
 </div>
 
+<!-- Modal: factura duplicada cuyo Estado impide reemplazarla -->
+<div id="facturaBloqueadaOverlay" class="overlay-modal" role="dialog" aria-modal="true" aria-labelledby="facturaBloqueadaTitle" aria-describedby="facturaBloqueadaText">
+  <div class="modal-card">
+    <h3 id="facturaBloqueadaTitle">Factura no reemplazable</h3>
+    <p id="facturaBloqueadaText">La factura ya fue procesada y no puede ser reemplazada.</p>
+    <p>Por seguridad, <strong>solo las facturas en estado Registrada</strong> pueden reemplazarse.</p>
+    <p><strong>Sus datos no se borraron.</strong></p>
+    <div class="modal-actions">
+      <button type="button" id="btnEntendidoFacturaBloqueada" class="modal-btn btn-primary">Entendido</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 
@@ -1022,6 +1089,18 @@ document.addEventListener('DOMContentLoaded', function(){
     setTimeout(function(){ try{ document.getElementById('btnCorregirFactura').focus(); }catch(_){} },0);
   };
   function hideFacturaError(){ hide(document.getElementById('facturaErrorOverlay')); }
+
+  window.showFacturaBloqueadaModal = function(estado, message){
+    var ov = document.getElementById('facturaBloqueadaOverlay');
+    var text = document.getElementById('facturaBloqueadaText');
+    var estadoTxt = String(estado || '').trim() || 'No disponible';
+    if (text) {
+      text.textContent = message || ('La factura se encuentra en estado ' + estadoTxt + ' y no puede ser reemplazada.');
+    }
+    show(ov);
+    setTimeout(function(){ try{ document.getElementById('btnEntendidoFacturaBloqueada').focus(); }catch(_){} },0);
+  };
+  function hideFacturaBloqueada(){ hide(document.getElementById('facturaBloqueadaOverlay')); }
 
   // Helpers: modal pre-descarga
   window.showPreDescargaModal = function(){
@@ -1050,6 +1129,16 @@ document.addEventListener('DOMContentLoaded', function(){
         if (f){
           try { f.focus(); f.select(); } catch(_){}
         }
+        if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
+      });
+    }
+
+    var btnFacturaBloqueada = document.getElementById('btnEntendidoFacturaBloqueada');
+    if (btnFacturaBloqueada){
+      btnFacturaBloqueada.addEventListener('click', function(){
+        hideFacturaBloqueada();
+        var f = document.getElementById('factura') || document.getElementById('NumeroFactura');
+        if (f){ try { f.focus(); f.select(); } catch(_){} }
         if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
       });
     }
@@ -1302,22 +1391,34 @@ async function postJSONTolerant(url, payload, opts){
   }catch(e){ clearTimeout(timer); throw e; }
 }
 
-// Estado global de duplicado
+// Estado global de duplicado. Solo Estado=Registrada habilita reemplazo.
 var __facturaDuplicada = false;
-function setDuplicadaState(isDup){
+var __facturaEstado = null;
+var __facturaReemplazable = false;
+var __lastBlockedNoticeKey = '';
+function setDuplicadaState(isDup, estado, reemplazable){
   __facturaDuplicada = !!isDup;
-  // Mostrar/ocultar bloque de reemplazo (botón + texto) según duplicado
+  __facturaEstado = __facturaDuplicada ? (String(estado || '').trim() || 'Sin estado') : null;
+  __facturaReemplazable = !!(__facturaDuplicada && reemplazable === true);
+  window.__facturaDuplicada = __facturaDuplicada;
+  window.__facturaEstado = __facturaEstado;
+  window.__facturaReemplazable = __facturaReemplazable;
+
+  // Si no existe duplicado o no es reemplazable, nunca conservar un reemplazo forzado.
+  if (!__facturaDuplicada || !__facturaReemplazable) {
+    window.__forceReplaceByFactura = false;
+  }
+
+  // El bloque de reemplazo solo existe visualmente para facturas Registradas.
   try {
     var blk = document.getElementById('dupReplaceBlock');
-    if (blk) blk.style.display = __facturaDuplicada ? 'block' : 'none';
-    if (!__facturaDuplicada) { __forceReplaceByFactura = false; }
+    if (blk) blk.style.display = (__facturaDuplicada && __facturaReemplazable) ? 'block' : 'none';
   } catch(_){}
 
-  // Visibilidad del botón (se puede volver a mostrar si aparece otro duplicado)
   try {
     var btn = document.getElementById('btnReemplazar');
     if (btn){
-      if (__facturaDuplicada && !window.__forceReplaceByFactura){
+      if (__facturaDuplicada && __facturaReemplazable && !window.__forceReplaceByFactura){
         btn.style.display = '';
       } else {
         btn.style.display = 'none';
@@ -1325,7 +1426,6 @@ function setDuplicadaState(isDup){
     }
   } catch(_){}
 
-  // Estado del botón Enviar
   try {
     var btnEnviar = document.getElementById('btnEnviar');
     if (btnEnviar){
@@ -1340,6 +1440,9 @@ function setDuplicadaState(isDup){
 }
 
 window.__forceReplaceByFactura = window.__forceReplaceByFactura || false;
+window.__facturaDuplicada = __facturaDuplicada;
+window.__facturaEstado = __facturaEstado;
+window.__facturaReemplazable = __facturaReemplazable;
 var __facturaAbort = null;
 async function validarFacturaSoloNumero(){
   // Solo validar con 16 dígitos exactos
@@ -1388,11 +1491,29 @@ async function validarFacturaSoloNumero(){
     }, { timeoutMs: 20000, signal: __facturaAbort.signal });
     var dup = !!(resp && resp.duplicado === true);
     if(dup){
-      setFacturaStatus('err','Factura duplicada');
-      setDuplicadaState(true);
+      var estado = String((resp && resp.estado) || '').trim() || 'Sin estado';
+      var reemplazable = !!(resp && resp.reemplazable === true);
+      if (reemplazable) {
+        setFacturaStatus('err','Factura duplicada · Estado: ' + estado);
+        setDuplicadaState(true, estado, true);
+      } else {
+        setFacturaStatus('err','Factura duplicada · Estado: ' + estado + ' · No se puede reemplazar');
+        setDuplicadaState(true, estado, false);
+
+        // Avisar una sola vez por combinación factura/sector/estado para no abrir
+        // el modal repetidamente mientras el usuario sigue en el mismo campo.
+        var noticeKey = numero + '|' + sector.trim() + '|' + estado;
+        if (__lastBlockedNoticeKey !== noticeKey) {
+          __lastBlockedNoticeKey = noticeKey;
+          if (typeof window.showFacturaBloqueadaModal === 'function') {
+            window.showFacturaBloqueadaModal(estado, 'La factura se encuentra en estado ' + estado + ' y no puede ser reemplazada.');
+          }
+        }
+      }
     }else{
+      __lastBlockedNoticeKey = '';
       setFacturaStatus('ok','Factura aceptada');
-      setDuplicadaState(false);
+      setDuplicadaState(false, null, false);
     }
   }catch(e){
     // Si el error es por cancelación (AbortController), no cambiamos el estado: mantenemos "Validando…"

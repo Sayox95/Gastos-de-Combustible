@@ -37,6 +37,7 @@
     .btn.danger{background:#ff476a;border-color:#e33e5d}
     .btn[disabled]{opacity:.6;cursor:not-allowed}
     .error{color:var(--danger);font-size:.9rem;margin-top:.25rem;min-height:1.1em}
+    #factura.server-invalid{border-color:var(--danger);box-shadow:0 0 0 2px rgba(255,93,122,.18)}
     .previewWrap{border-radius:var(--radius);overflow:clip;border:1px solid #213154}
     #previewFrame{width:100%;height:min(75vh,900px);display:block;border:0;background:#0a0f1e}
     #previewFallback{padding:var(--space)}
@@ -241,7 +242,7 @@
         <div class="grid cols-3">
           <div>
             <label for="factura">Número de factura <span id="facturaStatus" class="factura-status" aria-live="polite"></span></label>
-            <input id="factura" name="factura" required />
+            <input id="factura" name="factura" inputmode="numeric" autocomplete="off" minlength="19" maxlength="19" pattern="\d{3}-\d{3}-\d{2}-\d{8}" placeholder="000-000-00-00000000" required />
             <div class="error" id="err_factura"></div>
           
     <div id="dupReplaceBlock" class="inline-actions" style="display:none;margin-top:.25rem">
@@ -675,7 +676,13 @@ var page3={ stack:[ {text:'FACTURA ORIGINAL',style:'tSub',margin:[0,0,0,8],align
         clearTimeout(t);
         if(!res.ok){
           var txtErr = await res.text().catch(function(){ return ''; });
-          throw new Error('HTTP '+res.status + (txtErr?(' - '+txtErr.slice(0,200)):'') );
+          var jsonErr = null;
+          try { jsonErr = txtErr ? JSON.parse(txtErr) : null; } catch(_){ jsonErr = null; }
+          var err = new Error((jsonErr && jsonErr.message) ? jsonErr.message : ('HTTP '+res.status + (txtErr?(' - '+txtErr.slice(0,200)):'')));
+          err.status = res.status;
+          err.code = (jsonErr && jsonErr.code) ? jsonErr.code : 'HTTP_ERROR';
+          err.payload = jsonErr;
+          throw err;
         }
         var txt = await res.text();
         var json = null;
@@ -814,6 +821,41 @@ function onSectorChange(){
       console.error(e);
       setBusy(false);
       isSaving = false;
+
+      // Si el backend detecta una factura con formato inválido, informar de forma
+      // explícita, conservar todos los datos y mantener Enviar bloqueado hasta corregirla.
+      if (e && e.code === 'FACTURA_FORMATO_INVALIDO') {
+        var facturaInput = $('factura');
+        var facturaMsg = 'El número de factura debe contener exactamente 16 dígitos en formato 000-000-00-00000000.';
+        if (facturaInput) {
+          showError(facturaInput, facturaMsg);
+          facturaInput.classList.add('server-invalid');
+          facturaInput.setAttribute('aria-invalid','true');
+          facturaInput.__serverRejected = true;
+          if (!facturaInput.__serverRejectClearAttached) {
+            facturaInput.addEventListener('input', function(){
+              if (!this.__serverRejected) return;
+              this.__serverRejected = false;
+              this.classList.remove('server-invalid');
+              this.removeAttribute('aria-invalid');
+              var errEl = $('err_factura');
+              if (errEl) errEl.textContent = '';
+              if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
+            }, {passive:true});
+            facturaInput.__serverRejectClearAttached = true;
+          }
+        }
+        try { setFacturaStatus('err','Factura rechazada'); } catch(_){}
+        if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
+        if (typeof window.showFacturaBackendErrorModal === 'function') {
+          window.showFacturaBackendErrorModal(facturaMsg);
+        } else {
+          alert('Número de factura inválido. ' + facturaMsg + '\n\nLos datos del formulario se conservaron. Corrija la factura e intente nuevamente.');
+        }
+        return;
+      }
+
+      if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
       alert('Error al guardar el reporte. Inténtalo de nuevo.');
     }
   });
@@ -880,7 +922,7 @@ function onSectorChange(){
   var br = document.getElementById('btnReemplazar');
   if(br){ br.addEventListener('click', function(){ __forceReplaceByFactura = true; setFacturaStatus('warn','Reemplazo activado'); if (typeof updateEnviarEnabled==='function') updateEnviarEnabled();  br.style.display='none'; }, {passive:true}); }
  ['sector','proceso','placa','nombre','identidad','fecha','horas','km','total','litros','motivo','factura','nombre_comercio','jefe'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change',schedulePreview); }); });
-    window.addEventListener('load', async function(){ try{ await waitForPdfMake(); await cargarCatalogos(); $('btnPreview').disabled=false; $('btnEnviar').disabled=false; $('btnPreview').addEventListener('click',schedulePreview); $('btnEnviar').addEventListener('click',enviarReporte); $('sector')&&$('sector').addEventListener('change', onSectorChange); }catch(e){} });
+    window.addEventListener('load', async function(){ try{ await waitForPdfMake(); await cargarCatalogos(); $('btnPreview').disabled=false; if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled(); $('btnPreview').addEventListener('click',schedulePreview); $('btnEnviar').addEventListener('click',enviarReporte); $('sector')&&$('sector').addEventListener('change', onSectorChange); }catch(e){} });
     window.addEventListener('beforeunload',function(){ if(window.lastBlobUrl) URL.revokeObjectURL(window.lastBlobUrl); });
 
   })();
@@ -949,6 +991,19 @@ document.addEventListener('DOMContentLoaded', function(){
 <!-- Toast Descargando -->
 <div id="downloadingToast"><span class="spinner-mini"></span>Descargando…</div>
 
+<!-- Modal: rechazo del backend por formato de factura -->
+<div id="facturaErrorOverlay" class="overlay-modal" role="dialog" aria-modal="true" aria-labelledby="facturaErrorTitle" aria-describedby="facturaErrorText">
+  <div class="modal-card">
+    <h3 id="facturaErrorTitle">Número de factura inválido</h3>
+    <p id="facturaErrorText">El servidor rechazó el reporte porque el número de factura no cumple el formato requerido.</p>
+    <p><strong>Formato requerido:</strong> <code>000-000-00-00000000</code> (16 dígitos).</p>
+    <p><strong>Sus datos no se borraron.</strong> Corrija únicamente el número de factura e intente enviar nuevamente.</p>
+    <div class="modal-actions">
+      <button type="button" id="btnCorregirFactura" class="modal-btn btn-primary">Corregir factura</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 
@@ -957,6 +1012,16 @@ document.addEventListener('DOMContentLoaded', function(){
   // Mostrar/ocultar overlays
   function show(el){ if(el){ el.style.display='flex'; } }
   function hide(el){ if(el){ el.style.display='none'; } }
+
+  // Modal de rechazo de factura informado por el backend.
+  window.showFacturaBackendErrorModal = function(message){
+    var ov = document.getElementById('facturaErrorOverlay');
+    var text = document.getElementById('facturaErrorText');
+    if (text) text.textContent = 'El servidor rechazó el reporte. ' + (message || 'El número de factura no cumple el formato requerido.');
+    show(ov);
+    setTimeout(function(){ try{ document.getElementById('btnCorregirFactura').focus(); }catch(_){} },0);
+  };
+  function hideFacturaError(){ hide(document.getElementById('facturaErrorOverlay')); }
 
   // Helpers: modal pre-descarga
   window.showPreDescargaModal = function(){
@@ -977,6 +1042,18 @@ document.addEventListener('DOMContentLoaded', function(){
 
   // Botón Aceptar: descargar y refrescar al terminar el toast
   document.addEventListener('DOMContentLoaded', function(){
+    var btnCorregirFactura = document.getElementById('btnCorregirFactura');
+    if (btnCorregirFactura){
+      btnCorregirFactura.addEventListener('click', function(){
+        hideFacturaError();
+        var f = document.getElementById('factura') || document.getElementById('NumeroFactura');
+        if (f){
+          try { f.focus(); f.select(); } catch(_){}
+        }
+        if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled();
+      });
+    }
+
     var btnAceptar = document.getElementById('btnAceptarDescarga');
     if (btnAceptar){
       btnAceptar.addEventListener('click', function(){
@@ -1252,8 +1329,12 @@ function setDuplicadaState(isDup){
   try {
     var btnEnviar = document.getElementById('btnEnviar');
     if (btnEnviar){
-      var isSaving = (typeof window.isSaving !== 'undefined') ? !!window.isSaving : false;
-      btnEnviar.disabled = !!((__facturaDuplicada && !window.__forceReplaceByFactura) || isSaving);
+      if (typeof updateEnviarEnabled === 'function') {
+        updateEnviarEnabled();
+      } else {
+        var isSaving = (typeof window.isSaving !== 'undefined') ? !!window.isSaving : false;
+        btnEnviar.disabled = !!((__facturaDuplicada && !window.__forceReplaceByFactura) || isSaving);
+      }
     }
   } catch(_){}
 }

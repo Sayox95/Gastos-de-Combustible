@@ -1,0 +1,199 @@
+/* ==========================================================================
+   scanner.css  ·  Escáner de facturas · SGE-PAU-F-02
+   Prefijo .scn- para no colisionar con los estilos del formulario.
+   ========================================================================== */
+
+body.scn-lock { overflow: hidden; }
+
+.scn-overlay{
+  position:fixed; inset:0; z-index:99999;
+  background:#070b16;
+  display:flex; align-items:stretch; justify-content:center;
+  font-family:Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:#eaf0f8;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.scn-shell{
+  width:100%; max-width:760px;
+  display:flex; flex-direction:column;
+  min-height:0;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+
+/* ---------- cabecera ---------- */
+.scn-head{
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid #1c2942;
+  background:#0b1020;
+}
+.scn-x{
+  width:38px; height:38px; flex:0 0 38px;
+  border:1px solid #223052; background:#0f1525; color:#eaf0f8;
+  border-radius:10px; font-size:16px; line-height:1; cursor:pointer;
+  padding:0;
+}
+.scn-title{ font-weight:700; font-size:15px; flex:1 1 auto; }
+.scn-badge{ font-size:11px; color:#8aa0bc; text-align:right; white-space:nowrap; }
+
+/* ---------- escenario ---------- */
+.scn-body{ flex:1 1 auto; position:relative; min-height:0; display:flex; }
+.scn-stage{
+  flex:1 1 auto; position:relative;
+  display:flex; align-items:center; justify-content:center;
+  padding:10px; min-height:0; overflow:hidden;
+}
+.scn-stage canvas{
+  display:block; max-width:100%; max-height:100%;
+  touch-action:none; border-radius:6px;
+  background:#0b1020;
+}
+.scn-loupe{
+  position:absolute; top:10px; right:10px;
+  width:110px; height:110px;
+  display:none;
+  border:2px solid #4c9ffe; border-radius:50%;
+  box-shadow:0 4px 18px rgba(0,0,0,.6);
+  pointer-events:none; background:#0b1020;
+}
+
+.scn-busy{
+  position:absolute; inset:0; display:none;
+  align-items:center; justify-content:center; gap:12px; flex-direction:column;
+  background:rgba(7,11,22,.78); font-size:13px; color:#c9d3e0;
+}
+.scn-spin{
+  width:34px; height:34px; border-radius:50%;
+  border:3px solid #223052; border-top-color:#4c9ffe;
+  animation:scn-rot .8s linear infinite;
+}
+@keyframes scn-rot{ to{ transform:rotate(360deg); } }
+
+.scn-hint{
+  flex:0 0 auto;
+  padding:6px 14px; font-size:12px; color:#8aa0bc; text-align:center;
+  min-height:18px;
+}
+
+/* ---------- filtros ---------- */
+.scn-filters{
+  flex:0 0 auto;
+  display:flex; gap:8px; padding:6px 12px 2px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
+.scn-filters[hidden]{ display:none; }
+.scn-chip{
+  flex:0 0 auto; width:74px; padding:5px;
+  background:#0f1525; border:2px solid #223052; border-radius:10px;
+  color:#c9d3e0; font-size:11px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.scn-chip.on{ border-color:#4c9ffe; color:#eaf0f8; }
+.scn-chip img, .scn-chip .scn-noimg{
+  width:100%; height:56px; object-fit:cover;
+  border-radius:6px; background:#1a2338; display:block;
+}
+
+/* ---------- intensidad ---------- */
+.scn-strength{
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:10px; padding:8px 12px 2px;
+}
+.scn-strength[hidden]{ display:none; }
+.scn-slabel{ font-size:12px; color:#8aa0bc; }
+.scn-seg{ display:flex; flex:1 1 auto; border:1px solid #223052; border-radius:9px; overflow:hidden; }
+.scn-seg button{
+  flex:1 1 0; padding:8px 4px; font-size:12px;
+  background:#0f1525; color:#c9d3e0; border:0; cursor:pointer;
+  border-left:1px solid #223052;
+}
+.scn-seg button:first-child{ border-left:0; }
+.scn-seg button.on{ background:#17385f; color:#eaf0f8; font-weight:600; }
+
+/* ---------- pie ---------- */
+.scn-foot{
+  flex:0 0 auto;
+  display:flex; gap:8px; padding:10px 12px 14px;
+  border-top:1px solid #1c2942; background:#0b1020;
+  flex-wrap:wrap;
+}
+.scn-btn{
+  flex:1 1 auto; min-width:96px;
+  padding:12px 10px; border-radius:10px; font-size:14px;
+  cursor:pointer; border:1px solid #223052;
+}
+.scn-btn.ghost{ background:#0f1525; color:#c9d3e0; }
+.scn-btn.primary{ background:#4c9ffe; border-color:#4c9ffe; color:#06122a; font-weight:700; flex:2 1 auto; }
+.scn-btn:disabled{ opacity:.45; cursor:default; }
+
+@media (max-width:420px){
+  .scn-btn{ font-size:13px; min-width:78px; padding:11px 6px; }
+  .scn-chip{ width:66px; }
+  .scn-chip img, .scn-chip .scn-noimg{ height:48px; }
+}
+
+/* ==========================================================================
+   VISOR EN VIVO
+   ========================================================================== */
+
+.scn-cam{
+  flex:1 1 auto; position:relative; min-height:0;
+  background:#000; overflow:hidden; display:none;
+}
+.scn-cam video{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:contain; background:#000;
+}
+.scn-ovl{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  pointer-events:none;
+}
+.scn-camstate{
+  position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+  background:rgba(7,11,22,.78); color:#c9d3e0;
+  padding:7px 14px; border-radius:999px;
+  font-size:12px; white-space:nowrap; max-width:92%;
+  overflow:hidden; text-overflow:ellipsis;
+  border:1px solid #223052;
+}
+.scn-camstate.ok{ color:#37d67a; border-color:#2a6b47; }
+.scn-camstate.err{ color:#ff5d7a; border-color:#5a2233; }
+
+.scn-flash{
+  position:absolute; inset:0; background:#fff;
+  opacity:0; pointer-events:none;
+}
+.scn-flash.go{ animation:scn-flash .22s ease-out; }
+@keyframes scn-flash{ from{opacity:.85} to{opacity:0} }
+
+/* ---------- pie de cámara ---------- */
+.scn-camfoot{
+  flex:0 0 auto; display:none;
+  align-items:center; justify-content:space-around;
+  padding:12px 24px 8px; background:#0b1020;
+}
+.scn-round{
+  width:48px; height:48px; flex:0 0 48px;
+  border-radius:50%; border:1px solid #223052;
+  background:#0f1525; color:#c9d3e0;
+  font-size:13px; font-weight:700; cursor:pointer; padding:0;
+}
+.scn-round.on{ background:#17385f; border-color:#4c9ffe; color:#eaf0f8; }
+.scn-shutter{
+  width:72px; height:72px; flex:0 0 72px; padding:0;
+  border-radius:50%; border:4px solid #eaf0f8;
+  background:transparent; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.scn-shutter span{
+  display:block; width:54px; height:54px; border-radius:50%;
+  background:#eaf0f8; transition:transform .1s ease;
+}
+.scn-shutter:active span{ transform:scale(.86); }
+.scn-shutter:disabled{ opacity:.4; }
+
+.scn-hint.warn{ color:#ffb454; }

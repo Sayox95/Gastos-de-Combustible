@@ -98,6 +98,27 @@
 <style>
 /* === Modal de Firma === */
 .overlay-sign {position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:9999;}
+
+/* Capa bloqueante de guardado. A diferencia del toast anterior, cubre la
+   pantalla y captura los eventos, de modo que no se puedan editar campos
+   mientras se arma el PDF y se sube a R2. */
+.save-blocker{position:fixed; inset:0; z-index:10050; background:rgba(4,10,24,.72);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px);}
+.save-card{background:#0f1830; color:#eaf0f8; border:1px solid #223052;
+  border-radius:14px; padding:20px 22px; width:100%; max-width:340px; text-align:center;
+  box-shadow:0 14px 40px rgba(0,0,0,.5); font-family:Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;}
+.save-card #progressLabel{font-size:15px; font-weight:600; margin:10px 0 12px;}
+.save-note{margin-top:12px; font-size:12px; color:#8aa0bc;}
+.save-spin{width:34px; height:34px; margin:0 auto; border-radius:50%;
+  border:3px solid #223052; border-top-color:#4c9ffe; animation:save-rot .8s linear infinite;}
+@keyframes save-rot{to{transform:rotate(360deg)}}
+body.saving-lock{overflow:hidden;}
+
+/* Salida de la pantalla de carga */
+body.booting{overflow:hidden;}
+#bootScreen{transition:opacity .32s ease;}
+#bootScreen.done{opacity:0; pointer-events:none;}
 .sig-card {background:#ffffff; color:#111827; width:min(92vw,640px); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.25); padding:16px;}
 .sig-card h3 {margin:0 0 8px; font-size:18px; font-weight:700;}
 .sig-canvas-wrap {border:2px dashed #cbd5e1; border-radius:10px; background:#fff; height:220px; position:relative; overflow:hidden;}
@@ -159,6 +180,63 @@
 
 </head>
 <body>
+<!-- Pantalla de carga. Va como primer elemento del body y con estilos en
+     línea para que se pinte antes de que llegue cualquier script externo. -->
+<div id="bootScreen" style="position:fixed;inset:0;z-index:100000;background:#0b1020;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;font-family:Roboto,system-ui,-apple-system,'Segoe UI',sans-serif">
+  <img src="imagenes/Logo.png" alt="" style="width:170px;max-width:60vw;height:auto;opacity:.92" />
+  <div style="width:190px;height:5px;background:#1b2743;border-radius:999px;overflow:hidden">
+    <div id="bootBar" style="height:100%;width:12%;background:#4c9ffe;border-radius:999px;transition:width .45s ease"></div>
+  </div>
+  <div id="bootMsg" style="color:#8aa0bc;font-size:13px;letter-spacing:.2px">Preparando información…</div>
+</div>
+<script>
+/* Control de la pantalla de carga.
+   Se cierra cuando el formulario está realmente utilizable, no con un
+   temporizador: espera a window.load (scripts diferidos e imágenes guía) y a
+   que los catálogos hayan poblado los selects. Un tope de seguridad evita
+   que un fallo de red deje al usuario mirando la pantalla para siempre. */
+(function(){
+  var TOPE_MS = 9000;      // nunca retener más que esto
+  var MIN_MS  = 300;       // evita un parpadeo en equipos rápidos
+  var inicio  = Date.now();
+  var cerrado = false, pasos = 0;
+  document.documentElement.classList.add('booting');
+  try { document.body.classList.add('booting'); } catch(_){}
+
+  function barra(pct, msg){
+    var b=document.getElementById('bootBar'), m=document.getElementById('bootMsg');
+    if(b) b.style.width=pct+'%';
+    if(m && msg) m.textContent=msg;
+  }
+  function paso(msg, pct){ pasos++; barra(pct, msg); }
+
+  window.__bootDone = function(){
+    if (cerrado) return;
+    cerrado = true;
+    barra(100, 'Listo');
+    var espera = Math.max(0, MIN_MS - (Date.now()-inicio));
+    setTimeout(function(){
+      var el=document.getElementById('bootScreen');
+      document.documentElement.classList.remove('booting');
+      document.body.classList.remove('booting');
+      if(!el) return;
+      el.classList.add('done');
+      setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 340);
+    }, espera);
+  };
+  window.__bootStep = paso;
+
+  document.addEventListener('DOMContentLoaded', function(){
+    try { document.body.classList.add('booting'); } catch(_){}
+    paso('Cargando formulario…', 45);
+  });
+  window.addEventListener('load', function(){ paso('Cargando recursos…', 70); });
+
+  // Red de seguridad: pase lo que pase, la pantalla se va.
+  setTimeout(function(){ window.__bootDone(); }, TOPE_MS);
+})();
+</script>
+
   <header class="no-print">
     <h1>Reporte de Gastos de Combustible</h1>
     <p class="sub">Selecciona el sector para iniciar.</p>
@@ -268,21 +346,21 @@
             <div class="picker-row"><button type="button" id="cam_foto_tablero_antes" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_tablero_antes" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_tablero_antes" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_tablero_antes"></div>
-          <div class="thumb" id="preview_foto_tablero_antes" style="--guide-url:url('https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/refs/heads/main/imagenes/Tablero%20antes%20de%20llenado.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview tablero antes</span></div>
+          <div class="thumb" id="preview_foto_tablero_antes" style="--guide-url:url('imagenes/Tablero%20antes%20de%20llenado.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview tablero antes</span></div>
 </div>
           <div>
             <label for="foto_bomba">Foto bomba/contador</label>
             <div class="picker-row"><button type="button" id="cam_foto_bomba" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_bomba" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_bomba" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_bomba"></div>
-          <div class="thumb" id="preview_foto_bomba" style="--guide-url:url('https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/refs/heads/main/imagenes/Bomba%20en%20cero.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview bomba</span></div>
+          <div class="thumb" id="preview_foto_bomba" style="--guide-url:url('imagenes/Bomba%20en%20cero.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview bomba</span></div>
 </div>
           <div>
             <label for="foto_despues">Foto tablero después</label>
             <div class="picker-row"><button type="button" id="cam_foto_despues" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_despues" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_despues" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_despues"></div>
-          <div class="thumb" id="preview_foto_despues" style="--guide-url:url('https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/refs/heads/main/imagenes/Tablero%20antes%20de%20llenado.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview tablero después</span></div>
+          <div class="thumb" id="preview_foto_despues" style="--guide-url:url('imagenes/Tablero%20antes%20de%20llenado.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview tablero después</span></div>
 </div>
         </div>
         <div class="grid cols-3">
@@ -291,21 +369,21 @@
             <div class="picker-row"><button type="button" id="cam_foto_bomba_llenado" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_bomba_llenado" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_bomba_llenado" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_bomba_llenado"></div>
-          <div class="thumb" id="preview_foto_bomba_llenado" style="--guide-url:url('https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/refs/heads/main/imagenes/Bomba%20llena.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview bomba llenado</span></div>
+          <div class="thumb" id="preview_foto_bomba_llenado" style="--guide-url:url('imagenes/Bomba%20llena.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview bomba llenado</span></div>
 </div>
           <div>
             <label for="foto_frontal">Foto frontal vehículo</label>
             <div class="picker-row"><button type="button" id="cam_foto_frontal" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_frontal" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_frontal" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_frontal"></div>
-          <div class="thumb" id="preview_foto_frontal" style="--guide-url:url('https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/refs/heads/main/imagenes/Vista%20Frontal.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview frontal</span></div>
+          <div class="thumb" id="preview_foto_frontal" style="--guide-url:url('imagenes/Vista%20Frontal.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview frontal</span></div>
 </div>
           <div>
             <label for="foto_factura">Foto factura</label>
             <div class="picker-row"><button type="button" id="scan_foto_factura" class="btn btn-sm" style="display:none">📷 Escanear factura</button> <button type="button" id="cam_foto_factura" class="btn btn-sm" style="display:none">Tomar foto</button> <button type="button" id="gal_foto_factura" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_factura" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_factura"></div>
-          <div class="thumb" id="preview_foto_factura" style="--guide-url:url('https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/refs/heads/main/imagenes/Factura.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview factura</span></div>
+          <div class="thumb" id="preview_foto_factura" style="--guide-url:url('imagenes/Factura.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview factura</span></div>
 </div>
         </div>
         <div class="actions">
@@ -334,9 +412,13 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite">Listo</div>
 
-  <div id="progressToast" class="toast" style="display:none" hidden>
-    <div id="progressLabel" style="margin-bottom:6px">Guardando información...</div>
-    <div class="progressBarWrap"><div id="progressBar" class="progressBar" style="width:0%"></div></div>
+  <div id="progressToast" class="save-blocker" style="display:none" hidden role="alertdialog" aria-modal="true" aria-live="assertive" aria-busy="true">
+    <div class="save-card">
+      <div class="save-spin" aria-hidden="true"></div>
+      <div id="progressLabel">Guardando información...</div>
+      <div class="progressBarWrap"><div id="progressBar" class="progressBar" style="width:0%"></div></div>
+      <div class="save-note">No cierre ni modifique el formulario.</div>
+    </div>
   </div>
   <script>
   (function(){
@@ -371,7 +453,29 @@
 
     function $(id){ return document.getElementById(id); }
     function showToast(msg){ const t=$('toast'); if(!t) return; t.textContent=msg||'Hecho'; t.style.display='block'; clearTimeout(showToast._t); showToast._t=setTimeout(()=>{ t.style.display='none'; }, 2500); } 
-    function setBusy(b){ document.querySelectorAll('button').forEach(x=>x.disabled=!!b); }
+    /* Antes solo deshabilitaba botones, así que durante el guardado se podían
+       seguir editando campos. Como el PDF se arma leyendo el formulario y
+       ImageState, un cambio a media subida dejaba el PDF y el registro
+       desincronizados. Ahora se congela toda la entrada.
+       Se respetan los elementos ya deshabilitados por otras reglas: se marcan
+       para no reactivarlos al terminar. */
+    function setBusy(b){
+      var sel = 'button, input, select, textarea';
+      document.querySelectorAll(sel).forEach(function(x){
+        if (b){
+          if (x.disabled) { x.__wasDisabled = true; }
+          x.disabled = true;
+        } else {
+          if (x.__wasDisabled) { delete x.__wasDisabled; return; }
+          x.disabled = false;
+        }
+      });
+      // Al liberar, reponer las reglas propias del formulario (Enviar sigue
+      // bloqueado si la factura está duplicada o falta validación).
+      if (!b && typeof updateEnviarEnabled === 'function') {
+        try { updateEnviarEnabled(); } catch(_){}
+      }
+    }
 
     function showError(input,text){ const e=$('err_'+input.id); if(e) e.textContent=text||''; }
     function trimUpper(v){ return (v||'').trim().toUpperCase(); }
@@ -401,9 +505,23 @@
       return (iOS && isSafari) || isMobile;
     }
 
-    function showProgress(label){ const t=$('progressToast'),l=$('progressLabel'); if(!t||!l) return; l.textContent=label||'Guardando información...'; t.hidden=false; t.style.display='block'; setProgress(10); clearInterval(showProgress._timer); showProgress._timer=setInterval(()=>{ const b=$('progressBar'); const curr=parseInt(b&&b.style && b.style.width ? b.style.width : '0')||0; if(curr<85) setProgress(curr+5); },400); }
+    function beforeUnloadGuard(e){ e.preventDefault(); e.returnValue=''; return ''; }
+    function showProgress(label){ const t=$('progressToast'),l=$('progressLabel'); if(!t||!l) return; l.textContent=label||'Guardando información...'; t.hidden=false; t.style.display='flex'; document.body.classList.add('saving-lock'); window.addEventListener('beforeunload', beforeUnloadGuard); setProgress(10); clearInterval(showProgress._timer); showProgress._timer=setInterval(()=>{ const b=$('progressBar'); const curr=parseInt(b&&b.style && b.style.width ? b.style.width : '0')||0; if(curr<85) setProgress(curr+5); },400); }
     function setProgress(p){ const b=$('progressBar'); if(b){ const v=Math.max(0,Math.min(100,Number(p)||0)); b.style.width=v+'%'; } }
-    function hideProgress(msg){ const t=$('progressToast'),b=$('progressBar'); clearInterval(showProgress._timer); setProgress(100); setTimeout(()=>{ if(t){ t.style.display='none'; t.hidden=true; } if(b) b.style.width='0%'; if(msg) showToast(msg); },300); }
+    /* El desbloqueo va DENTRO del setTimeout: si se liberara antes, quedaría
+       un instante con la capa visible pero el formulario ya editable. */
+    function hideProgress(msg){
+      const t=$('progressToast'),b=$('progressBar');
+      clearInterval(showProgress._timer);
+      setProgress(100);
+      window.removeEventListener('beforeunload', beforeUnloadGuard);
+      setTimeout(()=>{
+        if(t){ t.style.display='none'; t.hidden=true; }
+        if(b) b.style.width='0%';
+        document.body.classList.remove('saving-lock');
+        if(msg) showToast(msg);
+      },300);
+    }
 
     function readFileAsDataURL(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej(fr.error||new Error('FileReader')); fr.readAsDataURL(file); }); }
     function drawToCanvas(imgLike,maxW,maxH){ const iw=imgLike.naturalWidth||imgLike.width; const ih=imgLike.naturalHeight||imgLike.height; const r=Math.min(maxW/iw,maxH/ih,1); const tw=Math.max(1,Math.round(iw*r)); const th=Math.max(1,Math.round(ih*r)); const c=document.createElement('canvas'); c.width=tw; c.height=th; const ctx=c.getContext('2d'); ctx.drawImage(imgLike,0,0,tw,th); return c; }
@@ -417,7 +535,7 @@
     // Debe coincidir con VER dentro de scanner-ui.js. Súbelo en cada
     // despliegue que toque los archivos de scanner/ para invalidar la caché
     // del CDN de Cloudflare y la del navegador.
-    const SCANNER_VER  = '2.3.0';
+    const SCANNER_VER  = '2.9.1';
     const SCAN_TARGET  = 'foto_factura';
     let __scannerLoad = null;
 
@@ -440,6 +558,25 @@
       requestAnimationFrame(()=>{ const prev=$('preview_'+inputId); if(prev) prev.innerHTML='<img alt="" src="'+dataUrl+'">'; });
     }
     function showScanBtn(show){ const b=$('scan_'+SCAN_TARGET); if(b) b.style.display = show ? '' : 'none'; }
+
+    /* Puerta del aviso de recorte. Se consulta localStorage AQUÍ, sin cargar
+       el escáner, para que en el caso "ya visto" la acción siga siendo
+       síncrona: en Android, input.click() exige el gesto del usuario y una
+       espera asíncrona previa puede invalidarlo. */
+    function introFacturaVisto(){
+      try { return localStorage.getItem('scn_coach_v1_intro') === '1'; }
+      catch(e){ return true; }   // sin almacenamiento, no se estorba al usuario
+    }
+    function conIntroFactura(accion){
+      if (introFacturaVisto()) { accion(); return; }        // síncrono
+      var hecho = false;
+      var unaVez = function(){ if (hecho) return; hecho = true; accion(); };
+      ensureScanner().then(function(S){
+        if (S && typeof S.intro === 'function') S.intro(unaVez);
+        else unaVez();
+      }).catch(function(){ unaVez(); });                    // si falla, no bloquea
+    }
+    window.__conIntroFactura = conIntroFactura;
 
     /* Guarda el resultado del escáner sin pasar por el <input file>.
        El File original permanece intacto, así validateForm() no se entera. */
@@ -1092,7 +1229,7 @@ function onSectorChange(){
     br.style.display='none';
   }, {passive:true}); }
  ['sector','proceso','placa','nombre','identidad','fecha','horas','km','total','litros','motivo','factura','nombre_comercio','jefe'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change',schedulePreview); }); });
-    window.addEventListener('load', async function(){ try{ await waitForPdfMake(); await cargarCatalogos(); $('btnPreview').disabled=false; if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled(); $('btnPreview').addEventListener('click',schedulePreview); $('btnEnviar').addEventListener('click',enviarReporte); $('sector')&&$('sector').addEventListener('change', onSectorChange); }catch(e){} });
+    window.addEventListener('load', async function(){ try{ if(window.__bootStep) window.__bootStep('Preparando documento…', 80); await waitForPdfMake(); if(window.__bootStep) window.__bootStep('Cargando catálogos…', 90); await cargarCatalogos(); $('btnPreview').disabled=false; if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled(); $('btnPreview').addEventListener('click',schedulePreview); $('btnEnviar').addEventListener('click',enviarReporte); $('sector')&&$('sector').addEventListener('change', onSectorChange); }catch(e){} finally { if(window.__bootDone) window.__bootDone(); } });
     window.addEventListener('beforeunload',function(){ if(window.lastBlobUrl) URL.revokeObjectURL(window.lastBlobUrl); });
 
   })();
@@ -1797,7 +1934,7 @@ async function validarFacturaSoloNumero(){
 
 
 <script>
-const LOGO_URL_UTCD="https://raw.githubusercontent.com/Sayox95/Gastos-de-Combustible/refs/heads/main/imagenes/Logo.png";
+const LOGO_URL_UTCD="imagenes/Logo.png";
 document.addEventListener('DOMContentLoaded', async () => {
   try{
     const res = await fetch(LOGO_URL_UTCD, {mode:'cors'});
@@ -1877,9 +2014,17 @@ function bindDualPicker(baseId){
   }
   if(gal){
     gal.addEventListener('click', function(){
-      input.removeAttribute('capture');
-      input.value = '';
-      input.click();
+      var abrir = function(){
+        input.removeAttribute('capture');
+        input.value = '';
+        input.click();
+      };
+      // Solo la factura pasa por el aviso de recorte; las otras 5 fotos no.
+      if (baseId === 'foto_factura' && typeof window.__conIntroFactura === 'function') {
+        window.__conIntroFactura(abrir);
+      } else {
+        abrir();
+      }
     }, {passive:true});
   }
 }
@@ -1899,7 +2044,9 @@ document.addEventListener('DOMContentLoaded', function(){
     scanBtn.style.display = puedeVisor ? '' : 'none';
     if (camBtn) camBtn.style.display = puedeVisor ? 'none' : '';
     scanBtn.addEventListener('click', function(){
-      if (typeof window.__abrirEscanerEnVivo === 'function') window.__abrirEscanerEnVivo();
+      var abrir = function(){ if (typeof window.__abrirEscanerEnVivo === 'function') window.__abrirEscanerEnVivo(); };
+      if (typeof window.__conIntroFactura === 'function') window.__conIntroFactura(abrir);
+      else abrir();
     }, {passive:true});
   }
 });
@@ -2226,9 +2373,7 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 
-</body>
-</html>
-\n
+
 <!-- HEIC/HEIF compatibility: converts .heic/.heif to JPEG client-side using heic2any -->
 <script src="https://unpkg.com/heic2any/dist/heic2any.min.js"></script>
 <script>
@@ -2294,8 +2439,11 @@ document.addEventListener('DOMContentLoaded', function(){
     } catch (e) {
       reenterGuard.set(input, false);
       console.error('HEIC conversion failed:', e);
-      alert('No se pudo convertir la foto HEIC/HEIF. Por favor intenta nuevamente o sube la imagen como JPEG/PNG.\n' + (e && e.message ? e.message : ''));
+      alert('No se pudo convertir la foto HEIC/HEIF. Por favor intenta nuevamente o sube la imagen como JPEG/PNG.' + (e && e.message ? e.message : ''));
     }
   }, true);
 })();
 </script>
+
+</body>
+</html>

@@ -125,7 +125,14 @@ body.scn-lock { overflow: hidden; }
   cursor:pointer; border:1px solid #223052;
 }
 .scn-btn.ghost{ background:#0f1525; color:#c9d3e0; }
-.scn-btn.primary{ background:#4c9ffe; border-color:#4c9ffe; color:#06122a; font-weight:700; flex:2 1 auto; }
+
+/* Acción principal en verde sólido. La secundaria "No recortar" va en rojo
+   pero SIN relleno: el contraste relleno/contorno distingue las dos opciones
+   aunque el usuario no perciba el color (el par rojo-verde es el peor caso
+   para daltonismo, ~8% de los hombres). */
+.scn-btn.primary{ background:#2fa96b; border-color:#2fa96b; color:#04180e; font-weight:700; flex:2 1 auto; }
+.scn-btn.warn{ background:transparent; border-color:#e0574f; color:#ff8a83; font-weight:600; }
+.scn-btn.warn:active{ background:rgba(224,87,79,.12); }
 .scn-btn:disabled{ opacity:.45; cursor:default; }
 
 @media (max-width:420px){
@@ -197,3 +204,103 @@ body.scn-lock { overflow: hidden; }
 .scn-shutter:disabled{ opacity:.4; }
 
 .scn-hint.warn{ color:#ffb454; }
+
+/* ==========================================================================
+   PISTA CONTEXTUAL (una sola vez, anclada al botón que importa)
+   ========================================================================== */
+
+/* Aviso previo: tarjeta centrada, antes de abrir cámara o galería */
+.scn-intro{
+  position:fixed; inset:0; z-index:100020;
+  background:rgba(4,10,24,.80);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  font-family:Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;
+  animation:scn-coach-in .2s ease-out;
+}
+.scn-intro-card{
+  background:#111c33; color:#eaf0f8;
+  border:1px solid #2b4570; border-radius:16px;
+  padding:20px 20px 18px; width:100%; max-width:330px; text-align:center;
+  box-shadow:0 18px 46px rgba(0,0,0,.6);
+  position:relative;
+}
+.scn-intro-tag{
+  position:absolute; top:14px; right:14px;
+  background:#17385f; color:#8fc4ff; border:1px solid #2f5f96;
+  border-radius:999px; padding:2px 9px; font-size:10px;
+  font-weight:700; letter-spacing:.6px; text-transform:uppercase;
+}
+.scn-intro-card h3{ margin:12px 0 8px; font-size:16px; }
+.scn-intro-card p{ margin:0 0 8px; font-size:13px; line-height:1.5; color:#c9d3e0; }
+.scn-intro-sub{ color:#8aa0bc !important; font-size:12px !important; }
+.scn-intro-ok{
+  margin-top:12px; width:100%;
+  background:#4c9ffe; border:0; border-radius:10px;
+  color:#06122a; font-weight:700; font-size:14px;
+  padding:12px 10px; cursor:pointer;
+}
+
+/* --------------------------------------------------------------------------
+   Animación: la factura torcida se detecta, se endereza y se realza.
+   Todo con CSS puro (sin JS, sin imágenes). Las esquinas son hijas del
+   documento, así que se transforman con él y se ven "pegadas" al papel.
+   -------------------------------------------------------------------------- */
+.scn-demo{
+  position:relative; height:104px; margin:2px 0 12px;
+  border-radius:9px; background:#0b1020;
+  border:1px solid #223052; overflow:hidden;
+}
+.scn-demo-doc{
+  position:absolute; left:50%; top:50%;
+  width:52px; height:78px; margin:-39px 0 0 -26px;
+  background:#f2f5fa; border-radius:3px;
+  padding:7px 6px; box-sizing:border-box;
+  animation:scn-doc 5.4s ease-in-out infinite;
+}
+.scn-demo-doc span{
+  display:block; height:3px; margin-bottom:4px; border-radius:2px;
+  background:#c3ccd8;
+  animation:scn-ink 5.4s ease-in-out infinite;
+}
+.scn-demo-doc span:nth-child(2){ width:78%; }
+.scn-demo-doc span:nth-child(3){ width:92%; }
+.scn-demo-doc span:nth-child(4){ width:60%; }
+.scn-demo-doc span:nth-child(5){ width:85%; }
+.scn-demo-doc span:nth-child(6){ width:45%; }
+
+.scn-demo-doc .c{
+  position:absolute; width:11px; height:11px; margin:-6px 0 0 -6px;
+  border-radius:50%; background:#4c9ffe;
+  box-shadow:0 0 0 2px #eaf0f8;
+  opacity:0; animation:scn-corner 5.4s ease-in-out infinite;
+}
+.scn-demo-doc .tl{ left:0;    top:0; }
+.scn-demo-doc .tr{ left:100%; top:0;    animation-delay:.10s; }
+.scn-demo-doc .br{ left:100%; top:100%; animation-delay:.20s; }
+.scn-demo-doc .bl{ left:0;    top:100%; animation-delay:.30s; }
+
+@keyframes scn-doc{
+  0%,8%    { transform:perspective(260px) rotateY(-19deg) rotate(-8deg) scale(.86); }
+  46%      { transform:perspective(260px) rotateY(-19deg) rotate(-8deg) scale(.86); }
+  70%,88%  { transform:perspective(260px) rotateY(0deg)   rotate(0deg)  scale(1.16); }
+  100%     { transform:perspective(260px) rotateY(-19deg) rotate(-8deg) scale(.86); }
+}
+@keyframes scn-corner{
+  0%,12%   { opacity:0; transform:scale(.4); }
+  24%,50%  { opacity:1; transform:scale(1); }
+  64%,100% { opacity:0; transform:scale(.6); }
+}
+/* La tinta se oscurece al final: es el filtro B/N entrando */
+@keyframes scn-ink{
+  0%,66%   { background:#c3ccd8; }
+  78%,90%  { background:#2b3442; }
+  100%     { background:#c3ccd8; }
+}
+@media (prefers-reduced-motion: reduce){
+  .scn-demo-doc, .scn-demo-doc span, .scn-demo-doc .c{ animation:none; }
+  .scn-demo-doc .c{ opacity:1; }
+}
+@keyframes scn-coach-in{
+  from{ opacity:0; transform:translateY(6px); }
+  to  { opacity:1; transform:translateY(0); }
+}

@@ -17,7 +17,7 @@
      que este módulo carga por su cuenta (worker, núcleo, hoja de estilos).
      Debe subirse en cada despliegue que toque scanner-*.js o scanner.css,
      y coincidir con el ?v= que index.html le pone a este archivo. */
-  var VER = '2.3.0';
+  var VER = '2.9.1';
   var QS = '?v=' + VER;
 
   /* BASE se deriva de la URL de este propio script, así que funciona igual
@@ -41,7 +41,11 @@
   var JPEG_QUALITY = 0.82;
   var SMOOTH_ALPHA = 0.38;        // suavizado temporal del cuadrilátero
   var STABLE_TOL = 0.014;         // movimiento relativo máx. para considerar estable
+  var STABLE_READY = 2;           // detecciones estables para marcar el borde en verde
   var STABLE_HITS = 5;            // detecciones estables seguidas para autodisparo
+  /* Antes el verde y el disparo compartían umbral, así que el borde se ponía
+     verde en la misma detección en que ya se estaba capturando y no daba
+     tiempo de verlo. Separarlos deja ~270 ms de confirmación visible. */
 
   var FILTERS = [
     { id: 'bn', label: 'B/N' },
@@ -51,6 +55,27 @@
   ];
   var DEFAULT_FILTER = 'gris';
   var DEFAULT_STRENGTH = 'normal';
+
+  /* ======================================================================
+     Pistas contextuales de un solo uso
+     ---------------------------------------------------------------------
+     Aparecen donde está la atención y en el momento de la decisión, no al
+     abrir la app. Se recuerdan en localStorage; si no está disponible
+     (modo privado, almacenamiento bloqueado) se degrada a "una vez por
+     carga de página" en lugar de repetirse en cada apertura.
+     ====================================================================== */
+  var COACH_KEY = 'scn_coach_v1_';
+  var coachSession = {};
+
+  function coachSeen(k) {
+    if (coachSession[k]) return true;
+    try { return localStorage.getItem(COACH_KEY + k) === '1'; }
+    catch (e) { return false; }
+  }
+  function coachMark(k) {
+    coachSession[k] = true;
+    try { localStorage.setItem(COACH_KEY + k, '1'); } catch (e) {}
+  }
 
   function loadScriptOnce(src) {
     loadScriptOnce._m = loadScriptOnce._m || {};
@@ -306,7 +331,7 @@
 
     + '  <div class="scn-foot" data-el="foot">'
     + '    <button type="button" class="scn-btn ghost" data-act="back">Atrás</button>'
-    + '    <button type="button" class="scn-btn ghost" data-act="full">Imagen completa</button>'
+    + '    <button type="button" class="scn-btn warn" data-act="full">No recortar</button>'
     + '    <button type="button" class="scn-btn ghost" data-act="skip">Sin procesar</button>'
     + '    <button type="button" class="scn-btn primary" data-act="next">Continuar</button>'
     + '  </div>'
@@ -372,6 +397,7 @@
         btn.back.style.display = 'none';
         btn.full.style.display = 'none';
         btn.next.style.display = 'none';
+        btn.skip.style.display = '';
         btn.skip.textContent = 'Usar cámara del teléfono';
         btn.skip.style.display = '';
         btn.shot.disabled = false;
@@ -447,11 +473,11 @@
           return { x: fit.x + p.x * fit.w, y: fit.y + p.y * fit.h };
         });
 
-        var stable = stableHits >= STABLE_HITS;
-        var col = stable ? '#37d67a' : (liveOk ? '#4c9ffe' : '#8aa0bc');
+        var listo = stableHits >= STABLE_READY;
+        var col = listo ? '#37d67a' : (liveOk ? '#4c9ffe' : '#8aa0bc');
 
         ctx.save();
-        ctx.fillStyle = stable ? 'rgba(55,214,122,.16)' : 'rgba(76,159,254,.12)';
+        ctx.fillStyle = listo ? 'rgba(55,214,122,.16)' : 'rgba(76,159,254,.12)';
         ctx.beginPath();
         ctx.moveTo(pts[0].x, pts[0].y);
         for (var i = 1; i < 4; i++) ctx.lineTo(pts[i].x, pts[i].y);
@@ -533,6 +559,10 @@
           el.camstate.textContent = autoCapture ? 'Capturando…' : 'Listo · toque el botón';
           el.camstate.classList.add('ok');
           if (autoCapture) doCapture();
+        } else if (stableHits >= STABLE_READY) {
+          // Confirmación visible antes del disparo, y también útil en manual
+          el.camstate.textContent = autoCapture ? 'Bordes detectados · no mueva' : 'Bordes detectados · toque el botón';
+          el.camstate.classList.add('ok');
         } else {
           el.camstate.textContent = 'Documento detectado · mantenga firme';
           el.camstate.classList.remove('ok');
@@ -644,6 +674,7 @@
               : 'No se detectaron bordes con claridad. Ajuste las esquinas.';
           }
           showCrop();
+          // La pista que más importa: aquí se decide recortar o no.
         });
       }
 
@@ -689,8 +720,8 @@
         btn.back.style.display = (source === 'camera') ? '' : 'none';
         btn.back.textContent = 'Repetir';
         btn.full.style.display = '';
-        btn.skip.style.display = '';
-        btn.skip.textContent = 'Sin procesar';
+        btn.full.textContent = 'No recortar';
+        btn.skip.style.display = 'none';   // la salida cruda ya no se ofrece aquí
         btn.next.style.display = '';
         btn.next.textContent = 'Continuar';
         btn.next.disabled = false;
@@ -805,7 +836,7 @@
         btn.back.style.display = '';
         btn.back.textContent = 'Atrás';
         btn.full.style.display = 'none';
-        btn.skip.style.display = '';
+        btn.skip.style.display = 'none';
         btn.next.textContent = 'Usar esta imagen';
         renderPreview();
         buildThumbs();
@@ -839,7 +870,10 @@
         }).catch(function () {
           if (closed || token !== renderToken) return;
           busy(false);
-          el.hint.textContent = 'No se pudo procesar. Puede continuar sin procesar.';
+          // Sin botón de escape visible, el fallo no puede dejar atascado al
+          // usuario: se devuelve el control al flujo original del formulario.
+          el.hint.textContent = 'No se pudo procesar. Se usará la foto original.';
+          setTimeout(function () { finish({ skipped: true }); }, 1400);
         });
       }
 
@@ -928,10 +962,14 @@
           startCamera();
         }
       });
+      /* Quien pulsa "No recortar" ya decidió no ajustar esquinas: se salta la
+         confirmación del recorte y pasa directo a los filtros. La imagen sigue
+         pasando por el aplanado de iluminación y el B/N, así que el resultado
+         es legible aunque no esté recortado. */
       btn.full.addEventListener('click', function () {
         quad = [{ x: 0, y: 0 }, { x: srcW - 1, y: 0 }, { x: srcW - 1, y: srcH - 1 }, { x: 0, y: srcH - 1 }];
         thumbCache = null;
-        drawCrop();
+        showFilters();
       });
       btn.next.addEventListener('click', function () {
         if (stage === 'crop') { showFilters(); return; }
@@ -947,11 +985,21 @@
         renderPreview(); buildThumbs();
       });
 
-      /* ---------------- arranque ---------------- */
+      /* ---------------- arranque ----------------
+         El modal nace NEUTRO: sin escenario de recorte y sin pie de botones.
+         Antes se mostraba el cuerpo y el pie por defecto, así que durante un
+         par de fotogramas se veían "No recortar" y "Continuar" hasta que
+         startCamera() reordenaba la interfaz. Cada etapa enciende ahora lo
+         que le toca; aquí solo se muestra el indicador de carga. */
       syncStrength();
       el.cam.style.display = 'none';
       el.body.style.display = 'flex';
       el.camfoot.style.display = 'none';
+      el.foot.style.display = 'none';
+      btn.back.style.display = 'none';
+      btn.full.style.display = 'none';
+      btn.skip.style.display = 'none';
+      btn.next.style.display = 'none';
       busy(true, 'Iniciando…');
 
       createEngine().then(function (eng) {
@@ -963,10 +1011,92 @@
       }).catch(function () {
         if (closed) return;
         busy(false);
-        el.hint.textContent = 'No se pudo abrir la imagen. Use "Sin procesar".';
+        el.hint.textContent = 'No se pudo abrir la imagen. Se usará la foto original.';
         btn.next.disabled = true;
+        setTimeout(function () { finish({ skipped: true }); }, 1400);
       });
     });
+  }
+
+  /* ======================================================================
+     Aviso previo de la función de recorte
+     ---------------------------------------------------------------------
+     Se muestra ANTES de abrir la cámara o la galería, una sola vez por
+     dispositivo. La API es por callback y no por promesa a propósito: en el
+     caso "ya visto" el callback se invoca de forma síncrona, para no romper
+     el gesto del usuario que necesita input.click() en Android.
+     ====================================================================== */
+  var INTRO_KEY = 'intro';
+
+  function introVisto() { return coachSeen(INTRO_KEY); }
+
+  function showIntro(cb) {
+    var orig = cb;
+    var usado = false;
+    cb = function () { if (usado) return; usado = true; if (typeof orig === 'function') orig(); };
+    if (introVisto()) { cb(); return; }      // síncrono: conserva el gesto
+    ensureCss();
+
+    var root = document.createElement('div');
+    root.className = 'scn-intro';
+    /* Estilos críticos en línea: si scanner.css no llegara (red caída, CDN
+       lento), la tarjeta se sigue posicionando y el botón sigue siendo
+       alcanzable. Sin esto quedaría como un div suelto al final de la página
+       con el scroll del body bloqueado. */
+    root.setAttribute('style',
+      'position:fixed;inset:0;z-index:100020;background:rgba(4,10,24,.80);' +
+      'display:flex;align-items:center;justify-content:center;padding:20px;');
+    root.innerHTML = ''
+      + '<div class="scn-intro-card" role="dialog" aria-modal="true">'
+      + '  <div class="scn-intro-tag">Nuevo</div>'
+      + '  <div class="scn-demo" aria-hidden="true">'
+      + '    <div class="scn-demo-doc">'
+      + '      <span></span><span></span><span></span><span></span><span></span><span></span>'
+      + '      <i class="c tl"></i><i class="c tr"></i><i class="c br"></i><i class="c bl"></i>'
+      + '    </div>'
+      + '  </div>'
+      + '  <h3>Recorte de facturas</h3>'
+      + '  <p>Los bordes de la factura se detectan solos. Si el recuadro no calza, '
+      + '     arrastre los puntos para ajustarlo a mano.</p>'
+      + '  <p class="scn-intro-sub">Recortar deja los montos y la fecha mucho más legibles.</p>'
+      + '  <button type="button" class="scn-intro-ok">Entendido</button>'
+      + '</div>';
+    document.body.appendChild(root);
+    document.body.classList.add('scn-lock');
+
+    var listo = false;
+    function cerrar() {
+      if (listo) return;
+      listo = true;
+      coachMark(INTRO_KEY);
+      document.body.classList.remove('scn-lock');
+      if (root.parentNode) root.parentNode.removeChild(root);
+      cb();                                  // el clic en Entendido es el gesto
+    }
+    // Envuelto en una función: 'cerrar' se reasigna más abajo y hay que
+    // resolverlo en tiempo de ejecución, no capturar la referencia vieja.
+    root.querySelector('.scn-intro-ok').addEventListener('click', function () { cerrar(); });
+
+    /* Tres salidas más, para que nadie quede atrapado si el botón no se ve:
+       toque fuera de la tarjeta, tecla Escape, y un tope de seguridad que
+       libera el bloqueo de scroll aunque el aviso siga en pantalla. */
+    root.addEventListener('click', function (ev) {
+      if (ev.target === root) cerrar();
+    });
+    var onEsc = function (ev) {
+      if (ev.key === 'Escape' || ev.keyCode === 27) cerrar();
+    };
+    document.addEventListener('keydown', onEsc);
+    var soltar = setTimeout(function () {
+      document.body.classList.remove('scn-lock');
+    }, 20000);
+
+    var cerrarOriginal = cerrar;
+    cerrar = function () {
+      clearTimeout(soltar);
+      document.removeEventListener('keydown', onEsc);
+      cerrarOriginal();
+    };
   }
 
   global.FacturaScanner = {
@@ -976,6 +1106,8 @@
       return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia
                 && (global.isSecureContext !== false));
     },
+    intro: showIntro,
+    introSeen: introVisto,
     openCamera: function () { return openScanner('camera'); },
     open: function (file) { return openScanner(file); }
   };

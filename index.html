@@ -568,7 +568,7 @@ body.booting{overflow:hidden;}
     // Debe coincidir con VER dentro de scanner-ui.js. Súbelo en cada
     // despliegue que toque los archivos de scanner/ para invalidar la caché
     // del CDN de Cloudflare y la del navegador.
-    const SCANNER_VER  = '2.9.3';
+    const SCANNER_VER  = '2.10.0';
     const SCAN_TARGET  = 'foto_factura';
     let __scannerLoad = null;
 
@@ -597,7 +597,8 @@ body.booting{overflow:hidden;}
        síncrona: en Android, input.click() exige el gesto del usuario y una
        espera asíncrona previa puede invalidarlo. */
     function introFacturaVisto(){
-      try { return localStorage.getItem('scn_coach_v1_intro') === '1'; }
+      // Debe coincidir con COACH_KEY dentro de scanner-ui.js.
+      try { return localStorage.getItem('scn_coach_v2_intro') === '1'; }
       catch(e){ return true; }   // sin almacenamiento, no se estorba al usuario
     }
     function conIntroFactura(accion){
@@ -674,8 +675,18 @@ body.booting{overflow:hidden;}
             showScanBtn(true);
             return;
           }
-          // null (cancelado) o {skipped:true}: sigue por la ruta normal,
-          // así ImageState nunca queda vacío habiendo archivo en el input.
+          if (r === null){
+            /* La (X) es una cancelación explícita. Antes se caía a la ruta
+               normal y quedaba adjunta la foto original sin recortar, que es
+               justo lo contrario de lo que el usuario pidió al cerrar. */
+            ImageState[inputId] = null;
+            input.value = '';
+            showError(input, '');
+            requestAnimationFrame(()=>{ const prev=$('preview_'+inputId); if(prev) prev.innerHTML=''; });
+            return;
+          }
+          // {skipped:true}: repliegue automático ante un fallo del escáner.
+          // Ahí sí conviene conservar la foto para no perder el gasto.
         }catch(e){
           console.warn('Escáner no disponible; se usa la foto sin procesar:', e && e.message);
         }

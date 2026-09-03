@@ -17,7 +17,7 @@
      que este módulo carga por su cuenta (worker, núcleo, hoja de estilos).
      Debe subirse en cada despliegue que toque scanner-*.js o scanner.css,
      y coincidir con el ?v= que index.html le pone a este archivo. */
-  var VER = '2.9.3';
+  var VER = '2.10.0';
   var QS = '?v=' + VER;
 
   /* BASE se deriva de la URL de este propio script, así que funciona igual
@@ -64,7 +64,11 @@
      (modo privado, almacenamiento bloqueado) se degrada a "una vez por
      carga de página" en lugar de repetirse en cada apertura.
      ====================================================================== */
-  var COACH_KEY = 'scn_coach_v1_';
+  /* Subir este número reinicia el aviso para TODOS los usuarios: la clave
+     vieja queda huérfana en localStorage y la nueva aún no existe, así que
+     el aviso vuelve a mostrarse una sola vez y luego se recuerda igual.
+     Debe coincidir con la clave leída en index.html (introFacturaVisto). */
+  var COACH_KEY = 'scn_coach_v2_';
   var coachSession = {};
 
   function coachSeen(k) {
@@ -534,7 +538,10 @@
         if (grabCanvas.width !== dw || grabCanvas.height !== dh) { grabCanvas.width = dw; grabCanvas.height = dh; }
         var imgData;
         try {
-          var gctx = grabCanvas.getContext('2d');
+          /* El visor lee un frame varias veces por segundo. Sin este
+             atributo, Chrome mantiene el canvas en la GPU y cada getImageData
+             obliga a una transferencia de vuelta a memoria. */
+          var gctx = grabCanvas.getContext('2d', { willReadFrequently: true });
           gctx.drawImage(v, 0, 0, dw, dh);
           imgData = gctx.getImageData(0, 0, dw, dh);
         } catch (e) { liveBusy = false; scheduleDetect(400); return; }
@@ -640,21 +647,6 @@
         return Promise.resolve(drawFit(v, v.videoWidth, v.videoHeight, SRC_MAX_SIDE));
       }
 
-      /** Porcentaje de píxeles quemados (>=250). Muestreo con salto. */
-      function blownRatio(canvas) {
-        try {
-          var w = canvas.width, h = canvas.height;
-          var d = canvas.getContext('2d').getImageData(0, 0, w, h).data;
-          var n = 0, blown = 0;
-          for (var i = 0; i < w * h; i += 5) {
-            var p = i * 4;
-            var g = (d[p] * 77 + d[p + 1] * 150 + d[p + 2] * 29) >> 8;
-            n++; if (g >= 250) blown++;
-          }
-          return n ? blown / n : 0;
-        } catch (e) { return 0; }
-      }
-
       function stopCamera() {
         cancelAnimationFrame(rafId);
         clearTimeout(liveTimer);
@@ -670,7 +662,6 @@
 
       function loadSource(canvas, seed) {
         srcCanvas = canvas; srcW = canvas.width; srcH = canvas.height;
-        var blown = blownRatio(canvas);
         var vs = Math.min(1, 900 / Math.max(srcW, srcH));
         viewCanvas = document.createElement('canvas');
         viewCanvas.width = Math.max(1, Math.round(srcW * vs));
@@ -685,15 +676,10 @@
           if (closed) return;
           quad = d.quad;
           busy(false);
-          if (blown > 0.25) {
-            el.hint.textContent = 'Imagen sobreexpuesta: apague la linterna o aleje la luz y repita.';
-            el.hint.classList.add('warn');
-          } else {
-            el.hint.classList.remove('warn');
-            el.hint.textContent = d.ok
-              ? 'Arrastre las esquinas si el recuadro no calza.'
-              : 'No se detectaron bordes con claridad. Ajuste las esquinas.';
-          }
+          el.hint.classList.remove('warn');
+          el.hint.textContent = d.ok
+            ? 'Arrastre las esquinas si el recuadro no calza.'
+            : 'No se detectaron bordes con claridad. Ajuste las esquinas.';
           showCrop();
           // La pista que más importa: aquí se decide recortar o no.
         });

@@ -203,7 +203,6 @@ body.scn-lock { overflow: hidden; }
 .scn-shutter:active span{ transform:scale(.86); }
 .scn-shutter:disabled{ opacity:.4; }
 
-.scn-hint.warn{ color:#ffb454; }
 
 /* ==========================================================================
    PISTA CONTEXTUAL (una sola vez, anclada al botón que importa)

@@ -46,7 +46,7 @@
     .thumbs{display:grid;gap:var(--space);grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
     .thumb{border:1px dashed #335084;border-radius:.75rem;padding:.5rem;background-color:#0f172a;min-height:160px;display:grid;place-items:center;background-position:center;background-size:contain;background-repeat:no-repeat}
     .thumb img{max-width:100%;height:auto;object-fit:contain;display:block}
-    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f2a1f;border:1px solid #1c7d57;color:#c8ffe7;padding:.85rem 1rem;border-radius:.75rem;box-shadow:0 10px 20px rgba(0,0,0,.35);display:none;z-index:50}
+    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f2a1f;border:1px solid #1c7d57;color:#c8ffe7;padding:.85rem 1rem;border-radius:.75rem;box-shadow:0 10px 20px rgba(0,0,0,.35);display:none;z-index:10060}
     @media print{@page{size:letter;margin:1.27cm}body{background:#fff;color:#000}.no-print{display:none !important}}
       .progressBarWrap{width:260px;height:8px;background:#1e2a44;border-radius:999px;overflow:hidden;border:1px solid #2a3a5a}
     .progressBar{height:100%;width:0%;background:#4c9ffe}
@@ -415,7 +415,7 @@ body.booting{overflow:hidden;}
   <div id="progressToast" class="save-blocker" style="display:none" hidden role="alertdialog" aria-modal="true" aria-live="assertive" aria-busy="true">
     <div class="save-card">
       <div class="save-spin" aria-hidden="true"></div>
-      <div id="progressLabel">Guardando información...</div>
+      <div id="progressLabel">Preparando documento…</div>
       <div class="progressBarWrap"><div id="progressBar" class="progressBar" style="width:0%"></div></div>
       <div class="save-note">No cierre ni modifique el formulario.</div>
     </div>
@@ -506,21 +506,54 @@ body.booting{overflow:hidden;}
     }
 
     function beforeUnloadGuard(e){ e.preventDefault(); e.returnValue=''; return ''; }
+    /* Cambia la barra y, opcionalmente, el rótulo de la etapa. */
+    function setStage(pct, label){
+      if (typeof setProgress === 'function') setProgress(pct);
+      const l=$('progressLabel');
+      if (l && label) l.textContent = label;
+    }
     function showProgress(label){ const t=$('progressToast'),l=$('progressLabel'); if(!t||!l) return; l.textContent=label||'Guardando información...'; t.hidden=false; t.style.display='flex'; document.body.classList.add('saving-lock'); window.addEventListener('beforeunload', beforeUnloadGuard); setProgress(10); clearInterval(showProgress._timer); showProgress._timer=setInterval(()=>{ const b=$('progressBar'); const curr=parseInt(b&&b.style && b.style.width ? b.style.width : '0')||0; if(curr<85) setProgress(curr+5); },400); }
-    function setProgress(p){ const b=$('progressBar'); if(b){ const v=Math.max(0,Math.min(100,Number(p)||0)); b.style.width=v+'%'; } }
+    /* Etapa del guardado: mueve la barra Y actualiza el rótulo. Antes la barra
+       subía 10 -> 70 -> 90 sin decir nada, así que el usuario veía avance sin
+       saber de qué. También detiene el avance automático de showProgress para
+       que el porcentaje no pelee con la etapa real. */
+    function setStage(p, texto){
+      clearInterval(showProgress._timer);
+      setProgress(p);
+      const l=$('progressLabel');
+      if(l && texto) l.textContent = texto;
+    }
+
+    /* El segundo parámetro cambia el texto del overlay. Antes la barra
+       avanzaba 10 -> 70 -> 90 sin decir nunca en qué etapa iba. */
+    function setProgress(p, label){ const b=$('progressBar'); if(b){ const v=Math.max(0,Math.min(100,Number(p)||0)); b.style.width=v+'%'; } if(label){ const l=$('progressLabel'); if(l) l.textContent=label; } }
     /* El desbloqueo va DENTRO del setTimeout: si se liberara antes, quedaría
        un instante con la capa visible pero el formulario ya editable. */
-    function hideProgress(msg){
+    /* hideProgress(msg, despues)
+       'despues' se ejecuta cuando la capa ya se retiró del todo. Antes,
+       showPreDescargaModal() se abría en paralelo al cierre y durante 300 ms
+       se apilaban overlay (10050), modal (9999) y toast (50): eso eran los
+       cuadros que asomaban detrás. Ahora el modal espera su turno. */
+    function hideProgress(msg, despues){
       const t=$('progressToast'),b=$('progressBar');
       clearInterval(showProgress._timer);
       setProgress(100);
       window.removeEventListener('beforeunload', beforeUnloadGuard);
-      setTimeout(()=>{
-        if(t){ t.style.display='none'; t.hidden=true; }
-        if(b) b.style.width='0%';
-        document.body.classList.remove('saving-lock');
-        if(msg) showToast(msg);
-      },300);
+      /* Devuelve una promesa que resuelve cuando la capa ya se retiró. Antes,
+         quien llamaba seguía de inmediato y abría el modal de descarga
+         mientras el overlay aún se desvanecía: de ahí los recuadros que
+         asomaban por detrás. */
+      hideProgress._last = new Promise((resolve)=>{
+        setTimeout(()=>{
+          if(t){ t.style.display='none'; t.hidden=true; }
+          if(b) b.style.width='0%';
+          document.body.classList.remove('saving-lock');
+          if(msg) showToast(msg);
+          if (typeof despues === 'function') { try { despues(); } catch(_){} }
+          resolve();
+        },300);
+      });
+      return hideProgress._last;
     }
 
     function readFileAsDataURL(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej(fr.error||new Error('FileReader')); fr.readAsDataURL(file); }); }
@@ -535,7 +568,7 @@ body.booting{overflow:hidden;}
     // Debe coincidir con VER dentro de scanner-ui.js. Súbelo en cada
     // despliegue que toque los archivos de scanner/ para invalidar la caché
     // del CDN de Cloudflare y la del navegador.
-    const SCANNER_VER  = '2.9.1';
+    const SCANNER_VER  = '2.9.2';
     const SCAN_TARGET  = 'foto_factura';
     let __scannerLoad = null;
 
@@ -1066,7 +1099,7 @@ function onSectorChange(){
         .replace(/[^A-Za-z0-9._-]/g, '');
 
       // Guardar primero
-      if (typeof setProgress === "function") setProgress(40);
+      if (typeof setProgress === "function") setProgress(40);   // el overlay aún no está visible
       await doSave(dd, data, filename, dedupeKey);
 
       // Preparar descarga en gesto del usuario
@@ -1074,6 +1107,10 @@ function onSectorChange(){
       window.__lastFileName = filename;
 
       setBusy(false); isSaving = false; if (typeof updateEnviarEnabled==='function') updateEnviarEnabled();
+      /* Esperar al cierre real del overlay antes de abrir el modal. Antes se
+         abría en paralelo y durante 300 ms se apilaban overlay (10050), modal
+         (9999) y toast: eso eran los recuadros que asomaban por detrás. */
+      try { await (hideProgress._last || Promise.resolve()); } catch(_){}
       showPreDescargaModal();
       try { renderPdfPreview(dd); } catch(_){}
 
@@ -1154,7 +1191,7 @@ function onSectorChange(){
 
 
     async function doSave(dd, data, filename, dedupeKey){
-      showProgress('Guardando información...');
+      showProgress('Preparando documento…');
       try {
         // 10%: empaquetando PDF
         if (typeof setProgress === 'function') setProgress(10);
@@ -1163,7 +1200,7 @@ function onSectorChange(){
           catch(err){ reject(err); }
         });
         // 70%: enviando a servidor
-        if (typeof setProgress === 'function') setProgress(70);
+        if (typeof setProgress === 'function') setProgress(70, 'Enviando información…');
         var __timeoutMs = 30000;
         var __submissionId = (typeof getSubmissionId==='function' ? getSubmissionId() : String(Date.now()));
         var resp = await postJSONWithRetry(
@@ -1193,12 +1230,12 @@ function onSectorChange(){
           __timeoutMs
         );
         // 90%: ACK recibido
-        if (typeof setProgress === 'function') setProgress(90);
+        if (typeof setProgress === 'function') setProgress(90, 'Confirmando registro…');
         var ok = !!(resp && (resp.ok === true || resp.status === 'OK'));
         if (!ok) { throw new Error((resp && (resp.code || resp.message)) || 'GUARDADO_NO_CONFIRMADO'); }
         // 100% y listo
-        if (typeof setProgress === 'function') setProgress(100);
-        hideProgress('Información enviada correctamente');
+        if (typeof setProgress === 'function') setProgress(100, 'Información enviada');
+        hideProgress();   // el overlay ya mostró 'Información enviada' al 100 %
         return resp;
       } catch(e){
         // Asegurar cierre del progreso en caso de error
@@ -1277,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', function(){
   .btn-secondary{background:#e5e7eb;color:#111827}
 
   /* Toast de "Descargando..." */
-  #downloadingToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f1525;border:1px solid #213154;color:#eaf0f8;padding:.85rem 1rem;border-radius:.75rem;box-shadow:0 10px 20px rgba(0,0,0,.35);display:none;z-index:50}
+  #downloadingToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f1525;border:1px solid #213154;color:#eaf0f8;padding:.85rem 1rem;border-radius:.75rem;box-shadow:0 10px 20px rgba(0,0,0,.35);display:none;z-index:10060}
   .spinner-mini{display:inline-block;vertical-align:-2px;width:14px;height:14px;border:2px solid #93c5fd;border-top-color:#1d4ed8;border-radius:50%;margin-right:8px;animation:spin-mini 0.9s linear infinite}
   @keyframes spin-mini{to{transform:rotate(360deg)}}
 

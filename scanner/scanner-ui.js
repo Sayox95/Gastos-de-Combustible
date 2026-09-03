@@ -17,7 +17,7 @@
      que este módulo carga por su cuenta (worker, núcleo, hoja de estilos).
      Debe subirse en cada despliegue que toque scanner-*.js o scanner.css,
      y coincidir con el ?v= que index.html le pone a este archivo. */
-  var VER = '2.9.1';
+  var VER = '2.9.2';
   var QS = '?v=' + VER;
 
   /* BASE se deriva de la URL de este propio script, así que funciona igual
@@ -1073,16 +1073,34 @@
       if (root.parentNode) root.parentNode.removeChild(root);
       cb();                                  // el clic en Entendido es el gesto
     }
+    var okBtn = root.querySelector('.scn-intro-ok');
+
+    /* Confirmación táctil: la clase se aplica en pointerdown para que el
+       hundido se vea de inmediato, sin esperar al click. Se retiene un
+       instante para que el gesto se perciba aunque el toque sea muy rápido. */
+    okBtn.addEventListener('pointerdown', function () {
+      okBtn.classList.add('pressed');
+      try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) {
+      okBtn.addEventListener(ev, function () {
+        setTimeout(function () { okBtn.classList.remove('pressed'); }, 90);
+      });
+    });
+
     // Envuelto en una función: 'cerrar' se reasigna más abajo y hay que
     // resolverlo en tiempo de ejecución, no capturar la referencia vieja.
-    root.querySelector('.scn-intro-ok').addEventListener('click', function () { cerrar(); });
-
-    /* Tres salidas más, para que nadie quede atrapado si el botón no se ve:
-       toque fuera de la tarjeta, tecla Escape, y un tope de seguridad que
-       libera el bloqueo de scroll aunque el aviso siga en pantalla. */
-    root.addEventListener('click', function (ev) {
-      if (ev.target === root) cerrar();
+    okBtn.addEventListener('click', function () {
+      okBtn.classList.add('pressed');
+      // 110 ms de retención: el usuario alcanza a ver que el botón respondió
+      setTimeout(function () { cerrar(); }, 110);
     });
+
+    /* El cierre por toque fuera se retiró a propósito: un roce accidental
+       descartaba el aviso sin leerlo y quedaba marcado como visto para
+       siempre. La única salida deliberada es "Entendido"; Escape se conserva
+       porque exige teclado físico y no ocurre por accidente. El tope de
+       seguridad libera el scroll aunque el aviso siguiera en pantalla. */
     var onEsc = function (ev) {
       if (ev.key === 'Escape' || ev.keyCode === 27) cerrar();
     };

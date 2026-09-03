@@ -17,7 +17,7 @@
      que este módulo carga por su cuenta (worker, núcleo, hoja de estilos).
      Debe subirse en cada despliegue que toque scanner-*.js o scanner.css,
      y coincidir con el ?v= que index.html le pone a este archivo. */
-  var VER = '2.9.2';
+  var VER = '2.9.3';
   var QS = '?v=' + VER;
 
   /* BASE se deriva de la URL de este propio script, así que funciona igual
@@ -337,11 +337,32 @@
     + '  </div>'
     + '</div>';
 
+  /**
+   * Carga scanner.css y devuelve una promesa que resuelve cuando ya está
+   * aplicado. Antes solo lo inyectaba y seguía de largo, así que la tarjeta
+   * y el modal se pintaban sin estilos durante unos fotogramas: se veía una
+   * versión "en crudo" antes de la definitiva.
+   * El tope de 1500 ms evita quedarse esperando si la hoja no llega; en ese
+   * caso se sigue igual, apoyado en los estilos críticos en línea.
+   */
+  var cssPromise = null;
   function ensureCss() {
-    if (document.getElementById('scn-css')) return;
-    var l = document.createElement('link');
-    l.id = 'scn-css'; l.rel = 'stylesheet'; l.href = BASE + 'scanner.css' + QS;
-    document.head.appendChild(l);
+    if (cssPromise) return cssPromise;
+    if (document.getElementById('scn-css')) {
+      cssPromise = Promise.resolve();
+      return cssPromise;
+    }
+    cssPromise = new Promise(function (res) {
+      var l = document.createElement('link');
+      l.id = 'scn-css'; l.rel = 'stylesheet'; l.href = BASE + 'scanner.css' + QS;
+      var hecho = false;
+      var fin = function () { if (hecho) return; hecho = true; res(); };
+      l.onload = fin;
+      l.onerror = fin;
+      setTimeout(fin, 1500);
+      document.head.appendChild(l);
+    });
+    return cssPromise;
   }
 
   /* ======================================================================
@@ -1035,7 +1056,10 @@
     var usado = false;
     cb = function () { if (usado) return; usado = true; if (typeof orig === 'function') orig(); };
     if (introVisto()) { cb(); return; }      // síncrono: conserva el gesto
-    ensureCss();
+    ensureCss().then(function () { pintarIntro(cb); });
+  }
+
+  function pintarIntro(cb) {
 
     var root = document.createElement('div');
     root.className = 'scn-intro';
@@ -1047,7 +1071,13 @@
       'position:fixed;inset:0;z-index:100020;background:rgba(4,10,24,.80);' +
       'display:flex;align-items:center;justify-content:center;padding:20px;');
     root.innerHTML = ''
-      + '<div class="scn-intro-card" role="dialog" aria-modal="true">'
+      /* Estilos mínimos en línea como respaldo: si scanner.css no llegara
+         dentro del tope, la tarjeta sigue siendo legible y usable en vez de
+         quedar como texto suelto a lo ancho de la pantalla. */
+      + '<div class="scn-intro-card" role="dialog" aria-modal="true"'
+      + '     style="background:#111c33;color:#eaf0f8;border-radius:16px;'
+      + '            padding:20px;width:100%;max-width:330px;text-align:center;'
+      + '            box-sizing:border-box">'
       + '  <div class="scn-intro-tag">Nuevo</div>'
       + '  <div class="scn-demo" aria-hidden="true">'
       + '    <div class="scn-demo-doc">'
@@ -1059,7 +1089,10 @@
       + '  <p>Los bordes de la factura se detectan solos. Si el recuadro no calza, '
       + '     arrastre los puntos para ajustarlo a mano.</p>'
       + '  <p class="scn-intro-sub">Recortar deja los montos y la fecha mucho más legibles.</p>'
-      + '  <button type="button" class="scn-intro-ok">Entendido</button>'
+      + '  <button type="button" class="scn-intro-ok"'
+      + '          style="width:100%;margin-top:14px;padding:13px 10px;border:0;'
+      + '                 border-radius:10px;background:#4c9ffe;color:#06122a;'
+      + '                 font-weight:700;font-size:15px">Entendido</button>'
       + '</div>';
     document.body.appendChild(root);
     document.body.classList.add('scn-lock');
@@ -1126,8 +1159,12 @@
     },
     intro: showIntro,
     introSeen: introVisto,
-    openCamera: function () { return openScanner('camera'); },
-    open: function (file) { return openScanner(file); }
+    openCamera: function () {
+      return ensureCss().then(function () { return openScanner('camera'); });
+    },
+    open: function (file) {
+      return ensureCss().then(function () { return openScanner(file); });
+    }
   };
 
 })(window);

@@ -704,7 +704,20 @@ body.booting{overflow:hidden;}
       }
     }
 
-    function validateForm(){ let ok=true; document.querySelectorAll('#form [required]').forEach(inp=>{ if(!(inp && typeof inp.checkValidity==='function' ? inp.checkValidity() : true)){ ok=false; showError(inp, inp.validationMessage); } else { showError(inp,''); } }); const ids=['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura']; for(const id of ids){ const el=$(id); if(!el.files||!el.files[0]){ ok=false; showError(el,'Requerido'); continue; } const f=el.files[0]; const recent=(Date.now()-f.lastModified)<=960*3600*1000; if(!recent){ ok=false; showError(el,'La foto debe ser ≤ 48 horas'); } }
+    function validateForm(){ let ok=true; document.querySelectorAll('#form [required]').forEach(inp=>{ if(!(inp && typeof inp.checkValidity==='function' ? inp.checkValidity() : true)){ ok=false; showError(inp, inp.validationMessage); } else { showError(inp,''); } }); /* Los <select> deshabilitados quedan EXCLUIDOS de la validación por
+       especificación: checkValidity() devuelve true sobre ellos y el atributo
+       required se ignora. Como #placa nace disabled y solo se habilita al
+       elegir sector, el formulario podía enviarse sin placa (por ejemplo si
+       fallaban los catálogos, o con un sector sin placas asignadas).
+       Estos dos se validan por valor, estén habilitados o no. */
+    [['sector','Seleccione un sector'],['placa','Seleccione una placa']].forEach(function(par){
+      const el=$(par[0]); if(!el) return;
+      if(!String(el.value||'').trim()){
+        ok=false;
+        showError(el, el.disabled ? 'No se pudieron cargar los catálogos. Recargue la página.' : par[1]);
+      } else { showError(el,''); }
+    });
+    const ids=['foto_tablero_antes','foto_bomba','foto_despues','foto_bomba_llenado','foto_frontal','foto_factura']; for(const id of ids){ const el=$(id); if(!el.files||!el.files[0]){ ok=false; showError(el,'Requerido'); continue; } const f=el.files[0]; const recent=(Date.now()-f.lastModified)<=960*3600*1000; if(!recent){ ok=false; showError(el,'La foto debe ser ≤ 48 horas'); } }
       // Validación dura de máximos
       var litrosVal = normalizeNumberForSave($('litros').value);
       var totalVal  = normalizeNumberForSave($('total').value);
@@ -1017,7 +1030,7 @@ var page3={ stack:[ {text:'FACTURA ORIGINAL',style:'tSub',margin:[0,0,0,8],align
     Catalogos.placasPorSector = placasPorSector;
     Catalogos.jefePorSector = jefePorSector;
     Catalogos.todasPlacas = Array.from(todasPlacasSet).sort();
-    setSelectOptions(selSector, Catalogos.sectores, 'Selecciona…'); if(selSector) selSector.disabled=false; } }catch(e){ console.error('Catálogos:',e); } }
+    setSelectOptions(selSector, Catalogos.sectores, 'Selecciona…'); if(selSector) selSector.disabled=false; } }catch(e){ console.error('Catálogos:',e); /* Antes el fallo era silencioso: los selects quedaban deshabilitados y el usuario no sabía por qué no podía elegir. */ try{ const sp=$('placa'), ss=$('sector'); if(ss) showError(ss,'No se pudieron cargar los catálogos. Revise su conexión y recargue.'); if(sp) showError(sp,''); }catch(_){} } }
 
     
 function setSelectOptions(sel, arr, placeholder){

@@ -722,7 +722,7 @@ body.booting{overflow:hidden;}
       var litrosVal = normalizeNumberForSave($('litros').value);
       var totalVal  = normalizeNumberForSave($('total').value);
       if(litrosVal > 250){ ok=false; showError($('litros'), 'Excede el máximo permitido de 250 litros'); }
-      if(totalVal  > 5000){ ok=false; showError($('total'),  'Excede el máximo permitido de L 5,000'); }
+      if(totalVal  > 7000){ ok=false; showError($('total'),  'Excede el máximo permitido de L 7,000'); }
       return ok; }
 
     function getFormData(){ return { Sector: trimAny($('sector').value), Placa: trimUpper($('placa').value), Proceso: trimAny($('proceso').value), Nombre: trimAny($('nombre').value), Identidad: trimAny($('identidad').value), TotalGastado: normalizeNumberForSave($('total').value), LitrosConsumidos: normalizeNumberForSave($('litros').value), MotivoDelLlenado: trimAny($('motivo').value), Fecha: trimAny($('fecha').value), HorasDelViaje: trimAny($('horas').value), KmActual: trimAny($('km').value), NumeroFactura: trimAny($('factura').value), NombreComercio: trimAny($('nombre_comercio').value), JefeInmediato: trimAny(($('jefe').value)||'') }; }
@@ -1962,7 +1962,7 @@ async function validarFacturaSoloNumero(){
   }
 
   document.addEventListener('DOMContentLoaded', function(){
-    bindMaxValidation('total',  'err_total_lbl',  5000, {decimals:2, fixedOnBlur:true});
+    bindMaxValidation('total',  'err_total_lbl',  7000, {decimals:2, fixedOnBlur:true});
     bindMaxValidation('litros', 'err_litros_lbl', 250,  {decimals:2, fixedOnBlur:false});
 
     // También disparar validación en paste para capturar valores pegados

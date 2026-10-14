@@ -187,16 +187,19 @@ body.booting{overflow:hidden;}
     <div id="bootBar" style="height:100%;width:12%;background:#4c9ffe;border-radius:999px;transition:width .45s ease"></div>
   </div>
   <div id="bootMsg" style="color:#8aa0bc;font-size:13px;letter-spacing:.2px">Preparando información…</div>
+  <div id="bootLento" style="color:#fbbf24;font-size:12px;min-height:1em;text-align:center;padding:0 16px"></div>
 </div>
 <script>
 /* Control de la pantalla de carga.
    Se cierra cuando el formulario está realmente utilizable, no con un
    temporizador: espera a window.load (scripts diferidos e imágenes guía) y a
-   que los catálogos hayan poblado los selects. Un tope de seguridad evita
-   que un fallo de red deje al usuario mirando la pantalla para siempre. */
+   que los catálogos hayan poblado los selects. En conexiones lentas avisa en
+   vez de cerrarse, y un tope de seguridad evita que un fallo de red deje al
+   usuario mirando la pantalla para siempre. */
 (function(){
-  var TOPE_MS = 9000;      // nunca retener más que esto
-  var MIN_MS  = 300;       // evita un parpadeo en equipos rápidos
+  var LENTO_MS = 9000;     // a partir de aquí se avisa que la conexión va lenta
+  var TOPE_MS  = 45000;    // nunca retener más que esto
+  var MIN_MS   = 300;      // evita un parpadeo en equipos rápidos
   var inicio  = Date.now();
   var cerrado = false, pasos = 0;
   document.documentElement.classList.add('booting');
@@ -209,9 +212,29 @@ body.booting{overflow:hidden;}
   }
   function paso(msg, pct){ pasos++; barra(pct, msg); }
 
-  window.__bootDone = function(){
-    if (cerrado) return;
+  function avisoCarga(mostrar){
+    var a=document.getElementById('bootAviso');
+    if(!mostrar){ if(a && a.parentNode) a.parentNode.removeChild(a); return; }
+    if(a) return;
+    a=document.createElement('div');
+    a.id='bootAviso';
+    a.setAttribute('role','alert');
+    a.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#fef3c7;color:#92400e;padding:10px 16px;font:14px Roboto,system-ui,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.2)';
+    a.innerHTML='<span>Algunos datos no cargaron. Recarga la página para continuar.</span>'+
+      '<button type="button" style="background:#92400e;color:#fff;border:0;border-radius:6px;padding:6px 12px;font:inherit;cursor:pointer">Recargar</button>';
+    a.querySelector('button').addEventListener('click', function(){ location.reload(); });
+    document.body.appendChild(a);
+  }
+
+  // ok === false: la carga falló o se agotó el tope; se cierra igual pero avisando.
+  window.__bootDone = function(ok){
+    if (cerrado) {
+      // La carga terminó bien después del tope: quitar el aviso.
+      if (ok !== false) avisoCarga(false);
+      return;
+    }
     cerrado = true;
+    if (ok === false) avisoCarga(true);
     barra(100, 'Listo');
     var espera = Math.max(0, MIN_MS - (Date.now()-inicio));
     setTimeout(function(){
@@ -231,8 +254,13 @@ body.booting{overflow:hidden;}
   });
   window.addEventListener('load', function(){ paso('Cargando recursos…', 70); });
 
+  // Conexión lenta: avisar sin cerrar la pantalla.
+  setTimeout(function(){
+    var l=document.getElementById('bootLento');
+    if (!cerrado && l) l.textContent='La conexión está lenta, seguimos cargando…';
+  }, LENTO_MS);
   // Red de seguridad: pase lo que pase, la pantalla se va.
-  setTimeout(function(){ window.__bootDone(); }, TOPE_MS);
+  setTimeout(function(){ window.__bootDone(false); }, TOPE_MS);
 })();
 </script>
 
@@ -1289,7 +1317,7 @@ function onSectorChange(){
     br.style.display='none';
   }, {passive:true}); }
  ['sector','proceso','placa','nombre','identidad','fecha','horas','km','total','litros','motivo','factura','nombre_comercio','jefe'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change',schedulePreview); }); });
-    window.addEventListener('load', async function(){ try{ if(window.__bootStep) window.__bootStep('Preparando documento…', 80); await waitForPdfMake(); if(window.__bootStep) window.__bootStep('Cargando catálogos…', 90); await cargarCatalogos(); $('btnPreview').disabled=false; if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled(); $('btnPreview').addEventListener('click',schedulePreview); $('btnEnviar').addEventListener('click',enviarReporte); $('sector')&&$('sector').addEventListener('change', onSectorChange); }catch(e){} finally { if(window.__bootDone) window.__bootDone(); } });
+    window.addEventListener('load', async function(){ var cargaOk=false; try{ if(window.__bootStep) window.__bootStep('Preparando documento…', 80); await waitForPdfMake(); if(window.__bootStep) window.__bootStep('Cargando catálogos…', 90); await cargarCatalogos(); $('btnPreview').disabled=false; if (typeof updateEnviarEnabled === 'function') updateEnviarEnabled(); $('btnPreview').addEventListener('click',schedulePreview); $('btnEnviar').addEventListener('click',enviarReporte); $('sector')&&$('sector').addEventListener('change', onSectorChange); cargaOk=true; }catch(e){} finally { if(window.__bootDone) window.__bootDone(cargaOk); } });
     window.addEventListener('beforeunload',function(){ if(window.lastBlobUrl) URL.revokeObjectURL(window.lastBlobUrl); });
 
   })();

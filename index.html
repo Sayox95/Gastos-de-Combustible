@@ -9,8 +9,7 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
-  <script defer src="https://unpkg.com/blueimp-load-image/js/load-image.all.min.js"></script>
+  <script defer src="https://unpkg.com/blueimp-load-image@5.16.0/js/load-image.all.min.js"></script>
   <style>
     :root{--space:clamp(.75rem,2.5vw,1rem);--space-lg:clamp(1rem,3.5vw,1.25rem);--radius:12px;--muted:#c9d3e0;--text:#eaf0f8;--primary:#4c9ffe;--danger:#ff5d7a}
     *{box-sizing:border-box}
@@ -130,8 +129,8 @@ body.booting{overflow:hidden;}
 .sig-btn.warn {background:#fee2e2; color:#991b1b;}
 </style>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/virtual-select-plugin/dist/virtual-select.min.css"/>
-<script defer src="https://cdn.jsdelivr.net/npm/virtual-select-plugin/dist/virtual-select.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/virtual-select-plugin@1.1.0/dist/virtual-select.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/virtual-select-plugin@1.1.0/dist/virtual-select.min.js"></script>
 
 <style>
 /* Virtual Select dark styling to match inputs */
@@ -346,21 +345,21 @@ body.booting{overflow:hidden;}
             <div class="picker-row"><button type="button" id="cam_foto_tablero_antes" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_tablero_antes" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_tablero_antes" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_tablero_antes"></div>
-          <div class="thumb" id="preview_foto_tablero_antes" style="--guide-url:url('imagenes/Tablero%20antes%20de%20llenado.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview tablero antes</span></div>
+          <div class="thumb" id="preview_foto_tablero_antes" style="--guide-url:url('imagenes/Tablero%20antes%20de%20llenado.webp');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview tablero antes</span></div>
 </div>
           <div>
             <label for="foto_bomba">Foto bomba/contador</label>
             <div class="picker-row"><button type="button" id="cam_foto_bomba" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_bomba" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_bomba" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_bomba"></div>
-          <div class="thumb" id="preview_foto_bomba" style="--guide-url:url('imagenes/Bomba%20en%20cero.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview bomba</span></div>
+          <div class="thumb" id="preview_foto_bomba" style="--guide-url:url('imagenes/Bomba%20en%20cero.webp');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview bomba</span></div>
 </div>
           <div>
             <label for="foto_despues">Foto tablero después</label>
             <div class="picker-row"><button type="button" id="cam_foto_despues" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_despues" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_despues" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_despues"></div>
-          <div class="thumb" id="preview_foto_despues" style="--guide-url:url('imagenes/Tablero%20antes%20de%20llenado.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview tablero después</span></div>
+          <div class="thumb" id="preview_foto_despues" style="--guide-url:url('imagenes/Tablero%20antes%20de%20llenado.webp');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview tablero después</span></div>
 </div>
         </div>
         <div class="grid cols-3">
@@ -369,21 +368,21 @@ body.booting{overflow:hidden;}
             <div class="picker-row"><button type="button" id="cam_foto_bomba_llenado" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_bomba_llenado" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_bomba_llenado" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_bomba_llenado"></div>
-          <div class="thumb" id="preview_foto_bomba_llenado" style="--guide-url:url('imagenes/Bomba%20llena.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview bomba llenado</span></div>
+          <div class="thumb" id="preview_foto_bomba_llenado" style="--guide-url:url('imagenes/Bomba%20llena.webp');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview bomba llenado</span></div>
 </div>
           <div>
             <label for="foto_frontal">Foto frontal vehículo</label>
             <div class="picker-row"><button type="button" id="cam_foto_frontal" class="btn btn-sm">Tomar foto</button> <button type="button" id="gal_foto_frontal" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_frontal" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_frontal"></div>
-          <div class="thumb" id="preview_foto_frontal" style="--guide-url:url('imagenes/Vista%20Frontal.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview frontal</span></div>
+          <div class="thumb" id="preview_foto_frontal" style="--guide-url:url('imagenes/Vista%20Frontal.webp');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview frontal</span></div>
 </div>
           <div>
             <label for="foto_factura">Foto factura</label>
             <div class="picker-row"><button type="button" id="scan_foto_factura" class="btn btn-sm" style="display:none">📷 Escanear factura</button> <button type="button" id="cam_foto_factura" class="btn btn-sm" style="display:none">Tomar foto</button> <button type="button" id="gal_foto_factura" class="btn btn-sm">Elegir de galería</button></div>
 <input id="foto_factura" type="file" accept="image/*" style="display:none" required />
             <div class="error" id="err_foto_factura"></div>
-          <div class="thumb" id="preview_foto_factura" style="--guide-url:url('imagenes/Factura.png');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview factura</span></div>
+          <div class="thumb" id="preview_foto_factura" style="--guide-url:url('imagenes/Factura.webp');background-image:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), var(--guide-url);"><span>Preview factura</span></div>
 </div>
         </div>
         <div class="actions">
@@ -2436,7 +2435,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <!-- HEIC/HEIF compatibility: converts .heic/.heif to JPEG client-side using heic2any -->
-<script src="https://unpkg.com/heic2any/dist/heic2any.min.js"></script>
+<script defer src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
 <script>
 (function(){
   // Extend accept attributes to include HEIC/HEIF
